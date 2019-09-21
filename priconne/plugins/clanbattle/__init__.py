@@ -2,6 +2,7 @@
 # clan == クラン == 戰隊（直译为氏族）（CLANNAD的CLAN（笑））
 
 from datetime import datetime
+import re
 
 from nonebot import on_command, CommandSession
 from nonebot.permission import *
@@ -69,12 +70,12 @@ async def add_member(session: CommandSession):
     battlemaster = BattleMaster(group_id)
     clan = battlemaster.get_clan(cid)
     if not clan:
-        await session.pause(f'Error: 指定的分会{cid}不存在')
+        await session.finish(f'Error: 指定的分会{cid}不存在')
     if alt < 0:
-        await session.pause('Error: 小号编号不能小于0')
+        await session.finish('Error: 小号编号不能小于0')
     if uid != session.ctx['user_id']:
         if not await check_permission(session.bot, session.ctx, SUPERUSER|GROUP_ADMIN):
-            await session.pause('Error: 只有管理员才能添加其他人到公会')
+            await session.finish('Error: 只有管理员才能添加其他人到公会')
     
 
     if battlemaster.add_member(uid, alt, name, cid):
@@ -98,7 +99,7 @@ async def list_member(session: CommandSession):
     clan = battlemaster.get_clan(cid)
 
     if not clan:
-        await session.pause('Error: 指定的分会不存在')
+        await session.finish('Error: 指定的分会不存在')
     mems = battlemaster.list_member()
     cmems = []
     for m in mems:
@@ -117,6 +118,9 @@ async def list_member(session: CommandSession):
 
 @on_command('add-challenge', aliases=('dmg', ), permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
 async def add_challenge(session: CommandSession):
+    '''
+    TODO: 这个命令最常用，需要给沙雕群友优化一下语法    // 简易版本见 add_challenge_e
+    '''
     parser = ArgumentParser(session=session, usage='dmg -r -b damage [--uid] [--alt] [--ext | --last | --timeout]\n对3周目的老五造成114514点伤害：dmg 114514 -r 3 -b 5\n帮骑士A出了尾刀收了4周目带善人：dmg 1919810 -r 4 -b 1 --last --uid [骑士A的QQ]')
     parser.add_argument('-r', '--round', type=int)
     parser.add_argument('-b', '--boss', type=int)
@@ -129,43 +133,59 @@ async def add_challenge(session: CommandSession):
     flag_group.add_argument('--timeout', action='store_true')
     args = parser.parse_args(session.argv)
 
+    flag = BattleMaster.NORM
+    if args.last:
+        flag = BattleMaster.LAST
+    elif args.ext:
+        flag = BattleMaster.EXT
+    elif args.timeout:
+        flag = BattleMaster.TIMEOUT
+        args.damage = 0
+
+    challenge = {
+        'round': args.round,
+        'boss': args.boss,
+        'damage': args.damage,
+        'uid': args.uid,
+        'alt': args.alt,
+        'flag': flag
+    }
+    await process_challenge(session, challenge)
+
+
+async def process_challenge(session: CommandSession, challenge):
+    '''
+    处理一条报刀
+    '''
     group_id = session.ctx['group_id']
     battlemaster = BattleMaster(group_id)
     
-    uid = args.uid if args.uid > 0 else session.ctx['user_id']
-    alt = args.alt
+    uid = challenge['uid'] if challenge['uid'] > 0 else session.ctx['user_id']
+    alt = challenge['alt']
     mem = battlemaster.get_member(uid, alt)
     if not mem:
-        await session.pause('本群无法找到该成员，请先使用join-clan命令加入公会后再报刀')
+        await session.finish('本群无法找到该成员，请先使用join-clan命令加入公会后再报刀')
     
     cid = mem['cid']
     if not battlemaster.has_clan(cid):
-        await session.pause('该成员所在分会已被删除，请重新加入公会')
+        await session.finish('该成员所在分会已被删除，请重新加入公会')
     
-    round_ = args.round
+    round_ = challenge['round']
     if round_ <= 0:
-        await session.pause('Error: 周目数必须大于0')
+        await session.finish('Error: 周目数必须大于0')
     
-    boss = args.boss
+    boss = challenge['boss']
     if not 1 <= boss <= 5:
-        await session.pause('Error: Boss编号只能是1/2/3/4/5')
+        await session.finish('Error: Boss编号只能是1/2/3/4/5')
     
-    damage = args.damage
+    damage = challenge['damage']
     if damage < 0:
-        await session.pause('Error: 伤害值不能为负')
+        await session.finish('Error: 伤害值不能为负')
     
-    flag = battlemaster.NORM
-    if args.last:
-        flag = battlemaster.LAST
-    elif args.ext:
-        flag = battlemaster.EXT
-    elif args.timeout:
-        flag = battlemaster.TIMEOUT
-        damage = 0
+    flag = challenge['flag']
 
     prog = battlemaster.get_challenge_progress(cid, datetime.now())
     msg0 = '该伤害上报与当前进度不一致，请注意核对\n' if not (round_ == prog[0] and boss == prog[1]) else ''
-
 
     if battlemaster.add_challenge(uid, alt, round_, boss, damage, flag, datetime.now()):
         await session.send('记录添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)')
@@ -178,6 +198,64 @@ async def add_challenge(session: CommandSession):
         await session.send(msg0 + msg1 + msg2)
 
 
+@on_command('add-challenge-e', aliases=('dmge', ), permission=GROUP_MEMBER, only_to_me=False)
+async def add_challenge_e(session: CommandSession):
+    '''
+    简易报刀
+    为学不会命令行的沙雕群友准备的简易版报刀命令。目前仅支持给自己的大号报刀
+    '''
+    USAGE = "使用方法：\ndmge 伤害数字 r周目 b老几 [last|ext|timeout]\n例：对5周目老4造成了1919810点伤害\ndmge 1919810 r5 b4 "
+    challenge = session.state['challenge']
+    challenge['uid'] = session.ctx['user_id']
+    challenge['alt'] = 0
+    flag = challenge['flag']
+    if not challenge['round']:
+        await session.finish('Error: 未找到周目数\n' + USAGE)
+    if not challenge['boss']:
+        await session.finish('Error: 请给出Boss编号\n' + USAGE)
+    if flag & BattleMaster.TIMEOUT:
+        challenge['damage'] = 0
+    if challenge['damage'] < 0:
+        await session.finish('Error: 未找到正确的伤害，请输入纯数字\n' + USAGE)
+    f_cnt = (flag == BattleMaster.LAST) + (flag == BattleMaster.EXT) + (flag == BattleMaster.TIMEOUT)
+    if f_cnt > 1:
+        await session.finish('Error: 出刀记录只能是[尾刀|补时刀|掉刀]中的一种，不可同时使用。\n补时刀收尾请报ext，游戏内一刀不能获得两次补时\n' + USAGE)  # TODO: 似乎可以用补时刀收尾？ // 此时应按ext处理，游戏内一刀不能获得两次补时
+
+    await process_challenge(session, challenge)
+
+
+@add_challenge_e.args_parser
+async def _(session: CommandSession):
+    args = session.current_arg_text.split()
+    rex_round = re.compile(r'r\d+', re.I)
+    rex_boss = re.compile(r'b[1-5]', re.I)
+    rex_dmg = re.compile(r'\d+w?', re.I)
+    rex_last = re.compile(r'last', re.I)
+    rex_ext = re.compile(r'ext(end)?', re.I)
+    rex_timeout = re.compile(r'timeout', re.I)
+    ret = {
+        'round': None,
+        'boss': None,
+        'damage': -1,
+        'flag': BattleMaster.NORM
+    }
+    for arg in args:
+        if rex_round.match(arg):
+            ret['round'] = int(arg[1: ])
+        elif rex_boss.match(arg):
+            ret['boss'] = int(arg[1])
+        elif rex_dmg.match(arg):
+            ret['damage'] = 10000 * int(arg[ :-1]) if arg[-1] == 'w' or arg[-1] == 'W' else int(arg)
+        elif rex_last.match(arg):
+            ret['flag'] = ret['flag'] | BattleMaster.LAST
+        elif rex_ext.match(arg):
+            ret['flag'] = ret['flag'] | BattleMaster.EXT
+        elif rex_timeout.match(arg):
+            ret['flag'] = ret['flag'] | BattleMaster.TIMEOUT
+            ret['damage'] = 0
+    session.state['challenge'] = ret
+
+
 @on_command('show-progress', permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
 async def show_progress(session: CommandSession):
     parser = ArgumentParser(session=session, usage='show-progress [--cid]')
@@ -188,7 +266,7 @@ async def show_progress(session: CommandSession):
     battlemaster = BattleMaster(group_id)
     cid = args.cid
     if not battlemaster.has_clan(cid):
-        await session.pause(f'本群不存在{cid}会')
+        await session.finish(f'本群不存在{cid}会')
     round_, boss, remain_hp = battlemaster.get_challenge_progress(cid, datetime.now())
     total_hp = battlemaster.get_boss_hp(boss)
     score_rate = battlemaster.get_score_rate(round_, boss)

@@ -79,19 +79,19 @@ SUPERUSER不受权限控制影响
 
 ### 术语
 
-- gid：QQ群号
-- cid：QQ群内下属公会号
+- gid：group id QQ群号
+- cid：clan id 群内下属分会编号
 
-- uid：用户的QQ号
+- uid：user id 用户的QQ号
 - alt：用户的小号编号（默认为0，主账号）
-- clan：公会标识，由gid与cid组成`[gid]_[cid]`
+- ~~clan：公会标识，由gid与cid组成`[gid]_[cid]`~~
 
 ```
 clanbattle.db
 ├─clan
 ├─member
 ├─subscribe
-├─battle_[gid]_[cid]_[yyyymm].csv
+├─battle_[gid]_[cid]_[yyyymm]
 
 ```
 
