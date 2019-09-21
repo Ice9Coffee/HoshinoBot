@@ -17,6 +17,7 @@ class BattleMaster(object):
         2.0, 2.0, 2.5, 2.5, 3.0
     ]
 
+
     def __init__(self, group):
         super().__init__()
         self.group = group
@@ -42,6 +43,37 @@ class BattleMaster(object):
             mm = 12
             yyyy = yyyy - 1
         return (yyyy, mm, dd)
+
+
+    @staticmethod
+    def next_boss(round_, boss):
+        boss = boss + 1
+        if boss > 5:
+            boss = 1
+            round_ = round_ + 1
+        return (round_, boss)
+
+
+    @staticmethod
+    def get_stage(round_):
+        return 3 if round_ >= 11 else 2 if round_ >= 4 else 1
+
+
+    @staticmethod
+    def get_boss_hp(boss):
+        return BattleMaster.BOSS_HP[ boss-1 ]
+
+
+    @staticmethod
+    def get_score_rate(round_, boss):
+        stage = BattleMaster.get_stage(round_)
+        return BattleMaster.SCORE_RATE[ 5*(stage-1) + boss-1 ]
+
+
+    @staticmethod
+    def int2kanji(x):
+        kanji = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
+        return kanji[x]
 
 
     def get_battledao(self, cid, time):
@@ -82,12 +114,12 @@ class BattleMaster(object):
         return mem if mem and mem['gid'] == self.group else None
 
 
-    def list_member(self):
-        return self.memberdao.find_by_gid(self.group)
+    def list_member(self, cid=None):
+        return self.memberdao.find_by(gid=self.group, cid=cid)
 
 
     def list_account(self, uid):
-        return self.memberdao.find_by_gid_uid(self.group, uid)
+        return self.memberdao.find_by(gid=self.group, uid=uid)
 
     
     def mod_member(self, uid, alt, new_name, new_cid):
@@ -138,16 +170,14 @@ class BattleMaster(object):
         return dao.delete(eid)
 
 
-    # def del_challenge(self, eid, uid, alt, time):
-    #     mem = self.get_member(uid, alt)
-    #     if not mem or mem['gid'] != self.group:
-    #         return BattleMaster.NOT_FOUND
-    #     # TODO
-
-
     def get_challenge(self, eid, cid, time):
         dao = self.get_battledao(cid, time)
         return dao.find_one(eid)
+
+
+    def list_challenge(self, cid, time):
+        dao = self.get_battledao(cid, time)
+        return dao.find_all()
 
 
     def list_challenge_of_user(self, uid, alt, time):
@@ -155,29 +185,100 @@ class BattleMaster(object):
         if not mem or mem['gid'] != self.group:
             return []
         dao = self.get_battledao(mem['cid'], time)
-        return dao.find_by_uid_alt(uid, alt)
+        return dao.find_by(uid=uid, alt=alt)
 
 
-    def list_challenge_of_day(self, cid, time):
+    @staticmethod
+    def filt_challenge_of_day(challenge_list, time):
         ret = []
-        _, _, day = self.get_yyyymmdd(time)
-        dao = self.get_battledao(cid, time)
-        for c in dao.find_all():
-            if day == self.get_yyyymmdd(c['time']):
-                ret.append(c)
+        _, _, day = BattleMaster.get_yyyymmdd(time)
+        # print('filt_challenge_of_day(): challenge_list=', challenge_list)
+        # print('filt_challenge_of_day(): day=', day)
+        for challen in challenge_list:
+            # print('filt_challenge_of_day(): day=', BattleMaster.get_yyyymmdd(challen['time']))
+            if day == BattleMaster.get_yyyymmdd(challen['time'])[2]:
+                ret.append(challen)
         return ret
 
 
+    def list_challenge_of_day(self, cid, time):
+        return self.filt_challenge_of_day(self.list_challenge(cid, time), time)
+
+
     def list_challenge_of_user_of_day(self, uid, alt, time):
+        return self.filt_challenge_of_day(self.list_challenge_of_user(uid, alt, time), time)
+
+
+    def stat_challenge(self, cid, time, only_one_day=True):
+        '''
+        return [(member, [challenge])]
+        '''
         ret = []
-        _, _, day = self.get_yyyymmdd(time)
-        mem = self.memberdao.find_one(uid, alt)
-        if not mem or mem['gid'] != self.group:
-            return []
-        dao = self.get_battledao(mem['cid'], time)
-        for c in dao.find_by_uid_alt(uid, alt):
-            if day == self.get_yyyymmdd(c['time']):
-                ret.append(c)
+        mem = self.list_member(cid)
+        dao = self.get_battledao(cid, time)
+        for m in mem:
+            challens = dao.find_by(uid=m['uid'], alt=m['alt'])
+            # print('challens=', challens)
+            if only_one_day:
+                challens = self.filt_challenge_of_day(challens, time)
+                # print('challens_filted=', challens)
+            ret.append((m, challens))
+        return ret
+
+    
+    def stat_score(self, cid, time):
+        '''
+        return [(uid,alt,name,score)]
+        '''
+        ret = []
+        stat = self.stat_challenge(cid, time, only_one_day=False)
+        for mem, challens in stat:
+            score = 0
+            for ch in challens:
+                score = score + round( self.get_score_rate(ch['round'], ch['boss']) * ch['dmg'] )
+            ret.append( (mem['uid'], mem['alt'], mem['name'], score) )
+        return ret
+
+
+    def list_challenge_remain(self, cid, time):
+        '''
+        return [(uid,alt,name,remain_n,remain_e)]
+
+        norm + timeout + last == 3 - remain_n       // 正常出刀数 == 3 - 余刀数
+        last - ext == remain_e                      // 尾刀数 - 补时刀数 == 补时余刀
+        challen_cnt == norm + last + ext + timeout  // 列表长度 == 所有出刀
+        故有==>
+        remain_n = 3 - (norm + timeout + last)
+        remain_e = last - ext
+        '''
+        def count(challens):
+            norm = 0
+            last = 0
+            ext = 0
+            timeout = 0
+            for ch in challens:
+                f = ch['flag']
+                if f & BattleMaster.EXT:
+                    ext = ext + 1
+                elif f & BattleMaster.LAST:
+                    last = last + 1
+                elif f & BattleMaster.TIMEOUT:
+                    timeout = timeout + 1
+                else:
+                    norm = norm + 1
+            return norm, last, ext, timeout
+
+        ret = []
+        stat = self.stat_challenge(cid, time, only_one_day=True)
+        # print(stat)
+        for mem, challens in stat:
+            norm, last, ext, timeout = count(challens)
+            r = (
+                mem['uid'], mem['alt'], mem['name'],
+                3 - (norm + timeout + last),
+                last - ext,
+            )
+            ret.append(r)
         return ret
 
 
@@ -202,33 +303,4 @@ class BattleMaster(object):
             remain_hp = self.get_boss_hp(boss)
         return (round_, boss, remain_hp)
 
-
-    @staticmethod
-    def next_boss(round_, boss):
-        boss = boss + 1
-        if boss > 5:
-            boss = 1
-            round_ = round_ + 1
-        return (round_, boss)
-
-
-    @staticmethod
-    def get_stage(round_):
-        return 3 if round_ >= 11 else 2 if round_ >= 4 else 1
-
-
-    @staticmethod
-    def get_boss_hp(boss):
-        return BattleMaster.BOSS_HP[ boss-1 ]
-
-
-    @staticmethod
-    def get_score_rate(round_, boss):
-        stage = BattleMaster.get_stage(round_)
-        return BattleMaster.SCORE_RATE[ 5*(stage-1) + boss-1 ]
-
-    @staticmethod
-    def int2kanji(x):
-        kanji = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
-        return kanji[x]
 

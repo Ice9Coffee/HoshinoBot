@@ -4,7 +4,7 @@
 from datetime import datetime
 import re
 
-from nonebot import on_command, CommandSession
+from nonebot import on_command, CommandSession, MessageSegment
 from nonebot.permission import *
 from nonebot.argparse import ArgumentParser
 from .battlemaster import BattleMaster
@@ -100,11 +100,7 @@ async def list_member(session: CommandSession):
 
     if not clan:
         await session.finish('Error: 指定的分会不存在')
-    mems = battlemaster.list_member()
-    cmems = []
-    for m in mems:
-        if m['cid'] == cid:
-            cmems.append(m)
+    cmems = battlemaster.list_member(cid)
     if len(cmems):
         msg = f'{cid}会成员一览：  {len(cmems)}/30\n'
         memstr = '{uid: <11d} {name}\n'
@@ -156,6 +152,7 @@ async def add_challenge(session: CommandSession):
 async def process_challenge(session: CommandSession, challenge):
     '''
     处理一条报刀
+    需要保证challenge['flag']的正确性
     '''
     group_id = session.ctx['group_id']
     battlemaster = BattleMaster(group_id)
@@ -186,6 +183,17 @@ async def process_challenge(session: CommandSession, challenge):
 
     prog = battlemaster.get_challenge_progress(cid, datetime.now())
     msg0 = '该伤害上报与当前进度不一致，请注意核对\n' if not (round_ == prog[0] and boss == prog[1]) else ''
+    msg00 = ''
+
+    if damage > prog[2] + 50000:
+        msg00 = '发生过度虐杀，伤害数值已自动修正并标记尾刀，请注意检查是否撞刀\n'
+        damage = prog[2]
+        flag = BattleMaster.LAST
+    elif flag & BattleMaster.LAST and damage >= prog[2] - 50000 and 0 == damage % 10000:
+        msg00 = '尾刀伤害已自动校对\n'
+        damage = prog[2]
+    elif flag & BattleMaster.LAST and damage < prog[2] - 50000:
+        msg00 = '本次尾刀上报后，Boss仍有较多血量，请注意核对并请尚未报刀的成员及时报刀\n'
 
     if battlemaster.add_challenge(uid, alt, round_, boss, damage, flag, datetime.now()):
         await session.send('记录添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)')
@@ -195,7 +203,7 @@ async def process_challenge(session: CommandSession, challenge):
         score_rate = battlemaster.get_score_rate(prog[0], prog[1])
         msg1 = f"记录成功！\n{mem['name']}对{round_}周目老{battlemaster.int2kanji(boss)}造成了{damage}点伤害\n"
         msg2 = f"当前{cid}会进度：\n{prog[0]}周目 老{battlemaster.int2kanji(prog[1])} HP={prog[2]}/{total_hp} x{score_rate:.1f}"
-        await session.send(msg0 + msg1 + msg2)
+        await session.send(msg0 + msg00 + msg1 + msg2)
 
 
 @on_command('add-challenge-e', aliases=('dmge', ), permission=GROUP_MEMBER, only_to_me=False)
@@ -209,6 +217,9 @@ async def add_challenge_e(session: CommandSession):
     challenge['uid'] = session.ctx['user_id']
     challenge['alt'] = 0
     flag = challenge['flag']
+    f_cnt = (flag == BattleMaster.LAST) + (flag == BattleMaster.EXT) + (flag == BattleMaster.TIMEOUT)
+    if f_cnt > 1:
+        await session.finish('Error: 出刀记录只能是[尾刀|补时刀|掉刀]中的一种，不可同时使用。\n补时刀收尾请报ext，游戏内一刀不能获得两次补时\n' + USAGE)  # TODO: 似乎可以用补时刀收尾？ // 此时应按ext处理，游戏内一刀不能获得两次补时
     if not challenge['round']:
         await session.finish('Error: 未找到周目数\n' + USAGE)
     if not challenge['boss']:
@@ -217,9 +228,6 @@ async def add_challenge_e(session: CommandSession):
         challenge['damage'] = 0
     if challenge['damage'] < 0:
         await session.finish('Error: 未找到正确的伤害，请输入纯数字\n' + USAGE)
-    f_cnt = (flag == BattleMaster.LAST) + (flag == BattleMaster.EXT) + (flag == BattleMaster.TIMEOUT)
-    if f_cnt > 1:
-        await session.finish('Error: 出刀记录只能是[尾刀|补时刀|掉刀]中的一种，不可同时使用。\n补时刀收尾请报ext，游戏内一刀不能获得两次补时\n' + USAGE)  # TODO: 似乎可以用补时刀收尾？ // 此时应按ext处理，游戏内一刀不能获得两次补时
 
     await process_challenge(session, challenge)
 
@@ -272,3 +280,61 @@ async def show_progress(session: CommandSession):
     score_rate = battlemaster.get_score_rate(round_, boss)
 
     await session.send(f'当前{cid}会进度：\n{round_}周目 老{battlemaster.int2kanji(boss)} HP={remain_hp}/{total_hp} x{score_rate:.1f}')
+
+
+@on_command('stat', permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
+async def stat(session: CommandSession):
+
+    def get_digi(x: int):
+        '''
+        获取非负数x的十进制位数
+        '''
+        if 0 == x:
+            return 1
+        ans = 0
+        while x > 0:
+            ans = ans + 1
+            x = x // 10
+        return ans
+
+    parser = ArgumentParser(session=session, usage='stat [--cid]')
+    parser.add_argument('--cid', type=int, default=1)
+    args = parser.parse_args(session.argv)
+
+    group_id = session.ctx['group_id']
+    cid = args.cid
+    battlemaster = BattleMaster(group_id)
+    stat = battlemaster.stat_score(cid, datetime.now())
+    yyyy, mm, _ = BattleMaster.get_yyyymmdd(datetime.now())
+
+    stat.sort(key=lambda x: x[3], reverse=True)
+    msg1 = []
+    for uid, alt, name, score in stat:
+        digi = get_digi(score)      # QQ字体非等宽，width(空格*2) == width(数字*1)
+        line = f"{' '*(10-digi)*2}{score}分 {name}\n"
+        msg1.append(line)
+    await session.send(f'{yyyy}年{mm}月会战{cid}会分数统计：\n' + ''.join(msg1))
+
+
+@on_command('show-remain', permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
+async def show_remain(session: CommandSession):
+    parser = ArgumentParser(session=session, usage='show-remain [--cid]')
+    parser.add_argument('--cid', type=int, default=1)
+    args = parser.parse_args(session.argv)
+    
+    group_id = session.ctx['group_id']
+    cid = args.cid
+    battlemaster = BattleMaster(group_id)
+    stat = battlemaster.list_challenge_remain(cid, datetime.now())
+
+    msg1 = []
+    for uid, alt, name, rem_n, rem_e in stat:
+        if rem_n or rem_e:
+            line = ( str(MessageSegment.at(uid)) if check_permission(session.bot, session.ctx, GROUP_ADMIN) else name ) + \
+                   ( f'的小号{alt} ' if alt else '' ) + \
+                   ( f' 余{rem_n}刀 补时{rem_e}刀\n' if rem_e else f'余{rem_n}刀\n' )
+            msg1.append(line)
+    if msg1:
+        await session.send('今日余刀统计：\n' + ''.join(msg1))
+    else:
+        await session.send('所有成员均已出完刀！各位辛苦了！')

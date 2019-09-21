@@ -23,7 +23,8 @@ class SqliteDao(object):
 
 
     def _connect(self):
-        return sqlite3.connect(self._dbpath)
+        # detect_types 中的两个参数用于处理datetime
+        return sqlite3.connect(self._dbpath, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 
 
 
@@ -248,6 +249,50 @@ class MemberDao(SqliteDao):
             return []
 
 
+    def find_by_gid_cid(self, gid, cid):
+        with self._connect() as conn:
+            try:
+                ret = conn.execute('''
+                    SELECT {1} FROM {0} WHERE gid=? AND cid=?
+                    '''.format(self._table, self._columns),
+                    (gid, cid) ).fetchall()
+                return [self.row2item(r) for r in ret]
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('MemberDao.find_by_gid_cid').error(e)
+            return []
+
+
+    # TODO重构：各种find_by可以合并
+    def find_by(self, gid=None, cid=None, uid=None):
+        cond_str = []
+        cond_tup = []
+        if not gid is None:
+            cond_str.append('gid=?')
+            cond_tup.append(gid)
+        if not cid is None:
+            cond_str.append('cid=?')
+            cond_tup.append(cid)
+        if not uid is None:
+            cond_str.append('uid=?')
+            cond_tup.append(uid)
+
+        if 0 == len(cond_tup):
+            return self.find_all()
+        
+        cond_str = " AND ".join(cond_str)
+        
+        with self._connect() as conn:
+            try:
+                ret = conn.execute('''
+                    SELECT {1} FROM {0} WHERE {2}
+                    '''.format(self._table, self._columns, cond_str), 
+                    cond_tup ).fetchall()
+                return [self.row2item(r) for r in ret]
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('MemberDao.find_by').error(e)
+            return []
+
+
 
 class BattleDao(SqliteDao):
     NORM    = 0x00
@@ -372,4 +417,33 @@ class BattleDao(SqliteDao):
                 return [self.row2item(r) for r in ret]
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('BattleDao.find_by_uid_alt').error(e)
+            return []
+
+
+    # TODO重构：各种find_by可以合并
+    def find_by(self, uid=None, alt=None, order_by_user=False):
+        cond_str = []
+        cond_tup = []
+        order = 'round, boss, eid' if not order_by_user else 'uid, alt, round, boss, eid'
+        if not uid is None:
+            cond_str.append('uid=?')
+            cond_tup.append(uid)
+        if not alt is None:
+            cond_str.append('alt=?')
+            cond_tup.append(alt)
+        if 0 == len(cond_tup):
+            return self.find_all()
+        
+        cond_str = " AND ".join(cond_str)
+        
+        with self._connect() as conn:
+            try:
+                ret = conn.execute('''
+                    SELECT {1} FROM {0} WHERE {2} ORDER BY {3}
+                    '''.format(self._table, self._columns, cond_str, order), 
+                    cond_tup ).fetchall()
+                # print('BattleDao.find_by() ret=', ret)
+                return [self.row2item(r) for r in ret]
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('BattleDao.find_by').error(e)
             return []
