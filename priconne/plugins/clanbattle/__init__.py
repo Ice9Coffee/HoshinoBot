@@ -206,7 +206,7 @@ async def process_challenge(session: CommandSession, challenge):
         await session.send(msg0 + msg00 + msg1 + msg2)
 
 
-@on_command('add-challenge-e', aliases=('dmge', ), permission=GROUP_MEMBER, only_to_me=False)
+@on_command('add-challenge-e', aliases=('dmge', '刀'), permission=GROUP_MEMBER, only_to_me=False)
 async def add_challenge_e(session: CommandSession):
     '''
     简易报刀
