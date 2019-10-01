@@ -1,4 +1,8 @@
+import os
 import logging
+import base64
+from io import BytesIO
+from PIL import Image
 from urllib.parse import urljoin, quote
 from nonebot import on_command, CommandSession, MessageSegment
 from aiocqhttp.exceptions import ActionFailed
@@ -8,6 +12,7 @@ USE_PRO_VERSION = True      # 是否使用酷Q PRO版功能，如撤回、发图
 
 IMG_BED = 'http://andong.ml/static/img/'    # 填写自己的图床地址
 
+LOCAL_IMG_DIR = os.path.expanduser('~/mywebsite/static/img/priconne/')
 
 
 
@@ -37,6 +42,7 @@ def get_cqimg(filename, path='', img_bed=IMG_BED):
 
 class CharaHelper(object):
 
+    UNKNOWN_CHARA = 1000
     NAME2ID = {}
 
     @staticmethod
@@ -62,13 +68,15 @@ class CharaHelper(object):
     def get_id(name) -> int:
         if not CharaHelper.NAME2ID:
             CharaHelper.__gen_name2id()
-        return CharaHelper.NAME2ID[name] if name in CharaHelper.NAME2ID else -1
+        return CharaHelper.NAME2ID[name] if name in CharaHelper.NAME2ID else CharaHelper.UNKNOWN_CHARA
 
 
     @staticmethod
     def get_picname(id_) -> str:
         pic_pre = 'icon_unit_'
         pic_end = '31.png'
+        if not 1000 < id_ < 2000:
+            id_ = CharaHelper.UNKNOWN_CHARA      # unknown character
         return f'{pic_pre}{id_:0>4d}{pic_end}'
 
 
@@ -76,5 +84,19 @@ class CharaHelper(object):
     def name2pic(name:str) -> str:
         id_ = CharaHelper.get_id(name)
         if not 1000 < id_ < 2000:
-            id_ = 1000      # unknown character
+            id_ = CharaHelper.UNKNOWN_CHARA      # unknown character
         return CharaHelper.get_picname(id_)
+
+
+    @staticmethod
+    def gen_pic_base64(ids, size=128):
+        num = len(ids)
+        des = Image.new('RGBA', (num*size, size))
+        for i, id_ in enumerate(ids):
+            path = os.path.join(LOCAL_IMG_DIR, CharaHelper.get_picname(id_))
+            src = Image.open(path).resize((size, size), Image.LANCZOS)
+            des.paste(src, (i * size, 0))
+        buf = BytesIO()
+        des.save(buf, format='PNG')
+        base64_str = str(base64.b64encode(buf.getvalue()), encoding='utf8')
+        return f'base64://{base64_str}'
