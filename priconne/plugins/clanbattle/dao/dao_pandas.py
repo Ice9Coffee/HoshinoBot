@@ -1,3 +1,6 @@
+# 已废弃
+# pandas不适合做增查删改
+
 import pandas as pd
 import os
 

@@ -10,6 +10,22 @@ from nonebot.argparse import ArgumentParser
 from .battlemaster import BattleMaster
 
 
+def get_digi(x: int):
+    '''
+    获取非负数x的十进制位数
+    '''
+    if 0 == x:
+        return 1
+    ans = 0
+    while x > 0:
+        ans = ans + 1
+        x = x // 10
+    return ans
+
+def format_int(x: int) -> str:
+    pass
+
+
 @on_command('add-clan', permission=SUPERUSER|GROUP_OWNER, shell_like=True, only_to_me=False)
 async def add_clan(session: CommandSession):
     parser = ArgumentParser(session=session, usage='add-clan --name [--cid]')
@@ -103,8 +119,10 @@ async def list_member(session: CommandSession):
     cmems = battlemaster.list_member(cid)
     if len(cmems):
         msg = f'{cid}会成员一览：  {len(cmems)}/30\n'
-        memstr = '{uid: <11d} {name}\n'
-        memstr_alt = '{uid: <11d} {name} 小号{alt}\n'
+        # 数字太多会被腾讯ban
+        memstr = '{uid: <11,d} {name}\n'
+        memstr_alt = '{uid: <11,d} {name} 小号{alt}\n'
+
         for m in cmems:
             msg = msg + (memstr.format_map(m) if not m['alt'] else memstr_alt.format_map(m))
         await session.send(msg)
@@ -201,8 +219,8 @@ async def process_challenge(session: CommandSession, challenge):
         prog = battlemaster.get_challenge_progress(cid, datetime.now())
         total_hp = battlemaster.get_boss_hp(prog[1])
         score_rate = battlemaster.get_score_rate(prog[0], prog[1])
-        msg1 = f"记录成功！\n{mem['name']}对{round_}周目老{battlemaster.int2kanji(boss)}造成了{damage}点伤害\n"
-        msg2 = f"当前{cid}会进度：\n{prog[0]}周目 老{battlemaster.int2kanji(prog[1])} HP={prog[2]}/{total_hp} x{score_rate:.1f}"
+        msg1 = f"记录成功！\n{mem['name']}对{round_}周目老{battlemaster.int2kanji(boss)}造成了{damage:,d}点伤害\n"
+        msg2 = f"当前{cid}会进度：\n{prog[0]}周目 老{battlemaster.int2kanji(prog[1])} HP={prog[2]:,d}/{total_hp:,d} x{score_rate:.1f}"
         await session.send(msg0 + msg00 + msg1 + msg2)
 
 
@@ -284,19 +302,6 @@ async def show_progress(session: CommandSession):
 
 @on_command('stat', permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
 async def stat(session: CommandSession):
-
-    def get_digi(x: int):
-        '''
-        获取非负数x的十进制位数
-        '''
-        if 0 == x:
-            return 1
-        ans = 0
-        while x > 0:
-            ans = ans + 1
-            x = x // 10
-        return ans
-
     parser = ArgumentParser(session=session, usage='stat [--cid]')
     parser.add_argument('--cid', type=int, default=1)
     args = parser.parse_args(session.argv)
@@ -310,8 +315,13 @@ async def stat(session: CommandSession):
     stat.sort(key=lambda x: x[3], reverse=True)
     msg1 = []
     for uid, alt, name, score in stat:
-        digi = get_digi(score)      # QQ字体非等宽，width(空格*2) == width(数字*1)
-        line = f"{' '*(10-digi)*2}{score}分 {name}\n"
+        # QQ字体非等宽，width(空格*2) == width(数字*1)
+        score = f'{score:,d}'
+        blank = ' ' * (11-len(score)) * 2
+
+        # 数字太多会被腾讯ban，用逗号分隔
+        line = f"{blank}{score}分 {name}\n"
+
         msg1.append(line)
     await session.send(f'{yyyy}年{mm}月会战{cid}会分数统计：\n' + ''.join(msg1))
 
@@ -330,7 +340,7 @@ async def show_remain(session: CommandSession):
     msg1 = []
     for uid, alt, name, rem_n, rem_e in stat:
         if rem_n or rem_e:
-            line = ( str(MessageSegment.at(uid)) if check_permission(session.bot, session.ctx, GROUP_ADMIN) else name ) + \
+            line = ( str(MessageSegment.at(uid)) if await check_permission(session.bot, session.ctx, GROUP_ADMIN) else name ) + \
                    ( f'的小号{alt} ' if alt else '' ) + \
                    ( f' 余{rem_n}刀 补时{rem_e}刀\n' if rem_e else f'余{rem_n}刀\n' )
             msg1.append(line)
