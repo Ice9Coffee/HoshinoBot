@@ -1,6 +1,15 @@
 # Config Files
 config.py
 
+# 暂时删除的代码
+TRASH/
+
+# 数据
+img/
+imgs/
+image/
+images/
+
 # VSCode Folder
 .vscode/
 

@@ -10,7 +10,7 @@ class BattleMaster(object):
     EXT     = BattleDao.EXT
     TIMEOUT = BattleDao.TIMEOUT
 
-    BOSS_HP = [6000000, 8000000, 10000000, 12000000, 15000000]
+    BOSS_HP = [6000000, 8000000, 10000000, 12000000, 20000000]
     SCORE_RATE = [
         1.0, 1.0, 1.2, 1.2, 1.5,
         1.4, 1.4, 1.8, 1.8, 2.0,
