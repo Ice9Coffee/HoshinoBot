@@ -1,4 +1,6 @@
+import re
 from nonebot import on_command, CommandSession
+from nonebot import on_natural_language, NLPSession, IntentCommand
 from sogou_tr import sogou_tr
 from datetime import datetime, timedelta
 
@@ -37,5 +39,39 @@ async def get_translation(text: str) -> str:
         return '翻译姬冷却中...'
     else:
         get_translation.cdtime = datetime.now() + timedelta(seconds=1)
-        return sogou_tr(text)
+        ret = sogou_tr(text)
+        # print(sogou_tr.json)
+        return ret if '0' != sogou_tr.json.get('errorCode') else '翻译姬出错了 ごめんなさい！'
 
+'''
+db = {
+    '173681-1': '173681-1价格为114514.00円',
+    '350218-1': '350218-1值1919810.00津巴布韦币'
+}
+
+
+@on_command('查询test', only_to_me=False)
+async def lookup_test(session:CommandSession):
+
+    res = []
+    for i in session.state['items']:
+        if i in db:
+            res.append(db[i])
+
+    await session.send('\n'.join(res))
+
+
+@lookup_test.args_parser
+async def lookup_test_parser(session:CommandSession):
+    if 'items' not in session.state:
+        session.state['items'] = session.current_arg.strip().split()
+    return
+
+
+@on_natural_language(only_to_me=False)
+async def nlp_lookup_test(session:NLPSession):
+    rex = re.compile(r'\d+-\d+')
+    res = [ m.group() for m in rex.finditer(session.msg_text.strip()) ]
+    if res:
+        return IntentCommand(90.0, '查询test', args={'items': res})
+'''

@@ -19,7 +19,7 @@ async def say_yingyingying(session: CommandSession):
     await session.send('嘤嘤怪确认！排除开始')
     group_id = session.ctx['group_id']
     user_id = session.ctx['user_id']
-    await session.bot.set_group_ban(group_id=group_id , user_id=user_id, duration=10*60)
+    await session.bot.set_group_ban(group_id=group_id , user_id=user_id, duration=45*60)
 
 
 @on_command('给我笑')
@@ -28,7 +28,7 @@ async def say_ciya(session: CommandSession):
     await session.send(ciya)
 
 
-@on_command('arina-database', aliases=('jjc', 'jjc作业', 'jjc作业网', 'pjjc作业网', 'jjc数据库', 'pjjc数据库'))
+@on_command('arina-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'pjjc作业网', 'jjc数据库', 'pjjc数据库'))
 async def say_arina_database(session: CommandSession):
     await session.send('公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
 
