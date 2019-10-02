@@ -2,7 +2,7 @@ from nonebot import on_command, CommandSession, MessageSegment
 from nonebot.permission import *
 from .util import get_cqimg
 
-
+'''
 @on_command('setu', aliases=('涩图', '色图', '来点涩图', '来点色图', '来张涩图', '来张色图', '来点杏佬'), only_to_me=False)
 async def setu(session: CommandSession):
     # xinglingling = MessageSegment.at(1418501385)
@@ -10,7 +10,7 @@ async def setu(session: CommandSession):
     group_id = session.ctx['group_id']
     user_id = session.ctx['user_id']
     await session.bot.set_group_ban(group_id=group_id , user_id=user_id, duration=24*60)
-
+'''
 
 @on_command('seina', aliases=('来点星奏',), only_to_me=False)
 async def seina(session: CommandSession):

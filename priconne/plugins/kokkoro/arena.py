@@ -5,7 +5,10 @@ import json
 import pandas as pd
 import numpy as np
 
+from logging import getLogger
+
 from ..util import CharaHelper
+from .config import AUTH_KEY
 
 class Arena(object):
 
@@ -13,13 +16,14 @@ class Arena(object):
     def do_query(id_list):
         print(id_list)
         header = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
-                'authorization':'c4ca4238a0b9238'}
-        payload = {"_sign":"a", "def":id_list, "nonce":"a", "page":1, "sort":1, "ts": 1567847361}
+                'authorization':AUTH_KEY}
+        payload = {"_sign":"a", "def":id_list, "nonce":"a", "page":1, "sort":1, "ts": int(time.time())}
         resp = requests.post('https://api.pcrdfans.com/x/v1/search', headers=header, data=json.dumps(payload))
         res = resp.json()
         print(json.dumps(payload))
-        print(type(res))
-        print(res)
+        # print(type(res))
+        # print(res)
+        print('len(res)=', len(res))
         res = res['data']['result']
         res = [ [ (c['id'] // 100) for c in x['atk'] ] for x in res ]
         return res
@@ -34,7 +38,7 @@ class Arena(object):
         '''
         return [ (CharaHelper.get_id(name) * 100 + 1)  for name in name_list ]
 
-
+'''
     # id>>>name
     @staticmethod
     def jjc_output(num):
@@ -53,7 +57,7 @@ class Arena(object):
             out_msg += out_msg0
         return out_msg
 
-'''
+
     # name>id>name
     @staticmethod
     def query(msg):
