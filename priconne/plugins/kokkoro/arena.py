@@ -4,19 +4,26 @@ import re
 import json
 import pandas as pd
 import numpy as np
+from os import path
 
 from logging import getLogger
 
 from ..util import CharaHelper
-from .config import AUTH_KEY
 
 class Arena(object):
+
+    @staticmethod
+    def get_auth_key():
+        config_file = path.join(path.dirname(__file__), "config.json")
+        with open(config_file) as f:
+            config = json.load(f)
+            return config["AUTH_KEY"]
 
     @staticmethod
     def do_query(id_list):
         print(id_list)
         header = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
-                'authorization':AUTH_KEY}
+                'authorization':Arena.get_auth_key()}
         payload = {"_sign":"a", "def":id_list, "nonce":"a", "page":1, "sort":1, "ts": int(time.time())}
         resp = requests.post('https://api.pcrdfans.com/x/v1/search', headers=header, data=json.dumps(payload))
         res = resp.json()
