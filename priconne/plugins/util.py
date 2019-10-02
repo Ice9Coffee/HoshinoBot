@@ -1,9 +1,13 @@
 import os
 import logging
 import base64
+
 from io import BytesIO
 from PIL import Image
 from urllib.parse import urljoin, quote
+
+from typing import List
+
 from nonebot import on_command, CommandSession, MessageSegment
 from aiocqhttp.exceptions import ActionFailed
 from ._priconne_data import _PriconneData
@@ -17,17 +21,19 @@ LOCAL_IMG_DIR = os.path.expanduser('~/mywebsite/static/img/priconne/')
 
 
 
-async def delete_msg(session:CommandSession, ban_time=0):
-    group_id = session.ctx['group_id']
-    user_id = session.ctx['user_id']
-    msg_id = session.ctx['message_id']
-    if ban_time:
-        await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
+async def delete_msg(session:CommandSession):
     try:
         if USE_PRO_VERSION:
+            msg_id = session.ctx['message_id']
             await session.bot.delete_msg(message_id=msg_id)
     except ActionFailed as e:
         print('retcode=', e.retcode, ' 撤回消息需要酷Q Pro版以及管理员权限')
+
+
+async def silence(session:CommandSession, ban_time):
+    group_id = session.ctx['group_id']
+    user_id = session.ctx['user_id']
+    await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
 
 
 def get_cqimg(filename, path='', img_bed=IMG_BED):
@@ -90,13 +96,34 @@ class CharaHelper(object):
 
     @staticmethod
     def gen_pic_base64(ids, size=128):
+        pic = CharaHelper.gen_team_pic(ids, size)
+        return CharaHelper.pic2b64(pic)
+
+
+    @staticmethod
+    def gen_team_pic(ids, size=128):
         num = len(ids)
         des = Image.new('RGBA', (num*size, size))
         for i, id_ in enumerate(ids):
             path = os.path.join(LOCAL_IMG_DIR, CharaHelper.get_picname(id_))
             src = Image.open(path).resize((size, size), Image.LANCZOS)
             des.paste(src, (i * size, 0))
+        return des
+
+
+    @staticmethod
+    def concat_team_pic(pics):
+        num = len(pics)
+        w, h = pics[0].size
+        des = Image.new('RGBA', (w, num * h))
+        for i, pic in enumerate(pics):
+            des.paste(pic, (0, i * h))
+        return des
+
+
+    @staticmethod
+    def pic2b64(pic) -> str:
         buf = BytesIO()
-        des.save(buf, format='PNG')
+        pic.save(buf, format='PNG')
         base64_str = str(base64.b64encode(buf.getvalue()), encoding='utf8')
         return f'base64://{base64_str}'
