@@ -12,12 +12,12 @@ from ..util import delete_msg, silence, get_cqimg, CharaHelper, USE_PRO_VERSION
 async def gacha_10(session:CommandSession):
     at = str(MessageSegment.at(session.ctx['user_id']))
     
-    result, hiishi = Gacha.gacha_10()
+    gacha = Gacha()
+    result, hiishi = gacha.gacha_10()
     silence_time = hiishi * 6 if hiishi < 200 else hiishi * 60
 
     if USE_PRO_VERSION:
         # 转成CQimg
-        # result = [ get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(x)), 'priconne') for x in result ]
         result = [ CharaHelper.get_id(x) for x in result ]
         res1 = CharaHelper.gen_team_pic(result[ :5])
         res2 = CharaHelper.gen_team_pic(result[5: ])
@@ -39,11 +39,12 @@ async def gacha_10(session:CommandSession):
 
 @on_command('卡池资讯', aliases=('看看卡池', '康康卡池'), only_to_me=True)
 async def gacha_info(session:CommandSession):
-    up_chara = Gacha.up
+    gacha = Gacha()
+    up_chara = gacha.up
     if USE_PRO_VERSION:
         up_chara = map(lambda x: get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(x)), 'priconne') + x, up_chara)
     up_chara = '\n'.join(up_chara)
-    await session.send(f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(Gacha.up_prob/10):.1f}% 3星出率={(Gacha.s3_prob)/10:.1f}%")
+    await session.send(f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3星出率={(gacha.s3_prob)/10:.1f}%")
     await delete_msg(session)
 
 
@@ -83,7 +84,7 @@ async def arena_query(session:CommandSession):
     await silence(session, 120)       # 避免过快查询
 
     print('query completed, Start generating pics')
-    pics = [ CharaHelper.gen_team_pic(team, 128) for team in res[ : min(5, len(res))] ]
+    pics = [ CharaHelper.gen_team_pic(team, 128) for team in res ]
     print('pic generated. Start concat pics')
     pics = CharaHelper.concat_team_pic(pics)
     print('concat finished. Converting to base64')

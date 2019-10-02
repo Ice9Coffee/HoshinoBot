@@ -1,5 +1,6 @@
 # Config Files
 config.py
+config.json
 
 # 暂时删除的代码
 TRASH/
