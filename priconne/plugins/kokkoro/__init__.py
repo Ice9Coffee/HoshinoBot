@@ -31,7 +31,7 @@ async def gacha_10(session:CommandSession):
 
     await delete_msg(session)
     await silence(session, silence_time)
-    msg = f'{at}\n新たな仲間が増えますよ！\n{res}'
+    msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     # print(msg)
     print('len(msg)=', len(msg))
     await session.send(msg)
@@ -48,7 +48,7 @@ async def gacha_info(session:CommandSession):
     await delete_msg(session)
 
 
-@on_command('竞技场查询', aliases=('怎么拆', '怎么解', '怎么打'), only_to_me=False)
+@on_command('竞技场查询', aliases=('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打'), only_to_me=False)
 async def arena_query(session:CommandSession):
 
     logger = logging.getLogger('kokkoro.arena_query')

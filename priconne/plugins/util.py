@@ -42,7 +42,7 @@ async def delete_msg(session:CommandSession):
 async def silence(session:CommandSession, ban_time):
     group_id = session.ctx['group_id']
     user_id = session.ctx['user_id']
-    if not check_permission(session.bot, session.ctx, SUPERUSER):
+    if not await check_permission(session.bot, session.ctx, SUPERUSER):
         await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
 
 
