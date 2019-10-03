@@ -1,4 +1,6 @@
 import re
+import os
+import json
 import logging
 from nonebot import on_command, CommandSession, MessageSegment
 from nonebot.permission import GROUP_MEMBER, GROUP_ADMIN
@@ -8,8 +10,24 @@ from .arena import Arena
 from ..util import delete_msg, silence, get_cqimg, CharaHelper, USE_PRO_VERSION
 
 
+def get_config():
+    config_file = os.path.join(os.path.dirname(__file__), "config.json")
+    with open(config_file) as f:
+        config = json.load(f)
+        return config
+
+def check_gacha_permission(group_id):
+    config = get_config()
+    return not (group_id in config["GACHA_DISABLE_GROUP"])
+
+
 @on_command('十连', aliases=('十连抽', '来个十连', '来发十连', '十连扭蛋'), only_to_me=False)
 async def gacha_10(session:CommandSession):
+
+    if not check_gacha_permission(session.ctx['group_id']):
+        await session.finish('本群转蛋功能已禁用')
+        return
+
     at = str(MessageSegment.at(session.ctx['user_id']))
     
     gacha = Gacha()
