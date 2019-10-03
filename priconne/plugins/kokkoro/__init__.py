@@ -42,7 +42,7 @@ async def gacha_info(session:CommandSession):
     gacha = Gacha()
     up_chara = gacha.up
     if USE_PRO_VERSION:
-        up_chara = map(lambda x: get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(x)), 'priconne') + x, up_chara)
+        up_chara = map(lambda x: get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(x)), 'priconne/unit') + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await session.send(f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3星出率={(gacha.s3_prob)/10:.1f}%")
     await delete_msg(session)

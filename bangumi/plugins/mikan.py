@@ -59,9 +59,7 @@ class Mikan(object):
 
 @nonebot.scheduler.scheduled_job('cron', minute='*', jitter=20)
 async def sche_lookup():
-
-    print('计划任务：sche_lookup 启动')
-
+    # print('计划任务：sche_lookup 启动')
     if not Mikan.rss_cache: 
         Mikan.update_cache()
         return
@@ -85,7 +83,7 @@ async def sche_lookup():
     else:
         print(f'{datetime.now()} 未检索到番剧更新！')
 
-    print('计划任务：sche_lookup 完成')
+    # print('计划任务：sche_lookup 完成')
 
 
 

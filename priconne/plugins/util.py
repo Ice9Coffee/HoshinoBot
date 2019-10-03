@@ -1,6 +1,7 @@
 import os
 import logging
 import base64
+import json
 
 from io import BytesIO
 from PIL import Image
@@ -9,16 +10,24 @@ from urllib.parse import urljoin, quote
 from typing import List
 
 from nonebot import on_command, CommandSession, MessageSegment
+from nonebot.permission import check_permission, SUPERUSER
 from aiocqhttp.exceptions import ActionFailed
 from ._priconne_data import _PriconneData
 
 USE_PRO_VERSION = True      # 是否使用酷Q PRO版功能，如撤回、发图等
 
-IMG_BED = 'http://andong.ml/static/img/'    # 填写自己的图床地址
 
-LOCAL_IMG_DIR = os.path.expanduser('~/mywebsite/static/img/priconne/')
+def get_config():
+    config_file = os.path.join(os.path.dirname(__file__), "config.json")
+    with open(config_file) as f:
+        config = json.load(f)
+        return config
 
+def get_img_bed():
+    return get_config()["IMG_BED"]
 
+def get_local_unit_img_dir():
+    return os.path.join(get_config()["LOCAL_IMG_DIR"], './unit/')
 
 
 async def delete_msg(session:CommandSession):
@@ -33,10 +42,13 @@ async def delete_msg(session:CommandSession):
 async def silence(session:CommandSession, ban_time):
     group_id = session.ctx['group_id']
     user_id = session.ctx['user_id']
-    await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
+    if not check_permission(session.bot, session.ctx, SUPERUSER):
+        await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
 
 
-def get_cqimg(filename, path='', img_bed=IMG_BED):
+def get_cqimg(filename, path='', img_bed=None):
+    if not img_bed:
+        img_bed = get_img_bed()
     print('img_bed=', img_bed)
     print('path=', path)
     print('filename=', filename)
@@ -94,10 +106,11 @@ class CharaHelper(object):
         return CharaHelper.get_picname(id_)
 
 
-    @staticmethod
-    def gen_pic_base64(ids, size=128):
-        pic = CharaHelper.gen_team_pic(ids, size)
-        return CharaHelper.pic2b64(pic)
+    # 已废弃
+    # @staticmethod
+    # def gen_pic_base64(ids, size=128):
+    #     pic = CharaHelper.gen_team_pic(ids, size)
+    #     return CharaHelper.pic2b64(pic)
 
 
     @staticmethod
@@ -105,7 +118,7 @@ class CharaHelper(object):
         num = len(ids)
         des = Image.new('RGBA', (num*size, size))
         for i, id_ in enumerate(ids):
-            path = os.path.join(LOCAL_IMG_DIR, CharaHelper.get_picname(id_))
+            path = os.path.join(get_local_unit_img_dir(), CharaHelper.get_picname(id_))
             src = Image.open(path).resize((size, size), Image.LANCZOS)
             des.paste(src, (i * size, 0))
         return des
