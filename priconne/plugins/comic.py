@@ -16,7 +16,7 @@ def get_img_bed():
 
 def load_index():
     base = get_img_bed()
-    url = urljoin(base, './comic/index.json')
+    url = urljoin(base, './priconne/comic/index.json')
     resp = requests.get(url)
     return resp.json()
 
