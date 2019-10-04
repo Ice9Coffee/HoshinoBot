@@ -99,7 +99,7 @@ class CharaHelper(object):
 
 
     @staticmethod
-    def name2pic(name:str) -> str:
+    def name2picname(name:str) -> str:
         id_ = CharaHelper.get_id(name)
         if not 1000 < id_ < 2000:
             id_ = CharaHelper.UNKNOWN_CHARA      # unknown character
@@ -114,7 +114,7 @@ class CharaHelper(object):
 
 
     @staticmethod
-    def gen_team_pic(ids, size=128):
+    def gen_team_pic(ids, size=128, star=None, equip=None):
         num = len(ids)
         des = Image.new('RGBA', (num*size, size))
         for i, id_ in enumerate(ids):
