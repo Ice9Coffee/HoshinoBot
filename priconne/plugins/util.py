@@ -39,10 +39,10 @@ async def delete_msg(session:CommandSession):
         print('retcode=', e.retcode, ' 撤回消息需要酷Q Pro版以及管理员权限')
 
 
-async def silence(session:CommandSession, ban_time):
+async def silence(session:CommandSession, ban_time, ignore_super_user=False):
     group_id = session.ctx['group_id']
     user_id = session.ctx['user_id']
-    if not await check_permission(session.bot, session.ctx, SUPERUSER):
+    if ignore_super_user or not await check_permission(session.bot, session.ctx, SUPERUSER):
         await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
 
 
