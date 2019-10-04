@@ -97,6 +97,10 @@ async def ban_word(session:CommandSession):
     await silence(session, 24*60*60)
 
 
+@on_command('sayhello', aliases=('在', '在？', '在吗', '在么？', '在嘛', '在嘛？'))
+async def sayhello(session:CommandSession):
+    await session.send('はい！ほしのちゃんはいつもあなたのそばにいるよ')
+
 
 @on_command('help', aliases=('帮助', '说明', '使用说明'), only_to_me=False)
 async def send_help(session:CommandSession):
