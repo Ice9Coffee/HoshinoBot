@@ -32,6 +32,9 @@ async def hb_handler(context):
                 await bot.send(context, title)
             except Exception as e:
                 print(e)
+    
+    # if user_id in bot.config.SUPERUSERS:
+    #     await bot.send(context, message)
 
 
 
