@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 # print(sogou_tr('hello world', to_lang='ja'))  # ->'ハローワールド'
 
 
-@on_command('translate', aliases=('翻译', '翻訳'))
+@on_command('translate', aliases=('翻译', '翻訳'), only_to_me=False)
 async def translate(session: CommandSession):
     text = session.get('text')
     if text:
