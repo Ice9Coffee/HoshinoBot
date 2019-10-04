@@ -21,7 +21,34 @@ def check_gacha_permission(group_id):
     return not (group_id in config["GACHA_DISABLE_GROUP"])
 
 
-@on_command('十连', aliases=('十连抽', '来个十连', '来发十连', '十连扭蛋'), only_to_me=False)
+@on_command('单抽', aliases=('单抽！', '来发单抽', '来个单抽', '扭蛋单抽', '单抽扭蛋'), only_to_me=False)
+async def gacha_1(session:CommandSession):
+
+    if not check_gacha_permission(session.ctx['group_id']):
+        await session.finish('本群转蛋功能已禁用')
+        return
+
+    at = str(MessageSegment.at(session.ctx['user_id']))
+    
+    gacha = Gacha()
+    res, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
+    silence_time = hiishi * 60
+
+    if USE_PRO_VERSION:
+        # 转成CQimg
+        res = get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(res)), 'priconne/unit')
+
+
+    await delete_msg(session)
+    await silence(session, silence_time)
+    msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
+    # print(msg)
+    print('len(msg)=', len(msg))
+    await session.send(msg)
+
+
+
+@on_command('十连', aliases=('十连！', '十连抽', '来个十连', '来发十连', '来次十连','十连扭蛋'), only_to_me=False)
 async def gacha_10(session:CommandSession):
 
     if not check_gacha_permission(session.ctx['group_id']):
@@ -63,7 +90,7 @@ async def gacha_info(session:CommandSession):
         up_chara = map(lambda x: get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(x)), 'priconne/unit') + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await session.send(f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3星出率={(gacha.s3_prob)/10:.1f}%")
-    await delete_msg(session)
+    # await delete_msg(session)
 
 
 @on_command('竞技场查询', aliases=('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打'), only_to_me=False)

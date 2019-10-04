@@ -78,3 +78,39 @@ async def sleep(session:NLPSession):
         sleep_time = 5*60*60 + round(math.sqrt(length) * 60 * 30 + 60 * random.randint(-15, 15))
         await silence(session, sleep_time, ignore_super_user=True)
 
+
+@on_command('老婆', aliases=('waifu', 'laopo'))
+async def laopo(session:CommandSession):
+    session.state['pic_name'] = '喊谁老婆呢.jpg'
+    await send_pic(session)
+
+
+@on_command('mua')
+async def mua(session:CommandSession):
+    await session.send('笨蛋~')
+
+
+
+@on_command('rbq', aliases=(''))
+
+
+
+@on_command('help', aliases=('帮助', '说明', '使用说明'), only_to_me=False)
+async def help(session:CommandSession):
+    msg='''
+目前支持的功能：[]替换为实际参数 注意使用空格分隔
+- 会战管理：详见github.com/Ice-Cirno/HoshinoBot
+- jjc查询：怎么拆 [角色1] [角色2] [...]
+- 翻译：翻译 [文本]
+- 查看rank推荐表：[前|中|后]卫rank表
+- 十连转蛋：来发十连
+
+以下功能需at机器人：请手动at，复制无效
+- 阅览官方四格：官漫 [章节数]
+- 查看卡池：卡池资讯
+- 查看新番：来点新番
+- 查阅jjc数据库网址：jjc作业网
+
+以及其他隐藏功能:)
+'''.strip()
+    await session.send(msg)
