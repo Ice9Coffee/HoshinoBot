@@ -57,6 +57,8 @@ class Mikan(object):
         return new_bangumi
 
 
+
+
 @nonebot.scheduler.scheduled_job('cron', minute='*', jitter=20)
 async def sche_lookup():
     # print('计划任务：sche_lookup 启动')
@@ -92,7 +94,7 @@ async def send_bangumi(session:CommandSession):
     if not Mikan.rss_cache:
         Mikan.update_cache()
     
-    msg = [ f'{i[1]}\n▲链接 {i[0]}' for i in Mikan.rss_cache[:min(5, len(Mikan.rss_cache))] ]
+    msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in Mikan.rss_cache[:min(5, len(Mikan.rss_cache))] ]
     msg = '\n'.join(msg)
     await session.send(f'最近更新的番剧：\n{msg}')
 

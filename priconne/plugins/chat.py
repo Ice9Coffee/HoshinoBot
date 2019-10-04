@@ -91,23 +91,27 @@ async def mua(session:CommandSession):
 
 
 
-@on_command('rbq', aliases=(''))
+@on_command('ban_word', aliases=('rbq', '憨批', '废物', '死妈', 'a片', 'A片', '崽种', '傻逼'))
+async def ban_word(session:CommandSession):
+    await session.send('D区')
+    await silence(session, 24*60*60)
 
 
 
 @on_command('help', aliases=('帮助', '说明', '使用说明'), only_to_me=False)
-async def help(session:CommandSession):
+async def send_help(session:CommandSession):
     msg='''
 目前支持的功能：[]替换为实际参数 注意使用空格分隔
 - 会战管理：详见github.com/Ice-Cirno/HoshinoBot
 - jjc查询：怎么拆 [角色1] [角色2] [...]
 - 翻译：翻译 [文本]
 - 查看rank推荐表：[前|中|后]卫rank表
-- 十连转蛋：来发十连
+- 查看卡池：卡池资讯
 
 以下功能需at机器人：请手动at，复制无效
 - 阅览官方四格：官漫 [章节数]
-- 查看卡池：卡池资讯
+- 十连转蛋：来发十连
+- 单抽转蛋：来发单抽
 - 查看新番：来点新番
 - 查阅jjc数据库网址：jjc作业网
 

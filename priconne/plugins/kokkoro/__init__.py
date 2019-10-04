@@ -10,6 +10,10 @@ from .arena import Arena
 from ..util import delete_msg, silence, get_cqimg, CharaHelper, USE_PRO_VERSION
 
 
+gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '十连扭蛋')
+gacha_1_aliases = ('单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
+
+
 def get_config():
     config_file = os.path.join(os.path.dirname(__file__), "config.json")
     with open(config_file) as f:
@@ -21,7 +25,7 @@ def check_gacha_permission(group_id):
     return not (group_id in config["GACHA_DISABLE_GROUP"])
 
 
-@on_command('单抽', aliases=('单抽！', '来发单抽', '来个单抽', '扭蛋单抽', '单抽扭蛋'), only_to_me=False)
+@on_command('gacha_1', aliases=gacha_1_aliases, only_to_me=True)
 async def gacha_1(session:CommandSession):
 
     if not check_gacha_permission(session.ctx['group_id']):
@@ -47,8 +51,7 @@ async def gacha_1(session:CommandSession):
     await session.send(msg)
 
 
-
-@on_command('十连', aliases=('十连！', '十连抽', '来个十连', '来发十连', '来次十连','十连扭蛋'), only_to_me=False)
+@on_command('gacha_10', aliases=gacha_10_aliases, only_to_me=True)
 async def gacha_10(session:CommandSession):
 
     if not check_gacha_permission(session.ctx['group_id']):
@@ -82,7 +85,7 @@ async def gacha_10(session:CommandSession):
     await session.send(msg)
 
 
-@on_command('卡池资讯', aliases=('看看卡池', '康康卡池'), only_to_me=True)
+@on_command('卡池资讯', aliases=('看看卡池', '康康卡池'), only_to_me=False)
 async def gacha_info(session:CommandSession):
     gacha = Gacha()
     up_chara = gacha.up
@@ -109,6 +112,9 @@ async def arena_query(session:CommandSession):
     print(f'竞技场查询：{argv}')
     logger.info(f'竞技场查询：{argv}')
 
+    if 0 >= len(argv):
+        await session.send('请输入防守方角色，用空格隔开')
+        return
     if 5 < len(argv):
         await session.send('编队不能多于5名角色')
         return
