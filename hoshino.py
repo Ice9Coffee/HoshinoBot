@@ -19,7 +19,7 @@ if __name__ == '__main__':
         'groupmaster.plugins'
     )
     nonebot.load_plugins(
-        path.join(path.dirname(__file__), 'bangumi', 'plugins'),
-        'bangumi.plugins'
+        path.join(path.dirname(__file__), 'subscribe', 'plugins'),
+        'subscribe.plugins'
     )
     nonebot.run()

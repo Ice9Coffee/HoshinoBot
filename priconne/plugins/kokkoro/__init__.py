@@ -1,4 +1,6 @@
 import re
+import os
+import json
 import logging
 from nonebot import on_command, CommandSession, MessageSegment
 from nonebot.permission import GROUP_MEMBER, GROUP_ADMIN
@@ -8,8 +10,54 @@ from .arena import Arena
 from ..util import delete_msg, silence, get_cqimg, CharaHelper, USE_PRO_VERSION
 
 
-@on_command('十连', aliases=('十连抽', '来个十连', '来发十连', '十连扭蛋'), only_to_me=False)
+gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '十连扭蛋')
+gacha_1_aliases = ('单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
+
+
+def get_config():
+    config_file = os.path.join(os.path.dirname(__file__), "config.json")
+    with open(config_file) as f:
+        config = json.load(f)
+        return config
+
+def check_gacha_permission(group_id):
+    config = get_config()
+    return not (group_id in config["GACHA_DISABLE_GROUP"])
+
+
+@on_command('gacha_1', aliases=gacha_1_aliases, only_to_me=True)
+async def gacha_1(session:CommandSession):
+
+    if not check_gacha_permission(session.ctx['group_id']):
+        await session.finish('本群转蛋功能已禁用')
+        return
+
+    at = str(MessageSegment.at(session.ctx['user_id']))
+    
+    gacha = Gacha()
+    res, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
+    silence_time = hiishi * 60
+
+    if USE_PRO_VERSION:
+        # 转成CQimg
+        res = get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(res)), 'priconne/unit')
+
+
+    await delete_msg(session)
+    await silence(session, silence_time)
+    msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
+    # print(msg)
+    print('len(msg)=', len(msg))
+    await session.send(msg)
+
+
+@on_command('gacha_10', aliases=gacha_10_aliases, only_to_me=True)
 async def gacha_10(session:CommandSession):
+
+    if not check_gacha_permission(session.ctx['group_id']):
+        await session.finish('本群转蛋功能已禁用')
+        return
+
     at = str(MessageSegment.at(session.ctx['user_id']))
     
     gacha = Gacha()
@@ -31,24 +79,24 @@ async def gacha_10(session:CommandSession):
 
     await delete_msg(session)
     await silence(session, silence_time)
-    msg = f'{at}\n新たな仲間が増えますよ！\n{res}'
+    msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     # print(msg)
     print('len(msg)=', len(msg))
     await session.send(msg)
 
 
-@on_command('卡池资讯', aliases=('看看卡池', '康康卡池'), only_to_me=True)
+@on_command('卡池资讯', aliases=('看看卡池', '康康卡池'), only_to_me=False)
 async def gacha_info(session:CommandSession):
     gacha = Gacha()
     up_chara = gacha.up
     if USE_PRO_VERSION:
-        up_chara = map(lambda x: get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(x)), 'priconne') + x, up_chara)
+        up_chara = map(lambda x: get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(x)), 'priconne/unit') + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await session.send(f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3星出率={(gacha.s3_prob)/10:.1f}%")
-    await delete_msg(session)
+    # await delete_msg(session)
 
 
-@on_command('竞技场查询', aliases=('怎么拆', '怎么解', '怎么打'), only_to_me=False)
+@on_command('竞技场查询', aliases=('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打'), only_to_me=False)
 async def arena_query(session:CommandSession):
 
     logger = logging.getLogger('kokkoro.arena_query')
@@ -64,6 +112,9 @@ async def arena_query(session:CommandSession):
     print(f'竞技场查询：{argv}')
     logger.info(f'竞技场查询：{argv}')
 
+    if 0 >= len(argv):
+        await session.send('请输入防守方角色，用空格隔开')
+        return
     if 5 < len(argv):
         await session.send('编队不能多于5名角色')
         return
