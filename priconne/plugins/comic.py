@@ -115,7 +115,7 @@ def download_comic(id_):
         json.dump(index, f, ensure_ascii=False)
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='*', second='25', jitter=5)
+@nonebot.scheduler.scheduled_job('cron', minute='*/5', second='25', jitter=4)
 async def update_seeker():
     '''
     轮询官方四格漫画更新
