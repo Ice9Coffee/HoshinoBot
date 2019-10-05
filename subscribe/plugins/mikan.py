@@ -67,7 +67,7 @@ class Mikan(object):
 
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='*', second='15', jitter=5)
+@nonebot.scheduler.scheduled_job('cron', minute='*/3', second='15', jitter=4)
 async def sche_lookup():
     print(f'[{datetime.now()} 计划任务：sche_lookup] 启动')
     if not Mikan.rss_cache: 
