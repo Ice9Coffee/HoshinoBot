@@ -10,8 +10,8 @@ from .arena import Arena
 from ..util import delete_msg, silence, get_cqimg, CharaHelper, USE_PRO_VERSION
 
 
-gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '十连扭蛋')
-gacha_1_aliases = ('单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
+gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '十连扭蛋', '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '10连扭蛋')
+gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
 
 
 def get_config():
