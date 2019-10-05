@@ -79,6 +79,11 @@ async def sleep(session:NLPSession):
         await silence(session, sleep_time, ignore_super_user=True)
 
 
+@on_natural_language(keywords={'咖啡'})
+async def call_master(session:NLPSession):
+    session.send(MessageSegment.at(session.bot.config.SUPERUSERS[0]))
+
+
 @on_command('老婆', aliases=('waifu', 'laopo'))
 async def laopo(session:CommandSession):
     session.state['pic_name'] = '喊谁老婆呢.jpg'

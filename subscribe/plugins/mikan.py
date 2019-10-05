@@ -67,7 +67,7 @@ class Mikan(object):
 
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='*', jitter=20)
+@nonebot.scheduler.scheduled_job('cron', minute='*', second='15', jitter=5)
 async def sche_lookup():
     print(f'[{datetime.now()} 计划任务：sche_lookup] 启动')
     if not Mikan.rss_cache: 
@@ -80,7 +80,7 @@ async def sche_lookup():
 
         print(f'[{datetime.now()}] 检索到{len(new_bangumi)}条番剧更新！')
 
-        msg = [ f'{i[1]}\n▲链接 {i[0]}' for i in new_bangumi ]
+        msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in new_bangumi ]
         msg = '\n'.join(msg)
 
         bot = nonebot.get_bot()
