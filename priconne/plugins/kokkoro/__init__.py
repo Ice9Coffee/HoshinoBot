@@ -10,9 +10,12 @@ from .arena import Arena
 from ..util import delete_msg, silence, get_cqimg, CharaHelper, USE_PRO_VERSION
 
 
-gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', 
-                    '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋')
-gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
+gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
+                    '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋', '扭蛋10连',
+                    '十連', '十連！', '十連抽', '來個十連', '來發十連', '來次十連', '抽個十連', '抽發十連', '抽次十連', '十連轉蛋', '轉蛋十連',
+                    '10連', '10連！', '10連抽', '來個10連', '來發10連', '來次10連', '抽個10連', '抽發10連', '抽次10連', '10連轉蛋', '轉蛋10連')
+gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋',
+                   '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 
 
 def get_config():
@@ -44,7 +47,7 @@ async def gacha_1(session:CommandSession):
         res = get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(res)), 'priconne/unit')
 
 
-    await delete_msg(session)
+    # await delete_msg(session)
     await silence(session, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     # print(msg)
@@ -78,7 +81,7 @@ async def gacha_10(session:CommandSession):
         res2 = ' '.join(result[5: ])
         res = f'{res1}\n{res2}'
 
-    await delete_msg(session)
+    # await delete_msg(session)
     await silence(session, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     # print(msg)

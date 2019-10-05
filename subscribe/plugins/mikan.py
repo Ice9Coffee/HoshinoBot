@@ -28,7 +28,7 @@ class Mikan(object):
 
     @staticmethod
     def get_auth_group():
-        return Mikan.get_config()["AUTH_GROUP"]
+        return Mikan.get_config()["MIKAN_GROUP"]
 
 
     @staticmethod
