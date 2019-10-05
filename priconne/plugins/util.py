@@ -29,6 +29,9 @@ def get_img_bed():
 def get_local_unit_img_dir():
     return os.path.join(get_config()["LOCAL_IMG_DIR"], './unit/')
 
+def get_local_gadget_img(filename):
+    return os.path.join(get_config()["LOCAL_IMG_DIR"], './gadget/', filename)
+
 
 async def delete_msg(session:CommandSession):
     try:
@@ -62,6 +65,10 @@ class CharaHelper(object):
 
     UNKNOWN_CHARA = 1000
     NAME2ID = {}
+    gadget_equip = Image.open(get_local_gadget_img('equip.png'))
+    gadget_star = Image.open(get_local_gadget_img('star.png'))
+    gadget_star_dis = Image.open(get_local_gadget_img('star_disabled.png'))
+
 
     @staticmethod
     def __gen_name2id():
@@ -114,23 +121,55 @@ class CharaHelper(object):
 
 
     @staticmethod
-    def gen_team_pic(ids, size=128, star=None, equip=None):
-        num = len(ids)
+    def gen_chara_pic(id_, size, star=0, equip=0):
+        path = os.path.join(get_local_unit_img_dir(), CharaHelper.get_picname(id_))
+        pic = Image.open(path).convert('RGBA').resize((size, size), Image.LANCZOS)
+
+        l = size // 6
+        margin = ( size - 6*l ) // 2
+        if star:
+            for i in range(5):
+                a = i*l + margin
+                b = size - l - margin - 5
+                s = CharaHelper.gadget_star if star > i else CharaHelper.gadget_star_dis
+                s = s.resize((l, l), Image.LANCZOS)
+                # print('paste', s, 'to', pic)
+                pic.paste(s, (a, b, a+l, b+l), s)
+            if 6 == star:
+                a = 5*l + margin
+                b = size - l - margin
+                pass
+                # TODO
+        l = round(l * 1.5)
+        if equip:
+            a = margin
+            b = margin
+            s = CharaHelper.gadget_equip.resize((l, l), Image.LANCZOS)
+            # print('paste', s, 'to', pic)
+            pic.paste(s, (a, b, a+l, b+l), s)
+        return pic
+
+
+    @staticmethod
+    def gen_team_pic(team, size=128):
+        '''
+        team = (id_, star, equip)
+        '''
+        num = len(team)
         des = Image.new('RGBA', (num*size, size))
-        for i, id_ in enumerate(ids):
-            path = os.path.join(get_local_unit_img_dir(), CharaHelper.get_picname(id_))
-            src = Image.open(path).resize((size, size), Image.LANCZOS)
-            des.paste(src, (i * size, 0))
+        for i, chara in enumerate(team):
+            src = CharaHelper.gen_chara_pic(chara[0], size, chara[1], chara[2])
+            des.paste(src, (i * size, 0), src)
         return des
 
 
     @staticmethod
-    def concat_team_pic(pics):
+    def concat_team_pic(pics, border=5):
         num = len(pics)
         w, h = pics[0].size
-        des = Image.new('RGBA', (w, num * h))
+        des = Image.new('RGBA', (w, num * h + (num-1) * border))
         for i, pic in enumerate(pics):
-            des.paste(pic, (0, i * h))
+            des.paste(pic, (0, i * (h + border)), pic)
         return des
 
 
