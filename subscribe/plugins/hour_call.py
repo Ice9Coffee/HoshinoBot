@@ -12,13 +12,8 @@ def get_config():
         config = json.load(f)
         return config
 
-
-def get_auth_group():
-    return get_config()["AUTH_GROUP"]
-
-
 def get_hour_call():
-    return get_config()["HOUR_CALL"]
+    return get_config()["HOUR_CALL_SHIGURE_YUI"]
 
 
 LAST_HOUR_CALL = datetime.now(pytz.timezone('Asia/Shanghai')).hour
@@ -32,13 +27,13 @@ async def hour_call():
     
     LAST_HOUR_CALL = now.hour
 
-    if 1 <= now.hour <= 4:
+    if 2 <= now.hour <= 4:
         # 宵禁 免打扰
         return
 
     msg = get_hour_call()[now.hour]
     bot = nonebot.get_bot()
-    for group in get_auth_group():
+    for group in get_config()["HOUR_CALL_GROUP"]:
         try:
             await bot.send_group_msg(group_id=group, message=msg)
             print(f'群{group} 投递成功')
@@ -47,12 +42,15 @@ async def hour_call():
             print(f'Error：群{group} 投递失败')
 
 
-@nonebot.scheduler.scheduled_job('cron', hour='6', minute='45', second='0', misfire_grace_time=120) # UTC 0 = UTC+8 1445
+@nonebot.scheduler.scheduled_job('cron', hour='5-6', minute='45', second='0', misfire_grace_time=120) # = UTC+8 1445
 async def pcr_reminder():
     print('pcr_reminder start')
-    msg = '一四四五、骑士君准备好背刺了吗？'
+
+    is_jp = (5 == datetime.now(pytz.timezone('UTC')).hour)
+
+    msg = f'一{"三" if is_jp else "四"}四五。骑士君、准备好背刺了吗？'
     bot = nonebot.get_bot()
-    for group in get_config()["PCR_GROUP"]:
+    for group in get_config()["PCR_GROUP_JP" if is_jp else "PCR_GROUP_TW"]:
         try:
             await bot.send_group_msg(group_id=group, message=msg)
             print(f'群{group} 投递成功')
