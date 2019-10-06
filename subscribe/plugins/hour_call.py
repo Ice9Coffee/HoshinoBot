@@ -16,7 +16,7 @@ def get_hour_call():
     return get_config()["HOUR_CALL_SHIGURE_YUI"]
 
 
-LAST_HOUR_CALL = datetime.now(pytz.timezone('Asia/Shanghai')).hour
+LAST_HOUR_CALL = -1
 
 @nonebot.scheduler.scheduled_job('cron', hour='*', minute='0-5', second='0', misfire_grace_time=30)
 async def hour_call():
