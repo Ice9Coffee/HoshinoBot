@@ -39,12 +39,12 @@ async def gacha_1(session:CommandSession):
     at = str(MessageSegment.at(session.ctx['user_id']))
     
     gacha = Gacha()
-    res, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
+    res, star, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
     if USE_PRO_VERSION:
         # 转成CQimg
-        res = get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(res)), 'priconne/unit')
+        res = get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(res)), 'priconne/unit') + f'{res} {"★"*star}'
 
 
     # await delete_msg(session)
@@ -70,13 +70,14 @@ async def gacha_10(session:CommandSession):
 
     if USE_PRO_VERSION:
         # 转成CQimg
-        result = [ CharaHelper.get_id(x) for x in result ]
-        res1 = CharaHelper.gen_team_pic(result[ :5])
-        res2 = CharaHelper.gen_team_pic(result[5: ])
+        result = [ (CharaHelper.get_id(x), star, 0) for x, star in result ]
+        res1 = CharaHelper.gen_team_pic(result[ :5], star_slot_verbose=False)
+        res2 = CharaHelper.gen_team_pic(result[5: ], star_slot_verbose=False)
         res = CharaHelper.concat_team_pic([res1, res2])
         res = CharaHelper.pic2b64(res)
         res = MessageSegment.image(res)
     else:
+        result = [ f'{x}{"★"*star}' for x, star in result]
         res1 = ' '.join(result[0:5])
         res2 = ' '.join(result[5: ])
         res = f'{res1}\n{res2}'
@@ -133,7 +134,7 @@ async def arena_query(session:CommandSession):
     res = Arena.do_query(defen)
 
     if not len(res):
-        await session.send('抱歉没有查询到解法')
+        await session.send('抱歉没有查询到解法\n（注：没有作业不代表不能拆，竞技场没有无敌的守队只有不够深的box）')
         return
 
     await silence(session, 120)       # 避免过快查询

@@ -30,7 +30,7 @@ class Gacha(object):
         up_prob: UP角色概率（从3星划出）
         up_chara: UP角色名列表
 
-        return: (单抽角色名, 秘石数)
+        return: (单抽角色名, 星数, 秘石数)
         ---------------------------
         |up|      |  20  |   78   |
         |   ***   |  **  |    *   |
@@ -41,13 +41,13 @@ class Gacha(object):
         total_ = s3_prob + s2_prob + s1_prob
         pick = random.randint(1, total_)
         if pick <= up_prob:
-            return random.choice(self.up), 200
+            return random.choice(self.up), 3, 100
         elif pick <= s3_prob:
-            return random.choice(self.star3), 50
+            return random.choice(self.star3), 3, 50
         elif pick <= s2_prob + s3_prob:
-            return random.choice(self.star2), 10 
+            return random.choice(self.star2), 2, 10
         else:
-            return random.choice(self.star1), 1
+            return random.choice(self.star1), 1, 1
 
 
     def gacha_10(self):
@@ -58,11 +58,11 @@ class Gacha(object):
         s2 = self.s2_prob
         s1 = 1000 - s3 - s2        
         for _ in range(9):    # 前9连
-            x, y = self.gacha_one(up, s3, s2, s1)
-            result.append(x)
+            x, star, y = self.gacha_one(up, s3, s2, s1)
+            result.append((x, star))
             hiishi = hiishi + y
-        x, y = self.gacha_one(up, s3, s2 + s1, 0)    # 保底第10抽
-        result.append(x)
+        x, star, y = self.gacha_one(up, s3, s2 + s1, 0)    # 保底第10抽
+        result.append((x, star))
         hiishi = hiishi + y
 
         return result, hiishi
