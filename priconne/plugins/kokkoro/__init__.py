@@ -28,7 +28,7 @@ def check_gacha_permission(group_id):
     config = get_config()
     return not (group_id in config["GACHA_DISABLE_GROUP"])
 
-GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如有需要 请给予bot管理权限后联系维护人员'
+GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如有需要 请给予bot管理权限后联系维护组'
 
 @on_command('gacha_1', aliases=gacha_1_aliases, only_to_me=True)
 async def gacha_1(session:CommandSession):
