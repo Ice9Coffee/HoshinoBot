@@ -32,7 +32,7 @@ class Arena(object):
         # print(res)
         print('len(res)=', len(res))
         res = res['data']['result']
-        res = [ [ (c['id'] // 100) for c in x['atk'] ] for x in res ]
+        res = [ [ (c['id'] // 100, c['star'], c['equip']) for c in x['atk'] ] for x in res ]
         return res
 
     # name>>>id

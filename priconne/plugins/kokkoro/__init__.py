@@ -10,8 +10,12 @@ from .arena import Arena
 from ..util import delete_msg, silence, get_cqimg, CharaHelper, USE_PRO_VERSION
 
 
-gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '十连扭蛋')
-gacha_1_aliases = ('单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋')
+gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
+                    '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋', '扭蛋10连',
+                    '十連', '十連！', '十連抽', '來個十連', '來發十連', '來次十連', '抽個十連', '抽發十連', '抽次十連', '十連轉蛋', '轉蛋十連',
+                    '10連', '10連！', '10連抽', '來個10連', '來發10連', '來次10連', '抽個10連', '抽發10連', '抽次10連', '10連轉蛋', '轉蛋10連')
+gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋',
+                   '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 
 
 def get_config():
@@ -35,15 +39,15 @@ async def gacha_1(session:CommandSession):
     at = str(MessageSegment.at(session.ctx['user_id']))
     
     gacha = Gacha()
-    res, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
+    res, star, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
     if USE_PRO_VERSION:
         # 转成CQimg
-        res = get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(res)), 'priconne/unit')
+        res = get_cqimg(CharaHelper.get_picname(CharaHelper.get_id(res)), 'priconne/unit') + f'{res} {"★"*star}'
 
 
-    await delete_msg(session)
+    # await delete_msg(session)
     await silence(session, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     # print(msg)
@@ -66,18 +70,19 @@ async def gacha_10(session:CommandSession):
 
     if USE_PRO_VERSION:
         # 转成CQimg
-        result = [ CharaHelper.get_id(x) for x in result ]
-        res1 = CharaHelper.gen_team_pic(result[ :5])
-        res2 = CharaHelper.gen_team_pic(result[5: ])
+        result = [ (CharaHelper.get_id(x), star, 0) for x, star in result ]
+        res1 = CharaHelper.gen_team_pic(result[ :5], star_slot_verbose=False)
+        res2 = CharaHelper.gen_team_pic(result[5: ], star_slot_verbose=False)
         res = CharaHelper.concat_team_pic([res1, res2])
         res = CharaHelper.pic2b64(res)
         res = MessageSegment.image(res)
     else:
+        result = [ f'{x}{"★"*star}' for x, star in result]
         res1 = ' '.join(result[0:5])
         res2 = ' '.join(result[5: ])
         res = f'{res1}\n{res2}'
 
-    await delete_msg(session)
+    # await delete_msg(session)
     await silence(session, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     # print(msg)
@@ -129,7 +134,7 @@ async def arena_query(session:CommandSession):
     res = Arena.do_query(defen)
 
     if not len(res):
-        await session.send('抱歉没有查询到解法')
+        await session.send('抱歉没有查询到解法\n（注：没有作业不代表不能拆，竞技场没有无敌的守队只有不够深的box）')
         return
 
     await silence(session, 120)       # 避免过快查询

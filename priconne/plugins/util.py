@@ -26,8 +26,11 @@ def get_config():
 def get_img_bed():
     return get_config()["IMG_BED"]
 
-def get_local_unit_img_dir():
-    return os.path.join(get_config()["LOCAL_IMG_DIR"], './unit/')
+def get_local_unit_img(filename):
+    return os.path.join(get_config()["LOCAL_IMG_DIR"], './unit/', filename)
+
+def get_local_gadget_img(filename):
+    return os.path.join(get_config()["LOCAL_IMG_DIR"], './gadget/', filename)
 
 
 async def delete_msg(session:CommandSession):
@@ -62,6 +65,11 @@ class CharaHelper(object):
 
     UNKNOWN_CHARA = 1000
     NAME2ID = {}
+    gadget_equip = Image.open(get_local_gadget_img('equip.png'))
+    gadget_star = Image.open(get_local_gadget_img('star.png'))
+    gadget_star_dis = Image.open(get_local_gadget_img('star_disabled.png'))
+    gadget_star_pink = Image.open(get_local_gadget_img('star_pink.png'))
+
 
     @staticmethod
     def __gen_name2id():
@@ -90,9 +98,9 @@ class CharaHelper(object):
 
 
     @staticmethod
-    def get_picname(id_) -> str:
+    def get_picname(id_, star=3, file_type='png') -> str:
         pic_pre = 'icon_unit_'
-        pic_end = '31.png'
+        pic_end = f'{star}1.{file_type}'
         if not 1000 < id_ < 2000:
             id_ = CharaHelper.UNKNOWN_CHARA      # unknown character
         return f'{pic_pre}{id_:0>4d}{pic_end}'
@@ -114,23 +122,63 @@ class CharaHelper(object):
 
 
     @staticmethod
-    def gen_team_pic(ids, size=128, star=None, equip=None):
-        num = len(ids)
-        des = Image.new('RGBA', (num*size, size))
-        for i, id_ in enumerate(ids):
-            path = os.path.join(get_local_unit_img_dir(), CharaHelper.get_picname(id_))
-            src = Image.open(path).resize((size, size), Image.LANCZOS)
-            des.paste(src, (i * size, 0))
+    def gen_chara_pic(id_, size, star=0, equip=0, star_slot_verbose=True):
+        path = get_local_unit_img(CharaHelper.get_picname(id_, 6 if star == 6 else 3))
+        pic = Image.open(path).convert('RGBA').resize((size, size), Image.LANCZOS)
+
+        l = size // 6
+        star_lap = round(l * 0.15)
+        margin_x = ( size - 6*l ) // 2
+        margin_y = margin_x + 5
+        if star:
+            for i in range(5 if star_slot_verbose else min(star, 5)):
+                a = i*(l-star_lap) + margin_x
+                b = size - l - margin_y
+                s = CharaHelper.gadget_star if star > i else CharaHelper.gadget_star_dis
+                s = s.resize((l, l), Image.LANCZOS)
+                # print('paste', s, 'to', pic)
+                pic.paste(s, (a, b, a+l, b+l), s)
+            if 6 == star:
+                a = 5*(l-star_lap) + margin_x
+                b = size - l - margin_y
+                s = CharaHelper.gadget_star_pink
+                s = s.resize((l, l), Image.LANCZOS)
+                pic.paste(s, (a, b, a+l, b+l), s)
+        l = round(l * 1.5)
+        if equip:
+            a = margin_x
+            b = margin_x
+            s = CharaHelper.gadget_equip.resize((l, l), Image.LANCZOS)
+            # print('paste', s, 'to', pic)
+            pic.paste(s, (a, b, a+l, b+l), s)
+        return pic
+
+
+    @staticmethod
+    def gen_team_pic(team, size=128, star_slot_verbose=True):
+        '''
+        team = List[(id_, star, equip)]
+        '''
+        num = len(team)
+        des = Image.new('RGBA', (num*size, size), (255, 255, 255, 255))
+        for i, chara in enumerate(team):
+            if not isinstance(chara, (tuple, list)):
+                if isinstance(chara, int):
+                    chara = (chara, 0, 0)
+                else:
+                    raise ValueError('items in team must be an int or a tuple of (id_, star, equip)')
+            src = CharaHelper.gen_chara_pic(chara[0], size, chara[1], chara[2], star_slot_verbose)
+            des.paste(src, (i * size, 0), src)
         return des
 
 
     @staticmethod
-    def concat_team_pic(pics):
+    def concat_team_pic(pics, border=5):
         num = len(pics)
         w, h = pics[0].size
-        des = Image.new('RGBA', (w, num * h))
+        des = Image.new('RGBA', (w, num * h + (num-1) * border), (255, 255, 255, 255))
         for i, pic in enumerate(pics):
-            des.paste(pic, (0, i * h))
+            des.paste(pic, (0, i * (h + border)), pic)
         return des
 
 
