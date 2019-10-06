@@ -3,6 +3,7 @@ import json
 import requests
 from lxml import etree
 from datetime import datetime
+from time import sleep
 
 import nonebot
 from nonebot import CommandSession, on_command
@@ -85,6 +86,7 @@ async def sche_lookup():
 
         bot = nonebot.get_bot()
         for group in Mikan.get_auth_group():
+            sleep(1.0)  # 降低发送频率，避免被腾讯ban TODO: sleep 不够优雅，换一种解决方式
             try:
                 await bot.send_group_msg(group_id=group, message=f'您订阅的番剧更新啦！\n{msg}')
                 print(f'群{group} 投递成功')

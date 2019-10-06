@@ -1,12 +1,14 @@
 import re
 import json
 import requests
+from time import sleep
 from datetime import datetime
 from urllib.parse import urljoin, urlparse, parse_qs
 from os import path
 
 import nonebot
-from nonebot import CommandSession, on_command, CQHttpError
+from nonebot import on_command, CommandSession, CQHttpError
+from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from .util import get_cqimg, silence
 
@@ -40,18 +42,18 @@ def get_pic_name(id_):
     return f'{pre}{id_}{end}'
 
 
-@on_command('官漫')
-async def comic(session:CommandSession):
-    rex = re.compile(r'\d{1,3}')
-    arg = session.current_arg_text.strip()
-    
-    if not rex.match(arg):
-        await session.finish('请输入漫画集数 如：官漫 132')
+@on_natural_language(keywords={'官漫'}, only_to_me=True)
+async def comic(session:NLPSession):
+    rex = re.compile(r'[1-9]\d{0,2}')
+    arg = session.msg_text.strip()
+    match = rex.search(arg)
+    if not match:
+        await session.send('请输入漫画集数 如：官漫 132')
         return
-    episode = str(int(arg))
+    episode = match.group()
     index = load_index()
     if episode not in index:
-        await session.finish(f'未查找到第{episode}话，敬请期待官方更新')
+        await session.send(f'未查找到第{episode}话，敬请期待官方更新')
         return
     title = index[episode]['title']
     pic = get_cqimg(get_pic_name(episode), './priconne/comic/', get_img_bed())
@@ -152,6 +154,7 @@ async def update_seeker():
 
     bot = nonebot.get_bot()
     for group in get_subscribe_group():
+        sleep(0.5)  # 降低发送频率，避免被腾讯ban TODO: sleep 不够优雅，换一种解决方式
         try:
             await bot.send_group_msg(group_id=group, message=msg)
             print(f'群{group} 投递成功')

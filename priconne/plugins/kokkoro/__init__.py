@@ -28,12 +28,13 @@ def check_gacha_permission(group_id):
     config = get_config()
     return not (group_id in config["GACHA_DISABLE_GROUP"])
 
+GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如有需要 请给予bot管理权限后联系维护人员'
 
 @on_command('gacha_1', aliases=gacha_1_aliases, only_to_me=True)
 async def gacha_1(session:CommandSession):
 
     if not check_gacha_permission(session.ctx['group_id']):
-        await session.finish('本群转蛋功能已禁用')
+        await session.finish(GACHA_DISABLE_NOTICE)
         return
 
     at = str(MessageSegment.at(session.ctx['user_id']))
@@ -59,14 +60,15 @@ async def gacha_1(session:CommandSession):
 async def gacha_10(session:CommandSession):
 
     if not check_gacha_permission(session.ctx['group_id']):
-        await session.finish('本群转蛋功能已禁用')
+        await session.finish(GACHA_DISABLE_NOTICE)
         return
 
+    SUPER_LUCKY_LINE = 170
     at = str(MessageSegment.at(session.ctx['user_id']))
     
     gacha = Gacha()
     result, hiishi = gacha.gacha_10()
-    silence_time = hiishi * 6 if hiishi < 200 else hiishi * 60
+    silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
     if USE_PRO_VERSION:
         # 转成CQimg
@@ -88,6 +90,8 @@ async def gacha_10(session:CommandSession):
     # print(msg)
     print('len(msg)=', len(msg))
     await session.send(msg)
+    if hiishi >= SUPER_LUCKY_LINE:
+        await session.send('恭喜海豹！おめでとうございます！')
 
 
 @on_command('卡池资讯', aliases=('看看卡池', '康康卡池'), only_to_me=False)
@@ -140,7 +144,7 @@ async def arena_query(session:CommandSession):
     await silence(session, 120)       # 避免过快查询
 
     print('query completed, Start generating pics')
-    pics = [ CharaHelper.gen_team_pic(team, 128) for team in res ]
+    pics = [ CharaHelper.gen_team_pic(team, 128) for team in res[:min(6, len(res))] ]
     print('pic generated. Start concat pics')
     pics = CharaHelper.concat_team_pic(pics)
     print('concat finished. Converting to base64')
