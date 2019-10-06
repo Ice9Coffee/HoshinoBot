@@ -1,5 +1,6 @@
 import os
 import json
+import random
 import requests
 from lxml import etree
 from datetime import datetime
@@ -88,7 +89,7 @@ async def sche_lookup():
         for group in Mikan.get_auth_group():
             sleep(1.0)  # 降低发送频率，避免被腾讯ban TODO: sleep 不够优雅，换一种解决方式
             try:
-                await bot.send_group_msg(group_id=group, message=f'您订阅的番剧更新啦！\n{msg}')
+                await bot.send_group_msg(group_id=group, message=f'您订阅的番剧更新啦!{"!"*random.randint(0,4)}\n{msg}')
                 print(f'群{group} 投递成功')
             except CQHttpError as e:
                 print(e)
