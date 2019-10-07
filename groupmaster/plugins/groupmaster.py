@@ -41,7 +41,11 @@ async def random_repeater(context):
         if not repeated_flag:
             if random.random() < prob_n:    # 概率测试通过，复读并设flag
                 repeated_flag = True
-                await bot.send(context, msg)
+                try:
+                    await bot.send(context, msg)
+                except CQHttpError as e:
+                    print(e)
+                    print('复读失败: CQHttpError')
             else:                           # 蓄力
                 prob_n = 1 - (1-prob_n)/PROB_A  
     else:   # 不是复读，重置

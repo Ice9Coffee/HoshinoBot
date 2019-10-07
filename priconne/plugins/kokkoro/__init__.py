@@ -139,10 +139,11 @@ async def arena_query(session:CommandSession):
         print(f'[{datetime.now()} arena_query] 参数异常：防守队多于5人，returned')
         return
     defen = Arena.user_input(argv)
-    if 100001 in defen:
-        await session.send('编队中含未知角色，请尝试使用官方译名')
-        print(f'[{datetime.now()} arena_query] 参数异常：未知角色，returned')
-        return 
+    for i, id_ in enumerate(defen):
+        if 100001 == id_:
+            print(f'[{datetime.now()} arena_query] 参数异常：未知角色，returned')
+            await session.finish(f'编队中含未知角色{argv[i]}，请尝试使用官方译名\n您也可以前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充角色别称')
+            return
     if len(defen) != len(set(defen)):
         await session.send('编队中出现重复角色')
         print(f'[{datetime.now()} arena_query] 参数异常：重复角色，returned')
