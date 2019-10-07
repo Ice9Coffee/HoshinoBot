@@ -5,6 +5,7 @@ import json
 import pandas as pd
 import numpy as np
 from os import path
+from datetime import datetime
 
 from logging import getLogger
 
@@ -21,16 +22,17 @@ class Arena(object):
 
     @staticmethod
     def do_query(id_list):
-        print(id_list)
+        print(f'[{datetime.now()} Arena.do_query] id_list={id_list}')
         header = {'user-agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36',
                 'authorization':Arena.get_auth_key()}
         payload = {"_sign":"a", "def":id_list, "nonce":"a", "page":1, "sort":1, "ts": int(time.time())}
+        print(f'[{datetime.now()} Arena.do_query] payload={json.dumps(payload)}')
+        
         resp = requests.post('https://api.pcrdfans.com/x/v1/search', headers=header, data=json.dumps(payload))
         res = resp.json()
-        print(json.dumps(payload))
         # print(type(res))
         # print(res)
-        print('len(res)=', len(res))
+        print(f'[{datetime.now()} Arena.do_query] len(res)=', len(res))
         res = res['data']['result']
         res = [ [ (c['id'] // 100, c['star'], c['equip']) for c in x['atk'] ] for x in res ]
         return res

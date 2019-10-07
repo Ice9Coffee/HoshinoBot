@@ -2,6 +2,8 @@ import re
 import os
 import json
 import logging
+from datetime import datetime
+
 from nonebot import on_command, CommandSession, MessageSegment
 from nonebot.permission import GROUP_MEMBER, GROUP_ADMIN
 from aiocqhttp.exceptions import ActionFailed
@@ -28,12 +30,13 @@ def check_gacha_permission(group_id):
     config = get_config()
     return not (group_id in config["GACHA_DISABLE_GROUP"])
 
+GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如有需要 请给予bot管理权限后联系维护组'
 
 @on_command('gacha_1', aliases=gacha_1_aliases, only_to_me=True)
 async def gacha_1(session:CommandSession):
 
     if not check_gacha_permission(session.ctx['group_id']):
-        await session.finish('本群转蛋功能已禁用')
+        await session.finish(GACHA_DISABLE_NOTICE)
         return
 
     at = str(MessageSegment.at(session.ctx['user_id']))
@@ -58,15 +61,19 @@ async def gacha_1(session:CommandSession):
 @on_command('gacha_10', aliases=gacha_10_aliases, only_to_me=True)
 async def gacha_10(session:CommandSession):
 
+    print(f'[{datetime.now()} gacha_10] Function called')
+
     if not check_gacha_permission(session.ctx['group_id']):
-        await session.finish('本群转蛋功能已禁用')
+        await session.finish(GACHA_DISABLE_NOTICE)
+        print(f'[{datetime.now()} gacha_10] No permission. Function finished.')
         return
 
+    SUPER_LUCKY_LINE = 170
     at = str(MessageSegment.at(session.ctx['user_id']))
     
     gacha = Gacha()
     result, hiishi = gacha.gacha_10()
-    silence_time = hiishi * 6 if hiishi < 200 else hiishi * 60
+    silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
     if USE_PRO_VERSION:
         # 转成CQimg
@@ -86,8 +93,13 @@ async def gacha_10(session:CommandSession):
     await silence(session, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     # print(msg)
-    print('len(msg)=', len(msg))
+    print(f'[{datetime.now()} gacha_10] len(msg)={len(msg)}')
     await session.send(msg)
+    if hiishi >= SUPER_LUCKY_LINE:
+        await session.send('恭喜海豹！おめでとうございます！')
+
+    print(f'[{datetime.now()} gacha_10] Function finished successully.')
+
 
 
 @on_command('卡池资讯', aliases=('看看卡池', '康康卡池'), only_to_me=False)
@@ -104,55 +116,69 @@ async def gacha_info(session:CommandSession):
 @on_command('竞技场查询', aliases=('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打'), only_to_me=False)
 async def arena_query(session:CommandSession):
 
+    print(f'[{datetime.now()} arena_query] Function called')
+
     logger = logging.getLogger('kokkoro.arena_query')
     logger.setLevel(logging.DEBUG)
 
     argv = session.current_arg.strip()
-    print(argv)
+    print(f'[{datetime.now()} arena_query] argv={argv}')
     argv = re.sub(r'[\?？呀啊哇]', ' ', argv)
-    print(argv)
+    print(f'[{datetime.now()} arena_query] argv={argv}')
     argv = argv.split()
-    print(argv)
 
-    print(f'竞技场查询：{argv}')
-    logger.info(f'竞技场查询：{argv}')
+    print(f'[{datetime.now()} arena_query] 竞技场查询：{argv}')
+    logger.info(f'[{datetime.now()} arena_query] 竞技场查询：{argv}')
 
     if 0 >= len(argv):
         await session.send('请输入防守方角色，用空格隔开')
+        print(f'[{datetime.now()} arena_query] 参数异常：无防守队，returned')
         return
     if 5 < len(argv):
         await session.send('编队不能多于5名角色')
+        print(f'[{datetime.now()} arena_query] 参数异常：防守队多于5人，returned')
         return
     defen = Arena.user_input(argv)
-    if 100001 in defen:
-        await session.send('编队中含未知角色，请尝试使用官方译名')
-        return 
+    for i, id_ in enumerate(defen):
+        if 100001 == id_:
+            print(f'[{datetime.now()} arena_query] 参数异常：未知角色，returned')
+            await session.finish(f'编队中含未知角色{argv[i]}，请尝试使用官方译名\n您也可以前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充角色别称')
+            return
     if len(defen) != len(set(defen)):
         await session.send('编队中出现重复角色')
+        print(f'[{datetime.now()} arena_query] 参数异常：重复角色，returned')
         return
 
+    print(f'[{datetime.now()} arena_query] do query...')
     res = Arena.do_query(defen)
+    print(f'[{datetime.now()} arena_query] get query!')
 
     if not len(res):
         await session.send('抱歉没有查询到解法\n（注：没有作业不代表不能拆，竞技场没有无敌的守队只有不够深的box）')
+        print(f'[{datetime.now()} arena_query] 未查询到有效结果，returned')
         return
 
     await silence(session, 120)       # 避免过快查询
 
-    print('query completed, Start generating pics')
-    pics = [ CharaHelper.gen_team_pic(team, 128) for team in res ]
-    print('pic generated. Start concat pics')
+    print(f'[{datetime.now()} arena_query] query completed, Start generating pics')
+    pics = [ CharaHelper.gen_team_pic(team, 128) for team in res[:min(6, len(res))] ]
+    print(f'[{datetime.now()} arena_query] pic generated. Start concat pics')
     pics = CharaHelper.concat_team_pic(pics)
-    print('concat finished. Converting to base64')
+    print(f'[{datetime.now()} arena_query] concat finished. Converting to base64')
     pics = CharaHelper.pic2b64(pics)
-    print('base64 ready! len=', len(pics))
+    print(f'[{datetime.now()} arena_query] base64 ready! len=', len(pics))
     pics = MessageSegment.image(pics)
+    print(f'[{datetime.now()} arena_query] img CQ code ready! len=', len(pics))
 
     header = f'已为{MessageSegment.at(session.ctx["user_id"])}骑士君查询到以下胜利队伍：\n'
     footer = '\n禁言是为了避免查询频繁，请打完本场竞技场后再来查询'
     msg = f'{header}{pics}{footer}'
-    print('len(msg)=', len(msg))
+    print(f'[{datetime.now()} arena_query] msg ready! len(msg)=', len(msg))
 
-    logger.info('sending pics...')
+    logger.info('sending msg...')
+    print(f'[{datetime.now()} arena_query] sending msg...')
     await session.send(msg)
+    print(f'[{datetime.now()} arena_query] Finished sending.')
     logger.info('Finished sending.')
+
+    print(f'[{datetime.now()} arena_query] Function finished successfully.')

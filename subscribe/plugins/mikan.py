@@ -1,8 +1,10 @@
 import os
 import json
+import random
 import requests
 from lxml import etree
 from datetime import datetime
+from time import sleep
 
 import nonebot
 from nonebot import CommandSession, on_command
@@ -67,14 +69,14 @@ class Mikan(object):
 
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='*/3', second='15', jitter=4)
+@nonebot.scheduler.scheduled_job('cron', minute='0/3', second='15', jitter=4)
 async def sche_lookup():
     print(f'[{datetime.now()} 计划任务：sche_lookup] 启动')
-    if not Mikan.rss_cache: 
+    if not Mikan.rss_cache:
         Mikan.update_cache()
         print(f'[{datetime.now()} 计划任务：sche_lookup] 订阅缓存为空，已加载至最新')
         return
-    
+
     new_bangumi = Mikan.update_cache()
     if new_bangumi:
 
@@ -85,8 +87,9 @@ async def sche_lookup():
 
         bot = nonebot.get_bot()
         for group in Mikan.get_auth_group():
+            sleep(1.0)  # 降低发送频率，避免被腾讯ban TODO: sleep 不够优雅，换一种解决方式
             try:
-                await bot.send_group_msg(group_id=group, message=f'您订阅的番剧更新啦！\n{msg}')
+                await bot.send_group_msg(group_id=group, message=f'您订阅的番剧更新啦!{"!"*random.randint(0,4)}\n{msg}')
                 print(f'群{group} 投递成功')
             except CQHttpError as e:
                 print(e)
@@ -102,7 +105,7 @@ async def sche_lookup():
 async def send_bangumi(session:CommandSession):
     if not Mikan.rss_cache:
         Mikan.update_cache()
-    
+
     msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in Mikan.rss_cache[:min(5, len(Mikan.rss_cache))] ]
     msg = '\n'.join(msg)
     await session.send(f'最近更新的番剧：\n{msg}')

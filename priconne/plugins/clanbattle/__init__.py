@@ -69,7 +69,7 @@ async def list_clan(session: CommandSession):
 
 @on_command('add-member', aliases=('join-clan', ), permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
 async def add_member(session: CommandSession):
-    parser = ArgumentParser(session=session, usage='add-member/join-clan [--cid] [--uid] [--alt] [--name]\n加入1会: join-clan --name [这里写游戏内的ID（不填将自动获取群名片）]\n将骑士A的小号2加入3会：add-member --uid [骑士A的QQ号] --alt 2 --cid 3 --name [骑士A的游戏ID]')
+    parser = ArgumentParser(session=session, usage='add-member/join-clan [--cid] [--uid] [--alt] [--name]\n加入1会: join-clan --name [游戏内ID（不填将自动获取群名片）]\n将骑士A的小号2加入3会：add-member --uid [骑士A的QQ号] --alt 2 --cid 3 --name [骑士A的游戏ID]')
     parser.add_argument('--cid', type=int, default=1)
     parser.add_argument('--uid', type=int, default=-1)
     parser.add_argument('--alt', type=int, default=0)
@@ -79,9 +79,18 @@ async def add_member(session: CommandSession):
     group_id = session.ctx['group_id']
     cid = args.cid
     uid = args.uid if args.uid > 0 else session.ctx['user_id']
-    group_member_info = await session.bot.get_group_member_info(group_id=group_id, user_id=uid)
     alt = args.alt
-    name = args.name if args.name else group_member_info['card']
+    name = args.name
+    try:    # 尝试获取群员信息，用以检查该成员是否在群中
+        group_member_info = await session.bot.get_group_member_info(group_id=group_id, user_id=uid)
+    except:
+        await session.finish(f'Error: 无法获取到指定群员的信息，请检查{uid}是否属于本群\n（注：uid为QQ号，机器人无需九码，如有小号请指定alt参数）')
+        return
+    if not name:
+        name = group_member_info['card']
+        if not name.strip():
+            session.finish('Error: name参数未指定，且获取群名片为空。请尝试指定name参数（建议使用游戏内昵称）')
+
 
     battlemaster = BattleMaster(group_id)
     clan = battlemaster.get_clan(cid)
@@ -90,12 +99,12 @@ async def add_member(session: CommandSession):
     if alt < 0:
         await session.finish('Error: 小号编号不能小于0')
     if uid != session.ctx['user_id']:
-        if not await check_permission(session.bot, session.ctx, SUPERUSER|GROUP_ADMIN):
+        if not await check_permission(session.bot, session.ctx, GROUP_ADMIN):
             await session.finish('Error: 只有管理员才能添加其他人到公会')
-    
+
 
     if battlemaster.add_member(uid, alt, name, cid):
-        await session.send('成员添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)\n请检查该帐号（的该小号）是否已存在于其他公会')
+        await session.send(f'成员添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)\n请检查帐号{uid}（的小号{alt}）是否已存在于其他公会')
     else:
         msg_alt = f'的{alt}号小号' if alt else ''
         clan_name = clan['name']
