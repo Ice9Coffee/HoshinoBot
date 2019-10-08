@@ -83,13 +83,15 @@ async def sche_lookup():
         print(f'[{datetime.now()}] 检索到{len(new_bangumi)}条番剧更新！')
 
         msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in new_bangumi ]
-        msg = '\n'.join(msg)
+        # msg = '\n'.join(msg)
 
         bot = nonebot.get_bot()
         for group in Mikan.get_auth_group():
             sleep(1.0)  # 降低发送频率，避免被腾讯ban TODO: sleep 不够优雅，换一种解决方式
             try:
-                await bot.send_group_msg(group_id=group, message=f'您订阅的番剧更新啦!{"!"*random.randint(0,4)}\n{msg}')
+                for m in msg:
+                    sleep(0.5)
+                    await bot.send_group_msg(group_id=group, message=f'您订阅的番剧更新啦!{"!"*random.randint(0,4)}\n{m}')
                 print(f'群{group} 投递成功')
             except CQHttpError as e:
                 print(e)
