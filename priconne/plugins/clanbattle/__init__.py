@@ -192,7 +192,7 @@ async def process_challenge(session: CommandSession, challenge):
     
     cid = mem['cid']
     if not battlemaster.has_clan(cid):
-        await session.finish('该成员所在分会已被删除，请重新加入公会')
+        await session.finish(f'该成员所在分会{cid}已不存在，请重新加入公会')
     
     round_ = challenge['round']
     if round_ <= 0:
@@ -204,7 +204,7 @@ async def process_challenge(session: CommandSession, challenge):
     
     damage = challenge['damage']
     if damage < 0:
-        await session.finish('Error: 伤害值不能为负')
+        await session.finish('Error: 未找到正确的伤害数值')
     
     flag = challenge['flag']
 
@@ -337,16 +337,30 @@ async def stat(session: CommandSession):
 
 @on_command('show-remain', permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
 async def show_remain(session: CommandSession):
+
+    print(f'[{datetime.now()} show_remain] Function called')
+
     parser = ArgumentParser(session=session, usage='show-remain [--cid]')
     parser.add_argument('--cid', type=int, default=1)
     args = parser.parse_args(session.argv)
     
+    print(f'[{datetime.now()} show_remain] arguments parsed')
+
     group_id = session.ctx['group_id']
     cid = args.cid
-    battlemaster = BattleMaster(group_id)
-    stat = battlemaster.list_challenge_remain(cid, datetime.now())
 
+    print(f'[{datetime.now()} show_remain] getting BattleMaster...')
+    battlemaster = BattleMaster(group_id)
+    print(f'[{datetime.now()} show_remain] got BattleMaster!')
+    print(f'[{datetime.now()} show_remain] call battlemaster.list_challenge_remain')
+    stat = battlemaster.list_challenge_remain(cid, datetime.now())
+    print(f'[{datetime.now()} show_remain] got remain stat')
+
+
+    print(f'[{datetime.now()} show_remain] checking permission')
     is_admin = await check_permission(session.bot, session.ctx, GROUP_ADMIN)
+    print(f'[{datetime.now()} show_remain] permission: is_admin={is_admin}')
+    print(f'[{datetime.now()} show_remain] generating message...')
     msg1 = []
     for uid, alt, name, rem_n, rem_e in stat:
         if rem_n or rem_e:
@@ -354,7 +368,11 @@ async def show_remain(session: CommandSession):
                    ( f'的小号{alt} ' if alt else '' ) + \
                    ( f' 余{rem_n}刀 补时{rem_e}刀\n' if rem_e else f'余{rem_n}刀\n' )
             msg1.append(line)
+    print(f'[{datetime.now()} show_remain] message prepared! sending...')
+        
     if msg1:
         await session.send('今日余刀统计：\n' + ''.join(msg1))
     else:
         await session.send(f'{cid}会所有成员均已出完刀！各位辛苦了！')
+
+    print(f'[{datetime.now()} show_remain] Function finished successfully.')
