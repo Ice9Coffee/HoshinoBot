@@ -35,7 +35,7 @@ async def send_pic(session:CommandSession):
 async def nlp_queshi(session:NLPSession):
     rex = re.compile(r'确实')
     if rex.search(session.msg_text):
-        if random.random() < 0.618:
+        if random.random() < 0.30:
             return IntentCommand(90.0, __private_send_pic_cmd, args={'pic_name': '确实.jpg'})
         else:
             return None
