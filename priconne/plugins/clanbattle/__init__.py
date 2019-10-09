@@ -69,7 +69,7 @@ async def list_clan(session: CommandSession):
 
 @on_command('add-member', aliases=('join-clan', ), permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
 async def add_member(session: CommandSession):
-    parser = ArgumentParser(session=session, usage='add-member/join-clan [--cid] [--uid] [--alt] [--name]\n加入1会: join-clan --name [游戏内ID（不填将自动获取群名片）]\n将骑士A的小号2加入3会：add-member --uid [骑士A的QQ号] --alt 2 --cid 3 --name [骑士A的游戏ID]')
+    parser = ArgumentParser(session=session, usage='add-member [--cid] [--uid] [--alt] [--name]\n\n加入1会:\n【 join-clan --name [游戏内昵称（缺省自动获取群名片）] 】\n将骑士A的小号2加入3会：\n【 add-member --uid [骑士A的QQ号] --alt 2 --cid 3 --name [骑士A的昵称] 】')
     parser.add_argument('--cid', type=int, default=1)
     parser.add_argument('--uid', type=int, default=-1)
     parser.add_argument('--alt', type=int, default=0)
@@ -142,12 +142,12 @@ async def list_member(session: CommandSession):
 @on_command('add-challenge', aliases=('dmg', ), permission=GROUP_MEMBER, shell_like=True, only_to_me=False)
 async def add_challenge(session: CommandSession):
     '''
-    TODO: 这个命令最常用，需要给沙雕群友优化一下语法    // 简易版本见 add_challenge_e
+    这个命令最常用，需要给沙雕群友优化一下语法  ---->  简易版本见 add_challenge_e
     '''
-    parser = ArgumentParser(session=session, usage='dmg -r -b damage [--uid] [--alt] [--ext | --last | --timeout]\n对3周目的老五造成114514点伤害：dmg 114514 -r 3 -b 5\n帮骑士A出了尾刀收了4周目带善人：dmg 1919810 -r 4 -b 1 --last --uid [骑士A的QQ]')
+    parser = ArgumentParser(session=session, usage='dmg -r -b damage [--uid] [--alt] [--ext | --last | --timeout]\n对3周目的老五造成114514点伤害：\n【 dmg 114514 -r3 -b5 】\n帮骑士A出了尾刀收了4周目带善人：\n【 dmg 1919810 -r4 -b1 --last --uid [骑士A的QQ] 】')
     parser.add_argument('-r', '--round', type=int)
     parser.add_argument('-b', '--boss', type=int)
-    parser.add_argument('damage', type=int)
+    parser.add_argument('damage', type=int, default=-1)
     parser.add_argument('--uid', type=int, default=-1)
     parser.add_argument('--alt', type=int, default=0)
     flag_group = parser.add_mutually_exclusive_group()
@@ -209,18 +209,19 @@ async def process_challenge(session: CommandSession, challenge):
     flag = challenge['flag']
 
     prog = battlemaster.get_challenge_progress(cid, datetime.now())
-    msg0 = '该伤害上报与当前进度不一致，请注意核对\n' if not (round_ == prog[0] and boss == prog[1]) else ''
-    msg00 = ''
+    warn_prog = '该伤害上报与当前进度不一致，请注意核对\n' if not (round_ == prog[0] and boss == prog[1]) else ''
+    warn_last = ''
 
-    if damage > prog[2] + 50000:
-        msg00 = '发生过度虐杀，伤害数值已自动修正并标记尾刀，请注意检查是否撞刀\n'
+    # 尾刀伤害校验
+    if damage > prog[2] + 50000:        # 忘加尾刀标志、撞刀
+        warn_last = '发生过度虐杀，伤害数值已自动修正并标记尾刀，请注意检查是否撞刀\n'
         damage = prog[2]
         flag = BattleMaster.LAST
-    elif flag & BattleMaster.LAST and damage >= prog[2] - 50000 and 0 == damage % 10000:
-        msg00 = '尾刀伤害已自动校对\n'
+    elif flag & BattleMaster.LAST and damage >= prog[2] - 50000 and 0 == damage % 10000:    # 使用整万数报尾刀，伤害不足
+        warn_last = '尾刀伤害已自动校对\n'
         damage = prog[2]
-    elif flag & BattleMaster.LAST and damage < prog[2] - 50000:
-        msg00 = '本次尾刀上报后，Boss仍有较多血量，请注意核对并请尚未报刀的成员及时报刀\n'
+    elif flag & BattleMaster.LAST and damage < prog[2] - 50000:                             # 报尾刀，但伤害严重不足
+        warn_last = '本次尾刀上报后，Boss仍有较多血量，请注意核对并请尚未报刀的成员及时报刀\n'
 
     if battlemaster.add_challenge(uid, alt, round_, boss, damage, flag, datetime.now()):
         await session.send('记录添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)')
@@ -230,7 +231,7 @@ async def process_challenge(session: CommandSession, challenge):
         score_rate = battlemaster.get_score_rate(prog[0], prog[1])
         msg1 = f"记录成功！\n{mem['name']}对{round_}周目老{battlemaster.int2kanji(boss)}造成了{damage:,d}点伤害\n"
         msg2 = f"当前{cid}会进度：\n{prog[0]}周目 老{battlemaster.int2kanji(prog[1])} HP={prog[2]:,d}/{total_hp:,d} x{score_rate:.1f}"
-        await session.send(msg0 + msg00 + msg1 + msg2)
+        await session.send(f'{warn_prog}{warn_last}{msg1}{msg2}')
 
 
 @on_command('add-challenge-e', aliases=('dmge', '刀'), permission=GROUP_MEMBER, only_to_me=False)
@@ -239,14 +240,14 @@ async def add_challenge_e(session: CommandSession):
     简易报刀
     为学不会命令行的沙雕群友准备的简易版报刀命令。目前仅支持给自己的大号报刀
     '''
-    USAGE = "使用方法：\ndmge 伤害数字 r周目 b老几 [last|ext|timeout]\n例：对5周目老4造成了1919810点伤害\ndmge 1919810 r5 b4 "
+    USAGE = "使用方法：\n【 dmge 伤害数字 r周目 b老几 [last|ext|timeout] 】\n例：对5周目老4造成了114万点伤害\n【 dmge 114w r5 b4 】"
     challenge = session.state['challenge']
     challenge['uid'] = session.ctx['user_id']
     challenge['alt'] = 0
     flag = challenge['flag']
     f_cnt = (flag == BattleMaster.LAST) + (flag == BattleMaster.EXT) + (flag == BattleMaster.TIMEOUT)
     if f_cnt > 1:
-        await session.finish('Error: 出刀记录只能是[尾刀|补时刀|掉刀]中的一种，不可同时使用。\n补时刀收尾请报ext，游戏内一刀不能获得两次补时\n' + USAGE)  # TODO: 似乎可以用补时刀收尾？ // 此时应按ext处理，游戏内一刀不能获得两次补时
+        await session.finish('Error: 出刀记录只能是[尾刀|补时刀|掉刀]中的一种，不可同时使用。\n若「补时刀」收尾请报ext，游戏内一刀不能获得两次补时\n' + USAGE)  # TODO: 似乎可以用补时刀收尾？ // 此时应按ext处理，游戏内一刀不能获得两次补时
     if not challenge['round']:
         await session.finish('Error: 未找到周目数\n' + USAGE)
     if not challenge['boss']:
@@ -325,10 +326,9 @@ async def stat(session: CommandSession):
     msg1 = []
     for uid, alt, name, score in stat:
         # QQ字体非等宽，width(空格*2) == width(数字*1)
+        # 数字太多会被腾讯ban，用逗号分隔
         score = f'{score:,d}'
         blank = ' ' * (11-len(score)) * 2
-
-        # 数字太多会被腾讯ban，用逗号分隔
         line = f"{blank}{score}分 {name}\n"
 
         msg1.append(line)
@@ -346,14 +346,15 @@ async def show_remain(session: CommandSession):
     battlemaster = BattleMaster(group_id)
     stat = battlemaster.list_challenge_remain(cid, datetime.now())
 
+    is_admin = await check_permission(session.bot, session.ctx, GROUP_ADMIN)
     msg1 = []
     for uid, alt, name, rem_n, rem_e in stat:
         if rem_n or rem_e:
-            line = ( str(MessageSegment.at(uid)) if await check_permission(session.bot, session.ctx, GROUP_ADMIN) else name ) + \
+            line = ( str(MessageSegment.at(uid)) if is_admin else name ) + \
                    ( f'的小号{alt} ' if alt else '' ) + \
                    ( f' 余{rem_n}刀 补时{rem_e}刀\n' if rem_e else f'余{rem_n}刀\n' )
             msg1.append(line)
     if msg1:
         await session.send('今日余刀统计：\n' + ''.join(msg1))
     else:
-        await session.send('所有成员均已出完刀！各位辛苦了！')
+        await session.send(f'{cid}会所有成员均已出完刀！各位辛苦了！')
