@@ -35,7 +35,7 @@ async def send_pic(session:CommandSession):
 async def nlp_queshi(session:NLPSession):
     rex = re.compile(r'确实')
     if rex.search(session.msg_text):
-        if random.random() < 0.618:
+        if random.random() < 0.30:
             return IntentCommand(90.0, __private_send_pic_cmd, args={'pic_name': '确实.jpg'})
         else:
             return None
@@ -104,7 +104,7 @@ async def mua(session:CommandSession):
 
 
 
-@on_command('ban_word', aliases=('rbq', 'RBQ', '憨批', '废物', '死妈', 'a片', 'A片', '崽种', '傻逼', '傻逼玩意', '没用东西', '傻B', '傻b', 'SB', 'sb'), only_to_me=True)
+@on_command('ban_word', aliases=('rbq', 'RBQ', '憨批', '废物', '死妈', 'a片', 'A片', '崽种', '傻逼', '傻逼玩意', '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬'), only_to_me=True)
 async def ban_word(session:CommandSession):
     await session.send('D区')
     await silence(session, 24*60*60)

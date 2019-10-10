@@ -158,7 +158,7 @@ async def arena_query(session:CommandSession):
         print(f'[{datetime.now()} arena_query] 未查询到有效结果，returned')
         return
 
-    await silence(session, 120)       # 避免过快查询
+    await silence(session, 30)       # 避免过快查询
 
     print(f'[{datetime.now()} arena_query] query completed, Start generating pics')
     pics = [ CharaHelper.gen_team_pic(team, 128) for team in res[:min(6, len(res))] ]

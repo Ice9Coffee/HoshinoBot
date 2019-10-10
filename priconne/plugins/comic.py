@@ -58,7 +58,7 @@ async def comic(session:NLPSession):
     title = index[episode]['title']
     pic = get_cqimg(get_pic_name(episode), './priconne/comic/', get_img_bed())
     msg = f'プリンセスコネクト！Re:Dive公式4コマ\n第{episode}話 {title}\n{pic}'
-    await silence(session, 1*60)
+    # await silence(session, 1*60)
     await session.send(msg)
 
 

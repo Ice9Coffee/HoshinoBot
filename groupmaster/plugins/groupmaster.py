@@ -20,7 +20,8 @@ bot = nonebot.get_bot()
 last_msg = "(仮)"
 repeated_flag = False
 prob_n = 0.0
-PROB_A = 1.6
+PROB_A = 2.0    # 由于下行所述的bug，暂时先提高复读概率，以减少被打断蓄力
+# TODO: 对不同群分别进行处理。现在的逻辑会使别的群打断当前群复读蓄力
 '''
 不复读率 随 复读次数 指数级衰减
 从第2条复读，即第3条重复消息开始有几率触发复读
@@ -29,7 +30,6 @@ a 设为一个略大于1的小数，最好不要超过2，建议1.6
 复读概率计算式：p_n = 1 - 1/a^n
 递推式：p_n+1 = 1 - (1 - p_n) / a
 '''
-# TODO: 对不同群分别进行处理。现在的逻辑会使别的群打断当前群复读蓄力
 @bot.on_message('group')
 async def random_repeater(context):
     global last_msg
