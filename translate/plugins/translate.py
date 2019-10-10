@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 # print(sogou_tr('hello world', to_lang='ja'))  # ->'ハローワールド'
 
 
-@on_command('translate', aliases=('翻译', '翻訳'), only_to_me=False)
+# @on_command('translate', aliases=('翻译', '翻訳'), only_to_me=False)
 async def translate(session: CommandSession):
     text = session.get('text')
     if text:
@@ -21,7 +21,7 @@ async def translate(session: CommandSession):
         await session.send('翻译姬待命中...')
 
 
-@translate.args_parser
+# @translate.args_parser
 async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip() # 删去首尾空白
     if stripped_arg:

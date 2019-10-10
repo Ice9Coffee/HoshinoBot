@@ -13,7 +13,7 @@ def get_config():
         return config
 
 def get_hour_call():
-    return get_config()["HOUR_CALL_SHIGURE_YUI"]
+    return get_config()["HOUR_CALL_AYANAMI_HIYORI"]
 
 
 LAST_HOUR_CALL = -1

@@ -209,7 +209,7 @@ class MemberDao(SqliteDao):
                 logging.getLogger('MemberDao.find_all').error(e)
             return []
 
-
+    """
     def find_by_gid(self, gid):
         with self._connect() as conn:
             try:
@@ -260,7 +260,7 @@ class MemberDao(SqliteDao):
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('MemberDao.find_by_gid_cid').error(e)
             return []
-
+    """   
 
     # TODO重构：各种find_by可以合并
     def find_by(self, gid=None, cid=None, uid=None):
@@ -393,7 +393,7 @@ class BattleDao(SqliteDao):
                 logging.getLogger('BattleDao.find_all').error(e)
             return []
 
-
+    """
     def find_by_uid(self, uid):
         with self._connect() as conn:
             try:
@@ -418,7 +418,7 @@ class BattleDao(SqliteDao):
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('BattleDao.find_by_uid_alt').error(e)
             return []
-
+    """
 
     # TODO重构：各种find_by可以合并
     def find_by(self, uid=None, alt=None, order_by_user=False):

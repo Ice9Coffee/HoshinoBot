@@ -43,10 +43,14 @@ async def delete_msg(session:CommandSession):
 
 
 async def silence(session:CommandSession, ban_time, ignore_super_user=False):
-    group_id = session.ctx['group_id']
-    user_id = session.ctx['user_id']
-    if ignore_super_user or not await check_permission(session.bot, session.ctx, SUPERUSER):
-        await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
+    try:
+        group_id = session.ctx['group_id']
+        user_id = session.ctx['user_id']
+        if ignore_super_user or not await check_permission(session.bot, session.ctx, SUPERUSER):
+            await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
+    except Exception as e:
+        print(e)
+        print('Exception: silence failed.')
 
 
 def get_cqimg(filename, path='', img_bed=None):
