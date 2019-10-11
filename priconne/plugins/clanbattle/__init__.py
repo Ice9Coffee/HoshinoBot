@@ -352,6 +352,10 @@ async def show_remain(session: CommandSession):
     print(f'[{datetime.now()} show_remain] getting BattleMaster...')
     battlemaster = BattleMaster(group_id)
     print(f'[{datetime.now()} show_remain] got BattleMaster!')
+
+    if not battlemaster.has_clan(cid):
+        session.finish(f'本群还没有{cid}会哦！使用list-clan查看本群所有公会')
+
     print(f'[{datetime.now()} show_remain] call battlemaster.list_challenge_remain')
     stat = battlemaster.list_challenge_remain(cid, datetime.now())
     print(f'[{datetime.now()} show_remain] got remain stat')

@@ -1,5 +1,5 @@
 import re
-import json
+import ujson as json
 import requests
 from time import sleep
 from datetime import datetime
