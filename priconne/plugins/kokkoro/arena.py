@@ -1,7 +1,7 @@
 import time
 import requests
 import re
-import json
+import ujson as json
 import pandas as pd
 import numpy as np
 from os import path
