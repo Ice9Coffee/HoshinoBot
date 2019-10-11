@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 # print(sogou_tr('hello world', to_lang='ja'))  # ->'ハローワールド'
 
 
-# @on_command('translate', aliases=('翻译', '翻訳'), only_to_me=False)
+@on_command('translate', aliases=('翻译', '翻訳'), only_to_me=False)
 async def translate(session: CommandSession):
     text = session.get('text')
     if text:
@@ -21,7 +21,7 @@ async def translate(session: CommandSession):
         await session.send('翻译姬待命中...')
 
 
-# @translate.args_parser
+@translate.args_parser
 async def _(session: CommandSession):
     stripped_arg = session.current_arg_text.strip() # 删去首尾空白
     if stripped_arg:
@@ -42,36 +42,3 @@ async def get_translation(text: str) -> str:
         ret = sogou_tr(text)
         # print(sogou_tr.json)
         return ret if '0' != sogou_tr.json.get('errorCode') else '翻译姬出错了 ごめんなさい！'
-
-'''
-db = {
-    '173681-1': '173681-1价格为114514.00円',
-    '350218-1': '350218-1值1919810.00津巴布韦币'
-}
-
-
-@on_command('查询test', only_to_me=False)
-async def lookup_test(session:CommandSession):
-
-    res = []
-    for i in session.state['items']:
-        if i in db:
-            res.append(db[i])
-
-    await session.send('\n'.join(res))
-
-
-@lookup_test.args_parser
-async def lookup_test_parser(session:CommandSession):
-    if 'items' not in session.state:
-        session.state['items'] = session.current_arg.strip().split()
-    return
-
-
-@on_natural_language(only_to_me=False)
-async def nlp_lookup_test(session:NLPSession):
-    rex = re.compile(r'\d+-\d+')
-    res = [ m.group() for m in rex.finditer(session.msg_text.strip()) ]
-    if res:
-        return IntentCommand(90.0, '查询test', args={'items': res})
-'''
