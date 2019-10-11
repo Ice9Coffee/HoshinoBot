@@ -309,7 +309,7 @@ clanbattle.db
 - alt：小号编号（一般情况不太需要）
 - gid：所属公会群
 - cid：所属分会
-- flag：SubBoss12345 | 0 | 0 | 0 | InQueue
+- flag：SubBoss12345 | 0 | 0 | 0 | Infight
 
 
 
