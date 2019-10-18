@@ -263,12 +263,12 @@ async def add_challenge_e(session: CommandSession):
 @add_challenge_e.args_parser
 async def _(session: CommandSession):
     args = session.current_arg_text.split()
-    rex_round = re.compile(r'r\d+', re.I)
-    rex_boss = re.compile(r'b[1-5]', re.I)
-    rex_dmg = re.compile(r'\d+w?', re.I)
-    rex_last = re.compile(r'last', re.I)
-    rex_ext = re.compile(r'ext(end)?', re.I)
-    rex_timeout = re.compile(r'timeout', re.I)
+    rex_round = re.compile(r'^r\d+$', re.I)
+    rex_boss = re.compile(r'^b[1-5]$', re.I)
+    rex_dmg = re.compile(r'^\d+w?$', re.I)
+    rex_last = re.compile(r'^last$', re.I)
+    rex_ext = re.compile(r'^ext(end)?$', re.I)
+    rex_timeout = re.compile(r'^timeout$', re.I)
     ret = {
         'round': None,
         'boss': None,

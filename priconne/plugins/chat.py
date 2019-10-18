@@ -52,7 +52,7 @@ async def nlp_clanba_time(session:NLPSession):
 @on_natural_language(keywords={'内鬼'}, only_to_me=False, only_short_message=True)
 async def nlp_neigui(session:NLPSession):
     if random.random() < 0.30:
-        return IntentCommand(90.0, __private_send_pic_cmd, args={'pic_name': '内鬼.jpg'})
+        return IntentCommand(90.0, __private_send_pic_cmd, args={'pic_name': '内鬼.png'})
     else:
         return None
 
