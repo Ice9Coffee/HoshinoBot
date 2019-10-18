@@ -16,7 +16,7 @@ async def translate(session: CommandSession):
     text = session.get('text')
     if text:
         translation = await get_translation(text)
-        await session.send(f'Sogou译文：\n{translation}')
+        await session.send(f'机翻译文：\n{translation}')
     else:
         await session.send('翻译姬待命中...')
 

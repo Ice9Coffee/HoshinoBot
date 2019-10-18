@@ -42,18 +42,18 @@ async def random_repeater(context):
     if (group_id in last_msg) and (group_id in repeated_flag) and (last_msg[group_id] == msg):
         if not repeated_flag[group_id]:
             if random.random() < prob_n:    # 概率测试通过，复读并设flag
-                repeated_flag[group_id] = True
                 try:
                     await bot.send(context, msg)
+                    repeated_flag[group_id] = True
                 except CQHttpError as e:
                     print(e)
                     print('复读失败: CQHttpError')
             else:                           # 蓄力
-                prob_n = 1 - (1-prob_n)/PROB_A  
+                prob_n = 1 - (1-prob_n)/PROB_A
     else:   # 不是复读，重置
         last_msg[group_id] = msg
         repeated_flag[group_id] = False
-        prob_n = 0.0
+        prob_n = 1 - (1.0 / PROB_A)
 
     def p(a):
         '''

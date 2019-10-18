@@ -25,7 +25,7 @@ def get_img_bed():
 
 
 def get_subscribe_group():
-    return get_config()["SUBSCRIBE_GROUP"]
+    return get_config()["PCR_COMIC_SUBSCRIBE_GROUP"]
 
 
 

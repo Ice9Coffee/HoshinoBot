@@ -13,7 +13,9 @@ def get_config():
         return config
 
 def get_hour_call():
-    return get_config()["HOUR_CALL_AYANAMI_HIYORI"]
+    config = get_config()
+    msg_group = config["HOUR_CALL"]
+    return config[msg_group]
 
 
 LAST_HOUR_CALL = -1
