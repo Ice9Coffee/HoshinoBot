@@ -53,7 +53,7 @@ async def random_repeater(context):
     else:   # 不是复读，重置
         last_msg[group_id] = msg
         repeated_flag[group_id] = False
-        prob_n = 1 - (1.0 / PROB_A)
+        prob_n = 0
 
     def p(a):
         '''
