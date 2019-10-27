@@ -1,5 +1,15 @@
+from os import path
+import ujson as json
 from datetime import datetime, timezone, timedelta
 from .dao.sqlitedao import ClanDao, MemberDao, BattleDao
+
+
+def get_config():
+    config_file = path.join(path.dirname(__file__), "config.json")
+    with open(config_file) as f:
+        config = json.load(f)
+        return config
+
 
 class BattleMaster(object):
 
@@ -10,7 +20,11 @@ class BattleMaster(object):
     EXT     = BattleDao.EXT
     TIMEOUT = BattleDao.TIMEOUT
 
-    BOSS_HP = [6000000, 8000000, 10000000, 12000000, 20000000]
+    SERVER_JP = ClanDao.SERVER_JP
+    SERVER_TW = ClanDao.SERVER_TW
+    SERVER_CN = ClanDao.SERVER_CN
+
+    # BOSS_HP = [6000000, 8000000, 10000000, 12000000, 20000000]
     SCORE_RATE = [
         1.0, 1.0, 1.2, 1.2, 1.5,
         1.4, 1.4, 1.8, 1.8, 2.0,
@@ -60,8 +74,11 @@ class BattleMaster(object):
 
 
     @staticmethod
-    def get_boss_hp(boss):
-        return BattleMaster.BOSS_HP[ boss-1 ]
+    def get_boss_hp(round_, boss, server):
+        # return BattleMaster.BOSS_HP[ boss-1 ]
+        stage = BattleMaster.get_stage(round_)
+        config = get_config()
+        return config[ config["BOSS_HP"][server] ][ stage-1 ][ boss-1 ]
 
 
     @staticmethod
@@ -107,6 +124,11 @@ class BattleMaster(object):
 
     def add_member(self, uid, alt, name, cid):
         return self.memberdao.add({'uid': uid, 'alt': alt, 'name': name, 'gid': self.group, 'cid': cid})
+
+
+    def has_member(self, uid, alt):
+        mem = self.memberdao.find_one(uid, alt)
+        return True if mem and mem['gid'] == self.group else False
 
 
     def get_member(self, uid, alt):
@@ -190,15 +212,8 @@ class BattleMaster(object):
 
     @staticmethod
     def filt_challenge_of_day(challenge_list, time):
-        ret = []
         _, _, day = BattleMaster.get_yyyymmdd(time)
-        # print('filt_challenge_of_day(): challenge_list=', challenge_list)
-        # print('filt_challenge_of_day(): day=', day)
-        for challen in challenge_list:
-            # print('filt_challenge_of_day(): day=', BattleMaster.get_yyyymmdd(challen['time']))
-            if day == BattleMaster.get_yyyymmdd(challen['time'])[2]:
-                ret.append(challen)
-        return ret
+        return list(filter(lambda challen: day == BattleMaster.get_yyyymmdd(challen['time'])[2], challenge_list))
 
 
     def list_challenge_of_day(self, cid, time):
@@ -286,13 +301,17 @@ class BattleMaster(object):
         '''
         return (round_, boss, remain_hp)
         '''
+        clan = self.get_clan(cid)
+        if not clan:
+            return None
+        server = clan['server']
         dao = self.get_battledao(cid, time)
         challens = dao.find_all()
         if not len(challens):
-            return ( 1, 1, self.get_boss_hp(1) )
+            return ( 1, 1, self.get_boss_hp(1, 1, server) )
         round_ = challens[-1]['round']
         boss = challens[-1]['boss']
-        remain_hp = self.get_boss_hp(boss)
+        remain_hp = self.get_boss_hp(round_, boss, server)
         for challen in reversed(challens):
             if challen['round'] == round_ and challen['boss'] == boss:
                 remain_hp = remain_hp - challen['dmg']
@@ -300,7 +319,7 @@ class BattleMaster(object):
                 break
         if remain_hp <= 0:
             round_, boss = self.next_boss(round_, boss)
-            remain_hp = self.get_boss_hp(boss)
+            remain_hp = self.get_boss_hp(round_, boss, server)
         return (round_, boss, remain_hp)
 
 
