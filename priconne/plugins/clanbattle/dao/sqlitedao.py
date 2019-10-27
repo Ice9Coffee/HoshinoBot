@@ -29,30 +29,36 @@ class SqliteDao(object):
 
 
 class ClanDao(SqliteDao):
+
+    SERVER_JP = 0x00
+    SERVER_TW = 0x01
+    SERVER_CN = 0x02
+
     def __init__(self):
         super().__init__(
             table='clan',
-            columns='gid, cid, name',
+            columns='gid, cid, name, server',
             fields='''
             gid INT NOT NULL,
             cid INT NOT NULL,
             name TEXT NOT NULL,
+            server INT NOT NULL,
             PRIMARY KEY (gid, cid)
             ''')
 
 
     @staticmethod
     def row2item(r):
-        return {'gid': r[0], 'cid': r[1], 'name': r[2]} if r else None
+        return {'gid': r[0], 'cid': r[1], 'name': r[2], 'server': r[3]} if r else None
 
 
     def add(self, clan):
         with self._connect() as conn:
             try:
                 conn.execute('''
-                    INSERT INTO {0} ({1}) VALUES (?, ?, ?)
+                    INSERT INTO {0} ({1}) VALUES (?, ?, ?, ?)
                     '''.format(self._table, self._columns),
-                    (clan['gid'], clan['cid'], clan['name']) )
+                    (clan['gid'], clan['cid'], clan['name'], clan['server']) )
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('ClanDao.add').error(e)
                 return -1
@@ -76,9 +82,9 @@ class ClanDao(SqliteDao):
         with self._connect() as conn:
             try:
                 conn.execute('''
-                    UPDATE {0} SET name=? WHERE gid=? AND cid=?
+                    UPDATE {0} SET name=?, server=? WHERE gid=? AND cid=?
                     '''.format(self._table),
-                    (clan['name'], clan['gid'], clan['cid']) )
+                    (clan['name'], clan['server'], clan['gid'], clan['cid']) )
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('ClanDao.modify').error(e)
                 return -1
@@ -369,9 +375,16 @@ class BattleDao(SqliteDao):
             return []
 
 
-
 """
 class SubscribeDao(SqliteDao):
+    IN_FIGHT  = 0x001
+    SUB_BOSS1 = 0x010
+    SUB_BOSS2 = 0x020
+    SUB_BOSS3 = 0x040
+    SUB_BOSS4 = 0x080
+    SUB_BOSS5 = 0x100
+
+
     def __init__(self):
         super().__init__(
             table='subscribe',
@@ -397,14 +410,14 @@ class SubscribeDao(SqliteDao):
                 conn.execute('''
                     INSERT INTO {0} ({1}) VALUES (?, ?, ?, ?, ?, ?)
                     '''.format(self._table, self._columns),
-                    (subscribe['sid'], subscribe['uid'], subscribe['alt'], subscribe['gid'], subscribe['cid']) )
+                    (subscribe['sid'], subscribe['uid'], subscribe['alt'], subscribe['gid'], subscribe['cid'], subscribe['flag']) )
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('MemberDao.add').error(e)
                 return -1
             return 0
 
     
-    def delete(self, uid, alt):
+    def delete(self, sid):
         with self._connect() as conn:
             try:
                 conn.execute('''
