@@ -1,6 +1,6 @@
 import os
 import pytz
-import json
+import ujson as json
 from datetime import datetime
 
 import nonebot
@@ -13,12 +13,14 @@ def get_config():
         return config
 
 def get_hour_call():
-    return get_config()["HOUR_CALL_AYANAMI_HIYORI"]
+    config = get_config()
+    msg_group = config["HOUR_CALL"]
+    return config[msg_group]
 
 
 LAST_HOUR_CALL = -1
 
-@nonebot.scheduler.scheduled_job('cron', hour='*', minute='0-5', second='0', misfire_grace_time=30)
+@nonebot.scheduler.scheduled_job('cron', hour='*', minute='0-2', second='0', misfire_grace_time=30)
 async def hour_call():
     global LAST_HOUR_CALL
     now = datetime.now(pytz.timezone('Asia/Shanghai'))

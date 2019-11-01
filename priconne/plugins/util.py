@@ -1,7 +1,7 @@
 import os
 import logging
 import base64
-import json
+import ujson as json
 
 from io import BytesIO
 from PIL import Image

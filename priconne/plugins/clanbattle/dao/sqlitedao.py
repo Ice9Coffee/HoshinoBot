@@ -29,30 +29,36 @@ class SqliteDao(object):
 
 
 class ClanDao(SqliteDao):
+
+    SERVER_JP = 0x00
+    SERVER_TW = 0x01
+    SERVER_CN = 0x02
+
     def __init__(self):
         super().__init__(
-            'clan',
-            'gid, cid, name',
-            '''
+            table='clan',
+            columns='gid, cid, name, server',
+            fields='''
             gid INT NOT NULL,
             cid INT NOT NULL,
             name TEXT NOT NULL,
+            server INT NOT NULL,
             PRIMARY KEY (gid, cid)
             ''')
 
 
     @staticmethod
     def row2item(r):
-        return {'gid': r[0], 'cid': r[1], 'name': r[2]} if r else None
+        return {'gid': r[0], 'cid': r[1], 'name': r[2], 'server': r[3]} if r else None
 
 
     def add(self, clan):
         with self._connect() as conn:
             try:
                 conn.execute('''
-                    INSERT INTO {0} ({1}) VALUES (?, ?, ?)
+                    INSERT INTO {0} ({1}) VALUES (?, ?, ?, ?)
                     '''.format(self._table, self._columns),
-                    (clan['gid'], clan['cid'], clan['name']) )
+                    (clan['gid'], clan['cid'], clan['name'], clan['server']) )
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('ClanDao.add').error(e)
                 return -1
@@ -76,9 +82,9 @@ class ClanDao(SqliteDao):
         with self._connect() as conn:
             try:
                 conn.execute('''
-                    UPDATE {0} SET name=? WHERE gid=? AND cid=?
+                    UPDATE {0} SET name=?, server=? WHERE gid=? AND cid=?
                     '''.format(self._table),
-                    (clan['name'], clan['gid'], clan['cid']) )
+                    (clan['name'], clan['server'], clan['gid'], clan['cid']) )
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('ClanDao.modify').error(e)
                 return -1
@@ -128,9 +134,9 @@ class ClanDao(SqliteDao):
 class MemberDao(SqliteDao):
     def __init__(self):
         super().__init__(
-            'member',
-            'uid, alt, name, gid, cid',
-            '''
+            table='member',
+            columns='uid, alt, name, gid, cid',
+            fields='''
             uid INT NOT NULL,
             alt INT NOT NULL,
             name TEXT NOT NULL,
@@ -209,60 +215,7 @@ class MemberDao(SqliteDao):
                 logging.getLogger('MemberDao.find_all').error(e)
             return []
 
-    """
-    def find_by_gid(self, gid):
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0} WHERE gid=?
-                    '''.format(self._table, self._columns),
-                    (gid,) ).fetchall()
-                return [self.row2item(r) for r in ret]
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_by_gid').error(e)
-            return []
 
-
-    def find_by_uid(self, uid):
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0} WHERE uid=?
-                    '''.format(self._table, self._columns),
-                    (uid,) ).fetchall()
-                return [self.row2item(r) for r in ret]
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_by_uid').error(e)
-            return []
-
-
-    def find_by_gid_uid(self, gid, uid):
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0} WHERE gid=? AND uid=?
-                    '''.format(self._table, self._columns),
-                    (gid, uid) ).fetchall()
-                return [self.row2item(r) for r in ret]
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_by_gid_uid').error(e)
-            return []
-
-
-    def find_by_gid_cid(self, gid, cid):
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0} WHERE gid=? AND cid=?
-                    '''.format(self._table, self._columns),
-                    (gid, cid) ).fetchall()
-                return [self.row2item(r) for r in ret]
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_by_gid_cid').error(e)
-            return []
-    """   
-
-    # TODO重构：各种find_by可以合并
     def find_by(self, gid=None, cid=None, uid=None):
         cond_str = []
         cond_tup = []
@@ -302,9 +255,9 @@ class BattleDao(SqliteDao):
 
     def __init__(self, gid, cid, yyyy, mm):
         super().__init__(
-            self.get_table_name(gid, cid, yyyy, mm),
-            'eid, uid, alt, time, round, boss, dmg, flag',
-            '''
+            table=self.get_table_name(gid, cid, yyyy, mm),
+            columns='eid, uid, alt, time, round, boss, dmg, flag',
+            fields='''
             eid INTEGER PRIMARY KEY AUTOINCREMENT,
             uid INT NOT NULL,
             alt INT NOT NULL,
@@ -393,34 +346,7 @@ class BattleDao(SqliteDao):
                 logging.getLogger('BattleDao.find_all').error(e)
             return []
 
-    """
-    def find_by_uid(self, uid):
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0} WHERE uid=? ORDER BY round, boss, eid
-                    '''.format(self._table, self._columns),
-                    (uid,) ).fetchall()
-                return [self.row2item(r) for r in ret]
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('BattleDao.find_by_uid').error(e)
-            return []
 
-
-    def find_by_uid_alt(self, uid, alt):
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0} WHERE uid=? AND alt=? ORDER BY round, boss, eid
-                    '''.format(self._table, self._columns),
-                    (uid, alt) ).fetchall()
-                return [self.row2item(r) for r in ret]
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('BattleDao.find_by_uid_alt').error(e)
-            return []
-    """
-
-    # TODO重构：各种find_by可以合并
     def find_by(self, uid=None, alt=None, order_by_user=False):
         cond_str = []
         cond_tup = []
@@ -447,3 +373,130 @@ class BattleDao(SqliteDao):
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('BattleDao.find_by').error(e)
             return []
+
+
+"""
+class SubscribeDao(SqliteDao):
+    IN_FIGHT  = 0x001
+    SUB_BOSS1 = 0x010
+    SUB_BOSS2 = 0x020
+    SUB_BOSS3 = 0x040
+    SUB_BOSS4 = 0x080
+    SUB_BOSS5 = 0x100
+
+
+    def __init__(self):
+        super().__init__(
+            table='subscribe',
+            columns='sid, uid, alt, gid, cid, flag',
+            fields='''
+            sid INTEGER PRIMARY KEY AUTOINCREMENT,
+            uid INT NOT NULL,
+            alt INT NOT NULL,
+            gid INT NOT NULL,
+            cid INT NOT NULL,
+            flag INT NOT NULL
+            ''')
+
+
+    @staticmethod
+    def row2item(r):
+        return {'sid': r[0], 'uid': r[1], 'alt': r[2], 'gid': r[3], 'cid': r[4], 'flag': r[5]} if r else None
+
+
+    def add(self, subscribe):
+        with self._connect() as conn:
+            try:
+                conn.execute('''
+                    INSERT INTO {0} ({1}) VALUES (?, ?, ?, ?, ?, ?)
+                    '''.format(self._table, self._columns),
+                    (subscribe['sid'], subscribe['uid'], subscribe['alt'], subscribe['gid'], subscribe['cid'], subscribe['flag']) )
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('MemberDao.add').error(e)
+                return -1
+            return 0
+
+    
+    def delete(self, sid):
+        with self._connect() as conn:
+            try:
+                conn.execute('''
+                    DELETE FROM {0} WHERE uid=? AND alt=?
+                    '''.format(self._table),
+                    (uid, alt) )
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('MemberDao.delete').error(e)
+                return -1
+            return 0
+
+
+    def modify(self, member):
+        with self._connect() as conn:
+            try:
+                conn.execute('''
+                    UPDATE {0} SET name=?, gid=?, cid=? WHERE uid=? AND alt=?
+                    '''.format(self._table),
+                    (member['name'], member['gid'], member['cid'], member['uid'], member['alt']) )
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('MemberDao.modify').error(e)
+                return -1
+            return 0           
+
+
+    def find_one(self, uid, alt):
+        with self._connect() as conn:
+            try:
+                ret = conn.execute('''
+                    SELECT {1} FROM {0} WHERE uid=? AND alt=?
+                    '''.format(self._table, self._columns),
+                    (uid, alt) ).fetchone()
+                return self.row2item(ret)
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('MemberDao.find_one').error(e)
+            return None
+
+
+    def find_all(self):
+        with self._connect() as conn:
+            try:
+                ret = conn.execute('''
+                    SELECT {1} FROM {0}
+                    '''.format(self._table, self._columns),
+                    ).fetchall()
+                return [self.row2item(r) for r in ret]
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('MemberDao.find_all').error(e)
+            return []
+
+
+    def find_by(self, gid=None, cid=None, uid=None):
+        cond_str = []
+        cond_tup = []
+        if not gid is None:
+            cond_str.append('gid=?')
+            cond_tup.append(gid)
+        if not cid is None:
+            cond_str.append('cid=?')
+            cond_tup.append(cid)
+        if not uid is None:
+            cond_str.append('uid=?')
+            cond_tup.append(uid)
+
+        if 0 == len(cond_tup):
+            return self.find_all()
+        
+        cond_str = " AND ".join(cond_str)
+        
+        with self._connect() as conn:
+            try:
+                ret = conn.execute('''
+                    SELECT {1} FROM {0} WHERE {2}
+                    '''.format(self._table, self._columns, cond_str), 
+                    cond_tup ).fetchall()
+                return [self.row2item(r) for r in ret]
+            except (sqlite3.DatabaseError) as e:
+                logging.getLogger('MemberDao.find_by').error(e)
+            return []
+"""
+
+
