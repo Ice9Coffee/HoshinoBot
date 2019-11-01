@@ -2,7 +2,7 @@ import re
 import random
 
 import nonebot
-from nonebot import on_command, CommandSession, Message
+from nonebot import on_command, CommandSession, Message, CQHttpError
 from nonebot.permission import *
 
 #, permission=GROUP_OWNER | GROUP_ADMIN | SUPERUSER)
@@ -17,11 +17,12 @@ async def silence(session: CommandSession):
 
 
 bot = nonebot.get_bot()
-last_msg = "(仮)"
-repeated_flag = False
+last_msg = {}
+repeated_flag = {}
 prob_n = 0.0
-PROB_A = 2.0    # 由于下行所述的bug，暂时先提高复读概率，以减少被打断蓄力
-# TODO: 对不同群分别进行处理。现在的逻辑会使别的群打断当前群复读蓄力
+PROB_A = 1.6    # 由于下行所述的bug，暂时先提高复读概率，以减少被打断蓄力
+# FIXME: 对不同群分别进行处理。现在的逻辑会使别的群打断当前群复读蓄力 
+# ↑ FIXED at 20191011 by Ice-Cirno
 '''
 不复读率 随 复读次数 指数级衰减
 从第2条复读，即第3条重复消息开始有几率触发复读
@@ -36,22 +37,23 @@ async def random_repeater(context):
     global repeated_flag
     global prob_n
     global PROB_A
+    group_id = context['group_id']
     msg = context['message'].extract_plain_text().strip()
-    if last_msg == msg:
-        if not repeated_flag:
+    if (group_id in last_msg) and (group_id in repeated_flag) and (last_msg[group_id] == msg):
+        if not repeated_flag[group_id]:
             if random.random() < prob_n:    # 概率测试通过，复读并设flag
-                repeated_flag = True
                 try:
                     await bot.send(context, msg)
+                    repeated_flag[group_id] = True
                 except CQHttpError as e:
                     print(e)
                     print('复读失败: CQHttpError')
             else:                           # 蓄力
-                prob_n = 1 - (1-prob_n)/PROB_A  
+                prob_n = 1 - (1-prob_n)/PROB_A
     else:   # 不是复读，重置
-        last_msg = msg
-        repeated_flag = False
-        prob_n = 0.0
+        last_msg[group_id] = msg
+        repeated_flag[group_id] = False
+        prob_n = 0
 
     def p(a):
         '''

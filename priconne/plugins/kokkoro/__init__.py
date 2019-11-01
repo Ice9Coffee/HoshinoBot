@@ -1,6 +1,6 @@
 import re
 import os
-import json
+import ujson as json
 import logging
 from datetime import datetime
 

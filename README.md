@@ -99,19 +99,19 @@ dmg -r -b damage [--uid] [--alt] [--ext | --last | --timeout]
 
 | 进度 | 命令                 | 参数              | 权限                    | 说明                                                         |
 |---| -------------------- | ----------------- | ----------------------- | ------------------------------------------------------------ |
-| ok | add-clan             | [--cid] [--name]  | GROUP_OWNER/GROUP_ADMIN | 添加新公会，编号为id，默认为该群最大公会id+1，若无公会则为1；name为公会名 |
+| ok | add-clan             | [--cid] [--name]  | GROUP_ADMIN | 添加新公会，编号为id，默认为该群最大公会id+1，若无公会则为1；name为公会名 |
 | ok | list-clan            | (empty) | GROUP_MEMBER            | 默认显示当前QQ群的所有公会；--all 显示管理的所有公会，仅SUPERUSER可用 |
-|  | mod-clan             | --cid  --new_name | GROUP_OWNER/GROUP_ADMIN | 修改公会的name                                               |
-| | del-clan             | --cid             | GROUP_OWNER/GROUP_ADMIN | 删除公会                                                     |
+|  | mod-clan             | --cid  --new_name | GROUP_ADMIN | 修改公会的name                                               |
+| | del-clan             | --cid             | GROUP_ADMIN | 删除公会                                                     |
 
 ### 成员管理
 
 |进度| 命令                 | 参数                            | 权限            | 说明 |
 |--| -------------------- | ------------------------------- | --------------- | ---- |
-|ok| add-member/join-clan | [--cid] [--uid] [--alt] [--name] | SUPERUSER       | 将[uid]的小号[alt]加入[cid]会，游戏内ID为[name]。参数缺省时将会将命令发送者的大号加入1会，自动获取群名片作为name。 |
-|ok| list-member          | [--cid]                         | SUPERUSER/OWNER | 列出[cid]会的成员。默认为1会 |
-|| mod-member           | [--clan] [--uid] [--alt] --name | SUPERUSER/OWNER |      |
-|| del-member           | [--clan]                        | SUPERUSER/OWNER |      |
+|ok| add-member / join-clan | [--cid] [--uid] [--alt] [--name] | GROUP_MEMBER | 将[uid]的小号[alt]加入[cid]会，游戏内ID为[name]。参数缺省时将会将命令发送者的大号加入1会，自动获取群名片作为name。 |
+|ok| list-member          | [--cid]                         | GROUP_MEMBER | 列出[cid]会的成员。默认为1会 |
+|| mod-member           | [--uid] [--alt] --name | OWNER / GROUP_ADMIN | 修改名称 |
+|ok| del-member / quit-clan | [--uid] [--alt]         | OWNER / GROUP_ADMIN | 退出公会 / 删除成员 |
 
 ### Boss信息查询
 
@@ -129,7 +129,7 @@ dmg -r -b damage [--uid] [--alt] [--ext | --last | --timeout]
 
 | 进度 | 命令     | 别名 | 参数 | 权限         | 说明                 |
 | ---- | -------|-- | ---- | ------------ | -------------------- |
-|      | subscribe |sub / 预约| -b   | GROUP_MEMBER | 预约boss，到达时提醒 |
+|      | subscribe |sub / 预约| --boss | GROUP_MEMBER | 预约boss，到达时提醒 |
 |      | enqueue   |enq / 入队|      | GROUP_MEMBER | 进入出刀队列 |
 |      | dequeue   | deq / 出队 |     | GROUP_MEMBER | 退出出刀队列 |
 
@@ -309,7 +309,7 @@ clanbattle.db
 - alt：小号编号（一般情况不太需要）
 - gid：所属公会群
 - cid：所属分会
-- flag：SubBoss12345 | 0 | 0 | 0 | InQueue
+- flag：Infight | 0 | 0 | 0 | SubBoss12345 |
 
 
 

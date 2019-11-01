@@ -1,5 +1,5 @@
 import re
-import json
+import ujson as json
 import requests
 from time import sleep
 from datetime import datetime
@@ -25,7 +25,7 @@ def get_img_bed():
 
 
 def get_subscribe_group():
-    return get_config()["SUBSCRIBE_GROUP"]
+    return get_config()["PCR_COMIC_SUBSCRIBE_GROUP"]
 
 
 
@@ -117,7 +117,7 @@ def download_comic(id_):
         json.dump(index, f, ensure_ascii=False)
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='0/5', second='25', jitter=4)
+@nonebot.scheduler.scheduled_job('cron', minute='2/5', second='25', jitter=4)
 async def update_seeker():
     '''
     轮询官方四格漫画更新

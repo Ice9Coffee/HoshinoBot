@@ -1,5 +1,5 @@
 from os import path
-import json
+import ujson as json
 import random
 
 class Gacha(object):
