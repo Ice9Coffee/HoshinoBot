@@ -10,10 +10,10 @@ if __name__ == '__main__':
         path.join(path.dirname(__file__), 'priconne', 'plugins'),
         'priconne.plugins'
     )
-    nonebot.load_plugins(
-        path.join(path.dirname(__file__), 'translate', 'plugins'),
-        'translate.plugins'
-    )
+    # nonebot.load_plugins(
+    #     path.join(path.dirname(__file__), 'translate', 'plugins'),
+    #     'translate.plugins'
+    # )
     nonebot.load_plugins(
         path.join(path.dirname(__file__), 'groupmaster', 'plugins'),
         'groupmaster.plugins'

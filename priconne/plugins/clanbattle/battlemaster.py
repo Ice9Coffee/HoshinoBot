@@ -38,16 +38,21 @@ class BattleMaster(object):
         self.clandao = ClanDao()
         self.memberdao = MemberDao()
 
+
+    @staticmethod
+    def get_timezone_num(server):
+        return 9 if BattleMaster.SERVER_JP == server else 8
+
     
     @staticmethod
-    def get_yyyymmdd(time):
+    def get_yyyymmdd(time, zone_num:int=8):
         '''
         返回time对应的会战年月日。
         其中，年月为该期会战的年月；日为刷新周期对应的日期。
         会战为每月最后一星期，编程时认为mm月的会战一定在mm月20日至mm+1月10日之间，每日以5:00 UTC+8为界。
         注意：返回的年月日并不一定是自然时间，如2019年9月2日04:00:00我们认为对应2019年8月会战，日期仍为1号，将返回(2019,8,1)
         '''
-        time = time.astimezone(timezone(timedelta(hours=3)))  # UTC+3 的0点恰好可以作为分界线
+        time = time.astimezone(timezone(timedelta(hours=zone_num-5)))  # UTC+3 的0点恰好可以作为 UTC+8 的分界线
         yyyy = time.year
         mm = time.month
         dd = time.day
@@ -94,7 +99,9 @@ class BattleMaster(object):
 
 
     def get_battledao(self, cid, time):
-        yyyy, mm, _ = self.get_yyyymmdd(time)
+        clan = self.get_clan(cid)
+        zone_num = self.get_timezone_num(clan['server'])
+        yyyy, mm, _ = self.get_yyyymmdd(time, zone_num)
         return BattleDao(self.group, cid, yyyy, mm)
 
 
@@ -211,17 +218,17 @@ class BattleMaster(object):
 
 
     @staticmethod
-    def filt_challenge_of_day(challenge_list, time):
-        _, _, day = BattleMaster.get_yyyymmdd(time)
-        return list(filter(lambda challen: day == BattleMaster.get_yyyymmdd(challen['time'])[2], challenge_list))
+    def filt_challenge_of_day(challenge_list, time, zone_num:int=8):
+        _, _, day = BattleMaster.get_yyyymmdd(time, zone_num)
+        return list(filter(lambda challen: day == BattleMaster.get_yyyymmdd(challen['time'], zone_num)[2], challenge_list))
 
 
-    def list_challenge_of_day(self, cid, time):
-        return self.filt_challenge_of_day(self.list_challenge(cid, time), time)
+    def list_challenge_of_day(self, cid, time, zone_num:int=8):
+        return self.filt_challenge_of_day(self.list_challenge(cid, time), time, zone_num)
 
 
-    def list_challenge_of_user_of_day(self, uid, alt, time):
-        return self.filt_challenge_of_day(self.list_challenge_of_user(uid, alt, time), time)
+    def list_challenge_of_user_of_day(self, uid, alt, time, zone_num:int=8):
+        return self.filt_challenge_of_day(self.list_challenge_of_user(uid, alt, time), time, zone_num)
 
 
     def stat_challenge(self, cid, time, only_one_day=True):

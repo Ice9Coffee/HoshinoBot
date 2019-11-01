@@ -419,7 +419,7 @@ async def list_challenge(session: CommandSession):
     parser.add_argument('--cid', type=int, default=1)
     # parser.add_argument('--uid', type=int, default=-1)
     # parser.add_argument('--alt', type=int, default=0)
-    parser.add_argument('--all', type=bool, default=False)
+    parser.add_argument('--all', action='store_true')
     args = parser.parse_args(session.argv)
 
     group_id = session.ctx['group_id']
@@ -432,7 +432,8 @@ async def list_challenge(session: CommandSession):
         await session.finish(f'Error: 本群不存在{cid}会')
 
     now = datetime.now()
-    challen = battlemaster.list_challenge(cid, now) if args.all else battlemaster.list_challenge_of_day(cid, now)
+    zone = battlemaster.get_timezone_num(clan['server'])
+    challen = battlemaster.list_challenge(cid, now) if args.all else battlemaster.list_challenge_of_day(cid, now, zone)
 
     msg = f'{cid}会出刀记录：\neid|name|round|boss|damage\n'
     challenstr = '{eid:0>3d}|{name}|r{round}|b{boss}|{dmg: >7,d}{flag_str}\n'
