@@ -128,7 +128,7 @@ async def sche_lookup():
 
 
 
-@on_command('来点新番')
+@on_command('来点新番', aliases=('來點新番', ))
 async def send_bangumi(session:CommandSession):
     if not Mikan.rss_cache:
         Mikan.update_cache()

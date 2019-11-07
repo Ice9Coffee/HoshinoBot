@@ -102,7 +102,7 @@ async def gacha_10(session:CommandSession):
 
 
 
-@on_command('卡池资讯', aliases=('看看卡池', '康康卡池'), only_to_me=False)
+@on_command('卡池资讯', aliases=('看看卡池', '康康卡池', '卡池資訊'), only_to_me=False)
 async def gacha_info(session:CommandSession):
     gacha = Gacha()
     up_chara = gacha.up
@@ -113,7 +113,7 @@ async def gacha_info(session:CommandSession):
     # await delete_msg(session)
 
 
-@on_command('竞技场查询', aliases=('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打'), only_to_me=False)
+@on_command('竞技场查询', aliases=('怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打', '怎麼拆', '怎麼解', '怎麼打'), only_to_me=False)
 async def arena_query(session:CommandSession):
 
     print(f'[{datetime.now()} arena_query] Function called')
