@@ -368,7 +368,6 @@ class BattleDao(SqliteDao):
                     SELECT {1} FROM {0} WHERE {2} ORDER BY {3}
                     '''.format(self._table, self._columns, cond_str, order), 
                     cond_tup ).fetchall()
-                # print('BattleDao.find_by() ret=', ret)
                 return [self.row2item(r) for r in ret]
             except (sqlite3.DatabaseError) as e:
                 logging.getLogger('BattleDao.find_by').error(e)

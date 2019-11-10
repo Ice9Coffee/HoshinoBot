@@ -7,6 +7,7 @@ from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from .gacha import gacha_10_aliases, gacha_1_aliases
 from hoshino.util import silence
+from hoshino.log import logger
 
 ban_hb_title = []
 ban_hb_title.extend(gacha_10_aliases)
@@ -29,4 +30,4 @@ async def hb_handler(context):
                 # sleep(0.5 + 3 * random.random())
                 # await bot.send(context, title)
             except Exception as e:
-                print(e)
+                logger.error(f'hb_handler: {type(e)}')

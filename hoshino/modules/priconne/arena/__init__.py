@@ -39,7 +39,7 @@ async def arena_query(session:CommandSession):
     logger.debug('Arena got response!')
 
     if res is None:
-        await session.finish('查询出错，请联系维护组')
+        await session.finish('查询出错，请联系维护组调教')
 
     if not len(res):
         await session.finish('抱歉没有查询到解法\n（注：没有作业不代表不能拆，竞技场没有无敌的守队只有不够深的box）')

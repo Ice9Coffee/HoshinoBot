@@ -99,6 +99,6 @@ async def gacha_info(session:CommandSession):
     gacha = Gacha()
     up_chara = gacha.up
     if get_bot().config.IS_CQPRO: 
-        up_chara = map(lambda x: Chara.fromname(x).icon.cqcode + x, up_chara)
+        up_chara = map(lambda x: str(Chara.fromname(x).icon.cqcode) + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await session.send(f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3星出率={(gacha.s3_prob)/10:.1f}%")

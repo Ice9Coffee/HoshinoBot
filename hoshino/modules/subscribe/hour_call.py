@@ -5,6 +5,8 @@ from datetime import datetime
 
 import nonebot
 
+from hoshino.log import logger
+
 
 def get_config():
     config_file = os.path.join(os.path.dirname(__file__), 'config.json')
@@ -38,15 +40,14 @@ async def hour_call():
     for group in get_config()["HOUR_CALL_GROUP"]:
         try:
             await bot.send_group_msg(group_id=group, message=msg)
-            print(f'群{group} 投递成功')
+            logger.info(f'群{group} 投递hour_call成功')
         except nonebot.CQHttpError as e:
-            print(e)
-            print(f'Error：群{group} 投递失败')
+            logger.error(f'群{group} 投递hour_call失败 {type(e)}')
 
 
 @nonebot.scheduler.scheduled_job('cron', hour='5-6', minute='45', second='0', misfire_grace_time=120) # = UTC+8 1445
 async def pcr_reminder():
-    print('pcr_reminder start')
+    logger.info('pcr_reminder start')
 
     is_jp = (5 == datetime.now(pytz.timezone('UTC')).hour)
 
@@ -55,7 +56,6 @@ async def pcr_reminder():
     for group in get_config()["PCR_GROUP_JP" if is_jp else "PCR_GROUP_TW"]:
         try:
             await bot.send_group_msg(group_id=group, message=msg)
-            print(f'群{group} 投递成功')
+            logger.info(f'群{group} 投递pcr_reminder成功')
         except nonebot.CQHttpError as e:
-            print(e)
-            print(f'Error：群{group} 投递失败')
+            logger.error(f'群{group} 投递pcr_reminder失败 {type(e)}')

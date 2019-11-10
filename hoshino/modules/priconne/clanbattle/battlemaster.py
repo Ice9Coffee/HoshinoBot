@@ -238,10 +238,8 @@ class BattleMaster(object):
         dao = self.get_battledao(cid, time)
         for m in mem:
             challens = dao.find_by(uid=m['uid'], alt=m['alt'])
-            # print('challens=', challens)
             if only_one_day:
                 challens = self.filt_challenge_of_day(challens, time)
-                # print('challens_filted=', challens)
             ret.append((m, challens))
         return ret
 
@@ -290,7 +288,6 @@ class BattleMaster(object):
 
         ret = []
         stat = self.stat_challenge(cid, time, only_one_day=True)
-        # print(stat)
         for mem, challens in stat:
             norm, last, ext, timeout = count(challens)
             r = (

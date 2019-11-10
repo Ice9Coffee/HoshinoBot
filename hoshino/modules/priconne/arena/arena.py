@@ -20,6 +20,7 @@ class Arena(object):
     @staticmethod
     def do_query(id_list):
         
+        id_list = [ x * 100 + 1 for x in id_list ]
         logger.debug(f'id_list={id_list}')
         
         header = {
@@ -28,14 +29,14 @@ class Arena(object):
             }
         payload = {"_sign": "a", "def": id_list, "nonce": "a", "page": 1, "sort": 1, "ts": int(time.time()), "region": 1}
         
-        logger.debug(f'payload={json.dumps(payload)}')
+        logger.info(f'Arena query payload={json.dumps(payload)}')
         
         resp = requests.post('https://api.pcrdfans.com/x/v1/search', headers=header, data=json.dumps(payload))
         res = resp.json()
         logger.debug(f'len(res)={len(res)}')
 
         if res['code']:
-            logger.error(f"Arena query failed. Response code={res['code']}")
+            logger.error(f"Arena query failed. \nResponse={res}")
             return None
 
         res = res['data']['result']

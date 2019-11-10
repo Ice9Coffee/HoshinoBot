@@ -3,6 +3,7 @@ import random
 from nonebot import get_bot
 from nonebot import CQHttpError
 
+from hoshino import logger
 
 
 
@@ -37,7 +38,7 @@ async def random_repeater(context):
                     await bot.send(context, msg)
                     group_stat[group_id] = (msg, True, 0)
                 except CQHttpError as e:
-                    print('复读失败:', type(e))
+                    logger.error(f'复读失败: {type(e)}')
             else:                      # 概率测试失败，蓄力
                 p = 1 - (1 - p) / PROB_A
                 group_stat[group_id] = (msg, False, p)
