@@ -1,9 +1,14 @@
-# Config Files
+# Config Files and Database
 config.py
 config.json
+db.json
+database.json
+*.db
+*.sqlite
 
 # 暂时删除的代码
 TRASH/
+kokkoro-OLD/
 
 # 数据
 img/
