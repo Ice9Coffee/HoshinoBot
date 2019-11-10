@@ -2,7 +2,6 @@ import re
 import ujson as json
 import requests
 from time import sleep
-from datetime import datetime
 from urllib.parse import urljoin, urlparse, parse_qs
 from os import path
 
@@ -10,6 +9,7 @@ import nonebot
 from nonebot import on_command, CommandSession, CQHttpError
 from nonebot import on_natural_language, NLPSession, IntentCommand
 
+from hoshino.log import logger
 from hoshino.util import silence
 from hoshino.res import R
 
@@ -31,10 +31,8 @@ def get_subscribe_group():
 
 
 def load_index():
-    base = get_img_bed()
-    url = urljoin(base, './priconne/comic/index.json')
-    resp = requests.get(url)
-    return resp.json()
+    with open(R.get('img/priconne/comic/index.json').path) as f:
+        return json.load(f)
 
 
 def get_pic_name(id_):
@@ -59,8 +57,22 @@ async def comic(session:NLPSession):
     title = index[episode]['title']
     pic = R.img('priconne/comic/', get_pic_name(episode)).cqcode
     msg = f'プリンセスコネクト！Re:Dive公式4コマ\n第{episode}話 {title}\n{pic}'
-    # await silence(session, 1*60)
     await session.send(msg)
+
+def download_img(save_path, link):
+    '''
+    从link下载图片保存至save_path（目录+文件名）
+    会覆盖原有文件，需保证目录存在
+    '''
+    logger.info(f'download_img from {link}')
+    resp = requests.get(link, stream=True)
+    logger.info(f'status_code={resp.status_code}')
+    if 200 == resp.status_code:
+        if re.search(r'image', resp.headers['content-type'], re.I):
+            logger.info(f'is image, saving to {save_path}')
+            with open(save_path, 'wb') as f:
+                f.write(resp.content)
+                logger.info('saved!')
 
 
 def download_comic(id_):
@@ -72,28 +84,14 @@ def download_comic(id_):
     save_dir = '/home/wad/mywebsite/static/img/priconne/comic/'
     index = load_index()
 
-    def download_img(save_path, link):
-        '''
-        从link下载图片保存至save_path（目录+文件名）
-        会覆盖原有文件，需保证目录存在
-        '''
-        print('download_img from ', link, end=' ')
-        resp = requests.get(link, stream=True)
-        print('status_code=', resp.status_code, end=' ')
-        if 200 == resp.status_code:
-            if re.search(r'image', resp.headers['content-type'], re.I):
-                print(f'is image, saving to {save_path}', end=' ')
-                with open(save_path, 'wb') as f:
-                    f.write(resp.content)
-                    print('ok', end=' ')
 
 
     # 先从api获取detail，其中包含图片真正的链接
-    print('getting comic', id_, '...', end=' ')
+    logger.info(f'getting comic {id_} ...')
     url = base + id_
-    print('url=', url, end=' ')
+    logger.info(f'url={url}')
     resp = requests.get(url)
-    print('status_code=', resp.status_code)
+    logger.info(f'status_code={resp.status_code}')
     if 200 != resp.status_code:
         return
     data = resp.json()[0]
@@ -102,11 +100,10 @@ def download_comic(id_):
     title = data['title']
     link = data['cartoon']
     index[episode] = {'title': title, 'link': link}
-    print(index[episode])
+    logger.info(f'episode={index[episode]}')
 
     # 下载图片并保存
     download_img(path.join(save_dir, get_pic_name(episode)), link)
-    print('\n', end='')
 
     # 保存官漫目录信息
     with open(path.join(save_dir, 'index.json'), 'w', encoding='utf8') as f:
@@ -122,7 +119,6 @@ async def update_seeker():
     index_api = 'https://comic.priconne-redive.jp/api/index'
     index = load_index()
 
-    # try:
     # 获取最新漫画信息
     resp = requests.get(index_api, timeout=10)
     data = resp.json()
@@ -137,11 +133,11 @@ async def update_seeker():
         qs = urlparse(index[episode]['link']).query
         old_id = parse_qs(qs)['id'][0]
         if id_ == old_id:
-            print(f'[{datetime.now()}] 未检测到官漫更新')
+            logger.info('未检测到官漫更新')
             return
     
     # 确定已有更新，下载图片
-    print(f'[{datetime.now()}] 发现更新 id=', id_)
+    logger.info(f'发现更新 id={id_}')
     download_comic(id_)
 
     # 推送至各个订阅群
@@ -150,12 +146,11 @@ async def update_seeker():
 
     bot = nonebot.get_bot()
     for group in get_subscribe_group():
-        sleep(0.5)  # 降低发送频率，避免被腾讯ban TODO: sleep 不够优雅，换一种解决方式
+        sleep(0.5)  # 降低发送频率，避免被腾讯ban FIXME: sleep 不够优雅，换一种解决方式
         try:
             await bot.send_group_msg(group_id=group, message=msg)
-            print(f'群{group} 投递成功')
+            logger.info(f'群{group} 投递成功')
         except CQHttpError as e:
-            print(e)
-            print(f'Error：群{group} 投递失败')
+            logger.error(f'Error：群{group} 投递失败 {type(e)}')
 
-    print(f'[{datetime.now()} 计划任务：update_seeker] 完成')
+    logger.info('计划任务：update_seeker 完成')

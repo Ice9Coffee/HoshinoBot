@@ -10,6 +10,7 @@ import nonebot
 from nonebot import CommandSession, on_command
 from aiocqhttp.exceptions import Error as CQHttpError
 
+from hoshino.log import logger
 
 class Mikan(object):
     link_cache = set()
@@ -40,7 +41,7 @@ class Mikan(object):
             resp = requests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=10)
             rss = etree.XML(resp.content)
         except Exception as e:
-            print(f'[{datetime.now()}] get_rss Error: {e}')
+            logger.error(f'[get_rss] Error: {e}')
             return []
 
         for i in rss.xpath('/rss/channel/item'):
@@ -71,16 +72,18 @@ class Mikan(object):
 
 @nonebot.scheduler.scheduled_job('cron', minute='1/3', second='15', jitter=4)
 async def sche_lookup():
-    # print(f'[{datetime.now()} 计划任务：sche_lookup] 启动')
+    
+    logger.debug(f'[计划任务：sche_lookup] 启动')
+    
     if not Mikan.rss_cache:
         Mikan.update_cache()
-        print(f'[{datetime.now()} 计划任务：sche_lookup] 订阅缓存为空，已加载至最新')
+        logger.info(f'[计划任务：sche_lookup] 订阅缓存为空，已加载至最新')
         return
 
     new_bangumi = Mikan.update_cache()
     if new_bangumi:
 
-        print(f'[{datetime.now()}] 检索到{len(new_bangumi)}条番剧更新！')
+        logger.info(f'检索到{len(new_bangumi)}条番剧更新！')
 
         msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in new_bangumi ]
         msg_device = [
@@ -117,14 +120,13 @@ async def sche_lookup():
                 for m in msg:
                     sleep(0.5)
                     await bot.send_group_msg(group_id=group, message=f'{random.choice(msg_device)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}')
-                print(f'群{group} 投递成功')
+                logger.info(f'群{group} 投递番剧更新成功')
             except CQHttpError as e:
-                print(e)
-                print(f'Error：群{group} 投递失败')
+                logger.error(f'Error：群{group} 投递番剧更新失败 {type(e)}')
     else:
-        print(f'[{datetime.now()}] 未检索到番剧更新！')
+        logger.info(f'未检索到番剧更新！')
 
-    # print(f'[{datetime.now()} 计划任务：sche_lookup] 完成')
+    logger.debug(f'[计划任务：sche_lookup] 完成')
 
 
 

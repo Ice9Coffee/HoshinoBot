@@ -58,7 +58,7 @@ class Chara:
 
     @property
     def icon(self) -> ResImg:
-        star = '6' if 6 <= self.star else '3' if 3 <= self.star else '1'
+        star = '6' if 6 <= self.star else '3' if 3 <= self.star else '1' if 1 <= self.star else '3'
         id_ = self.id
         if not 1000 < id_ < 2000:
             id_ = Chara.UNKNOWN
@@ -69,12 +69,13 @@ class Chara:
         try:
             pic = self.icon.toPILImage().convert('RGBA').resize((size, size), Image.LANCZOS)
         except FileNotFoundError:
+            logger.error(f'File not found: {self.icon.path}')
             pic = unknown_chara_icon.convert('RGBA').resize((size, size), Image.LANCZOS)
 
         l = size // 6
         star_lap = round(l * 0.15)
         margin_x = ( size - 6*l ) // 2
-        margin_y = margin_x + 5
+        margin_y = round(size * 0.05)
         if self.star:
             for i in range(5 if star_slot_verbose else min(self.star, 5)):
                 a = i*(l-star_lap) + margin_x
@@ -98,7 +99,7 @@ class Chara:
 
 
     @staticmethod
-    def gen_team_pic(team, size=64, star_slot_verbose=True):
+    def gen_team_pic(team, size=128, star_slot_verbose=True):
         num = len(team)
         des = Image.new('RGBA', (num*size, size), (255, 255, 255, 255))
         for i, chara in enumerate(team):
