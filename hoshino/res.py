@@ -31,11 +31,20 @@ class ResObj:
 
     @property
     def url(self):
-        return urljoin(get_bot().config.RESOURCE_URL, pathname2url(self.__path))
+        '''
+        供酷Q使用
+        '''
+        if get_bot().config.RESOURCE_URL:
+            return urljoin(get_bot().config.RESOURCE_URL, pathname2url(self.__path))
+        else:
+            return os.path.abspath(self.path)
 
 
     @property
     def path(self):
+        '''
+        供Nonebot内部使用
+        '''
         res_dir = get_bot().config.RESOURCE_DIR
         return os.path.join(res_dir, self.__path)
 
