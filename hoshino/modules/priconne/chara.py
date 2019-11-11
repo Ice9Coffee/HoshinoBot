@@ -5,6 +5,8 @@ import ujson as json
 from io import BytesIO
 from PIL import Image
 
+import zhconv
+
 from .priconne_data import _PriconneData
 from hoshino.log import logger
 from hoshino.res import R, ResImg
@@ -23,10 +25,15 @@ def gen_name2id():
     for k, v in _PriconneData.CHARA.items():
         for s in v:
             if s not in NAME2ID:
-                NAME2ID[s] = k
+                NAME2ID[normname(s)] = k
             else:
                 logger.warning(f'Chara.__gen_name2id: 出现重名{s}于id{k}与id{NAME2ID[s]}')
 
+
+def normname(name:str) -> str:
+    name = name.lower().replace('（', '(').replace('）', ')')
+    name = zhconv.convert(name, 'zh-hans')
+    return name
 
 class Chara:
     
@@ -58,7 +65,7 @@ class Chara:
 
     @property
     def icon(self) -> ResImg:
-        star = '6' if 6 <= self.star else '3' if 3 <= self.star else '1' if 1 <= self.star else '3'
+        star = '6' if 6 <= self.star else '3' # if 3 <= self.star else '1' if 1 <= self.star else '3'
         id_ = self.id
         if not 1000 < id_ < 2000:
             id_ = Chara.UNKNOWN
@@ -110,6 +117,7 @@ class Chara:
 
     @staticmethod
     def name2id(name):
+        name = normname(name)
         if not NAME2ID:
             gen_name2id()
         return NAME2ID[name] if name in NAME2ID else Chara.UNKNOWN

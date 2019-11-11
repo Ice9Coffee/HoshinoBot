@@ -76,8 +76,8 @@ async def gacha_10(session:CommandSession):
     silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
     if get_bot().config.IS_CQPRO: 
-        res1 = Chara.gen_team_pic(result[ :5])
-        res2 = Chara.gen_team_pic(result[5: ])
+        res1 = Chara.gen_team_pic(result[ :5], star_slot_verbose=False)
+        res2 = Chara.gen_team_pic(result[5: ], star_slot_verbose=False)
         res = concat_pic([res1, res2])
         res = pic2b64(res)
         res = MessageSegment.image(res)

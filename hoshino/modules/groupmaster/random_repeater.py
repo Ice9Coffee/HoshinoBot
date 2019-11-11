@@ -24,7 +24,7 @@ a 设为一个略大于1的小数，最好不要超过2，建议1.6
 @bot.on_message('group')
 async def random_repeater(context):
     group_id = context['group_id']
-    msg = context['message'].extract_plain_text().strip()
+    msg = str(context['message'])
 
     if group_id not in group_stat:
         group_stat[group_id] = (msg, False, 0)
