@@ -63,10 +63,11 @@ async def arena_query(session:CommandSession):
     defen = ' '.join(defen)
 
     header = f'已为{MessageSegment.at(session.ctx["user_id"])}骑士君查询到以下胜利队伍：'
-    defen = f'检索条件：{defen}'
+    defen = f'检索条件：【{defen}】'
     updown = f'赞&踩：\n{updown}'
-    footer = '禁言是为了避免查询频繁，请打完本场竞技场后再来查询'
-    msg = f'{header}\n{defen}{pics}{updown}\n{footer}'
+    footer = '禁言是为避免频繁查询，请打完本场竞技场后再来查询'
+    ref = 'support by pcrdfuns'
+    msg = f'{header}\n{defen}{pics}{updown}\n{footer}\n{ref}'
 
     logger.info('Arena sending result image...')
     await session.send(msg)
