@@ -26,7 +26,7 @@ class Arena(object):
         header = {
             'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36',
             'authorization': Arena.__get_auth_key()
-            }
+        }
         payload = {"_sign": "a", "def": id_list, "nonce": "a", "page": 1, "sort": 1, "ts": int(time.time()), "region": 1}
         
         logger.info(f'Arena query payload={json.dumps(payload)}')
