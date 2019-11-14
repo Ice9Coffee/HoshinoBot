@@ -37,7 +37,7 @@ class ResObj:
         if get_bot().config.RESOURCE_URL:
             return urljoin(get_bot().config.RESOURCE_URL, pathname2url(self.__path))
         else:
-            return os.path.abspath(self.path)
+            return f'file:///{os.path.abspath(self.path)}'  # FIXME: 找个linux和windows的通用写法
 
 
     @property
@@ -54,6 +54,7 @@ class ResImg(ResObj):
     @property
     def cqcode(self) -> MessageSegment:
         return MessageSegment.image(self.url)
+        # return MessageSegment.image(pic2b64(self.toPILImage()))
 
     def toPILImage(self) -> Image:
         return Image.open(self.path)
