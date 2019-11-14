@@ -106,7 +106,7 @@ class Chara:
 
 
     @staticmethod
-    def gen_team_pic(team, size=128, star_slot_verbose=True):
+    def gen_team_pic(team, size=64, star_slot_verbose=True):
         num = len(team)
         des = Image.new('RGBA', (num*size, size), (255, 255, 255, 255))
         for i, chara in enumerate(team):

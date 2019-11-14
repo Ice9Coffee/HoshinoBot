@@ -32,8 +32,8 @@ async def silence(session:CommandSession, ban_time, ignore_super_user=False):
 def pic2b64(pic:Image) -> str:
     buf = BytesIO()
     pic.save(buf, format='PNG')
-    base64_str = str(base64.b64encode(buf.getvalue()), encoding='utf8')
-    return f'base64://{base64_str}'
+    base64_str = base64.b64encode(buf.getvalue()).decode()   #, encoding='utf8')
+    return 'base64://' + base64_str
 
 
 def concat_pic(pics, border=5):
