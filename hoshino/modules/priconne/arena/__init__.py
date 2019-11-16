@@ -50,8 +50,7 @@ async def arena_query(session:CommandSession):
 
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
 
-    atk_team_txt = [  ' '.join([ x.name for x in entry['atk'] ]) for entry in res ]
-    atk_team_txt = '\n'.join(atk_team_txt)
+    atk_team_txt = '\n'.join(map(lambda entry: ' '.join(map(lambda x: f"{x.name}{x.star if x.star else ''}{'专' if x.equip else ''}" , entry['atk'])) , res))
 
     logger.info('Arena generating picture...')
     atk_team_pic = [ Chara.gen_team_pic(entry['atk']) for entry in res ]
@@ -67,14 +66,14 @@ async def arena_query(session:CommandSession):
     defen = [ Chara.fromid(x).name for x in defen ]
     defen = ' '.join(defen)
 
-    header = f'已为{MessageSegment.at(session.ctx["user_id"])}骑士君查询到以下胜利队伍：'
-    defen = f'检索条件：【{defen}】'
+    header = f'已为骑士君{MessageSegment.at(session.ctx["user_id"])}查询到以下进攻方案：'
+    defen = f'【{defen}】'
     updown = f'👍&👎：\n{updown}'
     footer = '禁言是为避免频繁查询，请打完本场竞技场后再来查询'
-    ref = 'support by pcrdfuns'
-    msg = f'{header}\n{defen}\n{atk_team_txt}\n{updown}\n{footer}\n{ref}'
+    ref = 'Support by pcrdfuns'
+    msg = f'{defen}\n{header}\n{atk_team_txt}\n{updown}\n{footer}\n{ref}'
 
     await session.send(msg)
     logger.info('Arena sending result image...')
-    await session.send(MessageSegment.at(session.ctx["user_id"]) + atk_team_pic)
+    await session.send(atk_team_pic)
     logger.info('Arena result image sent!')
