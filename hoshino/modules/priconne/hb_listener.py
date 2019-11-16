@@ -1,5 +1,5 @@
 import random
-from time import sleep
+import asyncio
 
 import nonebot
 from nonebot import on_command, CommandSession, Message

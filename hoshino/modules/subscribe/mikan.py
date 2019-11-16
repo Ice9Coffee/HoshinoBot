@@ -2,9 +2,10 @@ import os
 import ujson as json
 import random
 import requests
+import asyncio
+
 from lxml import etree
 from datetime import datetime
-from time import sleep
 
 import nonebot
 from nonebot import CommandSession, on_command
@@ -115,10 +116,10 @@ async def sche_lookup():
 
         bot = nonebot.get_bot()
         for group in Mikan.get_auth_group():
-            sleep(1.0)  # 降低发送频率，避免被腾讯ban TODO: sleep 不够优雅，换一种解决方式
+            await asyncio.sleep(1.0)  # 降低发送频率，避免被腾讯ban
             try:
                 for m in msg:
-                    sleep(0.5)
+                    await asyncio.sleep(0.5)
                     await bot.send_group_msg(group_id=group, message=f'{random.choice(msg_device)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}')
                 logger.info(f'群{group} 投递番剧更新成功')
             except CQHttpError as e:
