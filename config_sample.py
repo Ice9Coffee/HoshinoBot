@@ -15,5 +15,5 @@ IS_CQPRO = False
 RESOURCE_DIR = '~/.hoshino/res/'
 
 # 资源库 URL  用于docker中的酷Q读取宿主机资源，注意以'/'结尾
-# 若在WinServer上部署则不需本地WebServer，务必留空
+# 若留空则图片均采用base64发送，开销较大但部署方便
 RESOURCE_URL = ''
