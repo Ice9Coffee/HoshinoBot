@@ -24,12 +24,9 @@ class BattleMaster(object):
     SERVER_TW = ClanDao.SERVER_TW
     SERVER_CN = ClanDao.SERVER_CN
 
-    SCORE_RATE = [
-        1.0, 1.0, 1.2, 1.2, 1.5,
-        1.4, 1.4, 1.8, 1.8, 2.0,
-        2.0, 2.0, 2.5, 2.5, 3.0
-    ]
-
+    SERVER_JP_NAME = ('jp', 'JP', 'Jp', '日', '日服', str(SERVER_JP))
+    SERVER_TW_NAME = ('tw', 'TW', 'Tw', '台', '台服', str(SERVER_TW))
+    SERVER_CN_NAME = ('cn', 'CN', 'Cn', '国', '国服', 'B', 'B服', str(SERVER_CN))
 
     def __init__(self, group):
         super().__init__()
@@ -85,15 +82,28 @@ class BattleMaster(object):
 
 
     @staticmethod
-    def get_score_rate(round_, boss):
+    def get_score_rate(round_, boss, server):
         stage = BattleMaster.get_stage(round_)
-        return BattleMaster.SCORE_RATE[ 5*(stage-1) + boss-1 ]
+        config = get_config()
+        return config[ config["SCORE_RATE"][server] ][ stage-1 ][ boss-1 ]
 
 
     @staticmethod
     def int2kanji(x):
         kanji = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
         return kanji[x]
+
+
+    @staticmethod
+    def get_server_code(server_name):
+        if server_name in BattleMaster.SERVER_JP_NAME:
+            return BattleMaster.SERVER_JP
+        elif server_name in BattleMaster.SERVER_TW_NAME:
+            return BattleMaster.SERVER_TW
+        elif server_name in BattleMaster.SERVER_CN_NAME:
+            return BattleMaster.SERVER_CN
+        else:
+            return -1
 
 
     def get_battledao(self, cid, time):
@@ -111,8 +121,8 @@ class BattleMaster(object):
         return self.clandao.find_one(self.group, cid)
 
 
-    def add_clan(self, cid, name):
-        return self.clandao.add({'gid': self.group, 'cid': cid, 'name': name})
+    def add_clan(self, cid, name, server):
+        return self.clandao.add({'gid': self.group, 'cid': cid, 'name': name, 'server': server})
 
 
     def list_clan(self):
@@ -231,6 +241,7 @@ class BattleMaster(object):
 
     def stat_challenge(self, cid, time, only_one_day=True):
         '''
+        统计每个成员的出刀
         return [(member, [challenge])]
         '''
         ret = []
@@ -246,14 +257,19 @@ class BattleMaster(object):
     
     def stat_score(self, cid, time):
         '''
+        统计cid会各成员的本月总分数
         return [(uid,alt,name,score)]
         '''
+        clan = self.get_clan(cid)
+        if not clan:
+            return []
+        server = clan['server']
         ret = []
         stat = self.stat_challenge(cid, time, only_one_day=False)
         for mem, challens in stat:
             score = 0
             for ch in challens:
-                score = score + round( self.get_score_rate(ch['round'], ch['boss']) * ch['dmg'] )
+                score = score + round( self.get_score_rate(ch['round'], ch['boss'], server) * ch['dmg'] )
             ret.append( (mem['uid'], mem['alt'], mem['name'], score) )
         return ret
 
