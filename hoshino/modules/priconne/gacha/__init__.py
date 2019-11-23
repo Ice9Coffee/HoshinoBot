@@ -81,6 +81,10 @@ async def gacha_10(session:CommandSession):
         res = concat_pic([res1, res2])
         res = pic2b64(res)
         res = MessageSegment.image(res)
+        result = [ f'{c.name}{"★"*c.star}' for c in result]
+        res1 = ' '.join(result[0:5])
+        res2 = ' '.join(result[5: ])
+        res = res + f'{res1}\n{res2}'
     else:
         result = [ f'{c.name}{"★"*c.star}' for c in result]
         res1 = ' '.join(result[0:5])

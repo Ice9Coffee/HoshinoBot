@@ -46,28 +46,34 @@ async def arena_query(session:CommandSession):
     if not len(res):
         await session.finish('抱歉没有查询到解法\n（注：没有作业不代表不能拆，竞技场没有无敌的守队只有不够深的box）')
 
-    await silence(session, 30)       # 避免过快查询
+    await silence(session, 30)      # 避免过快查询
+
+    res = res[:min(6, len(res))]    # 限制显示数量，截断结果
+
+    atk_team_txt = '\n'.join(map(lambda entry: ' '.join(map(lambda x: f"{x.name}{x.star if x.star else ''}{'专' if x.equip else ''}" , entry['atk'])) , res))
 
     logger.info('Arena generating picture...')
-    pics = [ Chara.gen_team_pic(entry['atk']) for entry in res[:min(6, len(res))] ]
-    pics = concat_pic(pics)
-    pics = pic2b64(pics)
-    pics = MessageSegment.image(pics)
+    atk_team_pic = [ Chara.gen_team_pic(entry['atk']) for entry in res ]
+    atk_team_pic = concat_pic(atk_team_pic)
+    atk_team_pic = pic2b64(atk_team_pic)
+    atk_team_pic = MessageSegment.image(atk_team_pic)
     logger.info('Arena picture ready!')
 
-    updown = [ f"👍{entry['up']} 👎{entry['down']}" for entry in res[:min(6, len(res))] ]
+    updown = [ f"赞{entry['up']} 踩{entry['down']}" for entry in res ]
     updown = '\n'.join(updown)
 
     # 发送回复
     defen = [ Chara.fromid(x).name for x in defen ]
     defen = ' '.join(defen)
 
-    header = f'已为{MessageSegment.at(session.ctx["user_id"])}骑士君查询到以下胜利队伍：'
-    defen = f'检索条件：{defen}'
-    updown = f'赞&踩：\n{updown}'
-    footer = '禁言是为了避免查询频繁，请打完本场竞技场后再来查询'
-    msg = f'{header}\n{defen}{pics}{updown}\n{footer}'
+    header = f'已为骑士君{MessageSegment.at(session.ctx["user_id"])}查询到以下进攻方案：'
+    defen = f'【{defen}】'
+    updown = f'👍&👎：\n{updown}'
+    footer = '禁言是为避免频繁查询，请打完本场竞技场后再来查询'
+    ref = 'Support by pcrdfuns'
+    msg = f'{defen}\n{header}\n{atk_team_txt}\n{updown}\n{footer}\n{ref}'
 
-    logger.info('Arena sending result image...')
     await session.send(msg)
+    logger.info('Arena sending result image...')
+    await session.send(atk_team_pic)
     logger.info('Arena result image sent!')
