@@ -35,9 +35,10 @@ async def add_clan(session:CommandSession):
     if not await perm.check_permission(session.bot, session.ctx, perm.GROUP_ADMIN):
         await session.finish('Error: 只有管理员才能添加新公会')
 
-    parser = ArgumentParser(session=session, usage='add-clan --name [--cid]')
+    parser = ArgumentParser(session=session, usage='add-clan --name [--cid] --server')
     parser.add_argument('--name', default=None, required=False)
     parser.add_argument('--cid', type=int, default=-1)
+    parser.add_argument('--server', default='Unknown')
     args = parser.parse_args(session.argv)
     group_id = session.ctx['group_id']
     battlemaster = BattleMaster(group_id)
@@ -54,7 +55,11 @@ async def add_clan(session:CommandSession):
             cid = clan['cid'] if clan['cid'] > cid else cid
         cid = cid + 1 if cid > 0 else 1
 
-    if battlemaster.add_clan(cid, name):
+    server = battlemaster.get_server_code(args.server)
+    if server < 0:
+        await session.finish('请指定公会所在服务器 例【add-clan --server jp】')
+
+    if battlemaster.add_clan(cid, name, server):
         await session.send('公会添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)')
     else:
         await session.send(f'公会添加成功！{cid}会 {name}')
@@ -265,7 +270,7 @@ async def process_challenge(session: CommandSession, challenge):
     else:
         prog = battlemaster.get_challenge_progress(cid, datetime.now())
         total_hp = battlemaster.get_boss_hp(prog[0], prog[1], clan['server'])
-        score_rate = battlemaster.get_score_rate(prog[0], prog[1])
+        score_rate = battlemaster.get_score_rate(prog[0], prog[1], clan['server'])
         msg1 = f"记录成功！\n{mem['name']}对{round_}周目老{battlemaster.int2kanji(boss)}造成了{damage:,d}点伤害\n"
         msg2 = f"当前{cid}会进度：\n{prog[0]}周目 老{battlemaster.int2kanji(prog[1])} HP={prog[2]:,d}/{total_hp:,d} x{score_rate:.1f}"
         await session.send(f'{warn_prog}{warn_last}{msg1}{msg2}')
@@ -343,7 +348,7 @@ async def show_progress(session: CommandSession):
         await session.finish(f'本群不存在{cid}会')
     round_, boss, remain_hp = battlemaster.get_challenge_progress(cid, datetime.now())
     total_hp = battlemaster.get_boss_hp(round_, boss, clan['server'])
-    score_rate = battlemaster.get_score_rate(round_, boss)
+    score_rate = battlemaster.get_score_rate(round_, boss, clan['server'])
 
     await session.send(f'当前{cid}会进度：\n{round_}周目 老{battlemaster.int2kanji(boss)} HP={remain_hp}/{total_hp} x{score_rate:.1f}')
 

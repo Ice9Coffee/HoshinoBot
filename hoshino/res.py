@@ -3,9 +3,10 @@ from PIL import Image
 from urllib.request import pathname2url
 from urllib.parse import urljoin
 
-
 from nonebot import get_bot
 from nonebot import MessageSegment
+
+from hoshino.util import pic2b64
 
 class R:
 
@@ -31,11 +32,17 @@ class ResObj:
 
     @property
     def url(self):
+        '''
+        供酷Q使用
+        '''
         return urljoin(get_bot().config.RESOURCE_URL, pathname2url(self.__path))
 
 
     @property
     def path(self):
+        '''
+        供Nonebot内部使用
+        '''
         res_dir = get_bot().config.RESOURCE_DIR
         return os.path.join(res_dir, self.__path)
 
@@ -44,7 +51,10 @@ class ResObj:
 class ResImg(ResObj):
     @property
     def cqcode(self) -> MessageSegment:
-        return MessageSegment.image(self.url)
+        if get_bot().config.RESOURCE_URL:
+            return MessageSegment.image(self.url)
+        else:
+            return MessageSegment.image(pic2b64(self.toPILImage()))
 
     def toPILImage(self) -> Image:
         return Image.open(self.path)

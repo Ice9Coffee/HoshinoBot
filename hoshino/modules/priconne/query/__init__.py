@@ -6,25 +6,41 @@ from nonebot import on_command, CommandSession, MessageSegment
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import permission as perm
 
-
 from hoshino.util import silence, delete_msg
 from hoshino.res import R
 
-__private_send_pic_cmd = '__send_pic_' + hex(random.randint(0x1000000000000000, 0xffffffffffffffff))[2:]
-@on_command(__private_send_pic_cmd, only_to_me=False)
-async def send_pic(session:CommandSession):
-    pic = R.img(session.state['pic_name']).cqcode
-    await session.send(pic)
 
-
-@on_natural_language(keywords={'rank', 'Rank', 'RANK'}, only_to_me=False, only_short_message=True)
+@on_natural_language(keywords={'rank', 'Rank', 'RANK'}, only_to_me=True, only_short_message=True)
 async def nlp_rank(session:NLPSession):
+
     arg = session.msg_text.strip()
-    if re.search('前', arg):
-        return IntentCommand(90.0, __private_send_pic_cmd, args={'pic_name': './priconne/quick/前卫rank.jpg'})
-    if re.search('中', arg):
-        return IntentCommand(90.0, __private_send_pic_cmd, args={'pic_name': './priconne/quick/中卫rank.jpg'})
-    if re.search('后', arg):
-        return IntentCommand(90.0, __private_send_pic_cmd, args={'pic_name': './priconne/quick/后卫rank.jpg'})
-    if re.search('rank推荐表', arg, re.I):
-        session.send('输入前/中/后卫rank表以查看')
+    is_jp = arg.find('日') >= 0
+    is_tw = arg.find('台') >= 0 or arg.find('臺') >= 0
+
+    p1 = R.img('priconne/quick/前卫rank.jpg').cqcode
+    p2 = R.img('priconne/quick/中卫rank.jpg').cqcode
+    p3 = R.img('priconne/quick/后卫rank.jpg').cqcode
+    p4 = R.img('priconne/quick/台rank.png').cqcode
+
+    if not is_jp and not is_tw:
+        await session.send('请问您要查询日服还是台服的rank表？\n* 日rank\n* 台rank')
+    else:
+        await silence(session, 60)
+        await session.send('rank表图片较大，请稍等片刻\n不定期搬运，来源见图片，广告与本bot无关，仅供参考')
+        if is_jp:
+            await session.send(f'日服：{p1}{p2}{p3}')
+        if is_tw:
+            await session.send(f'台服：{p4}')
+
+
+@on_natural_language(keywords={'pcr速查', 'PCR速查', 'pcr常用', 'PCR常用', '图书馆'}, only_to_me=True)
+async def query_sites(session:NLPSession):
+    msg='''繁中wiki：pcredivewiki.tw
+日文wiki：gamewith.jp/pricone-re
+日文wiki：appmedia.jp/priconne-redive
+竞技场查询：www.pcrdfans.com/battle
+NGA论坛：bbs.nga.cn/thread.php?fid=-10308342
+日官网：priconne-redive.jp
+台官网：www.princessconnect.so-net.tw'''
+    await session.send(msg)
+    await silence(session, 60)
