@@ -11,12 +11,15 @@ from .priconne_data import _PriconneData
 from hoshino.log import logger
 from hoshino.res import R, ResImg
 
+try:
+    gadget_equip = R.img('priconne/gadget/equip.png').open()
+    gadget_star = R.img('priconne/gadget/star.png').open()
+    gadget_star_dis = R.img('priconne/gadget/star_disabled.png').open()
+    gadget_star_pink = R.img('priconne/gadget/star_pink.png').open()
+    unknown_chara_icon = R.img('priconne/unit/icon_unit_100031.png').open()
+except Exception as e:
+    logger.exception(e)
 
-gadget_equip = R.img('priconne/gadget/equip.png').toPILImage()
-gadget_star = R.img('priconne/gadget/star.png').toPILImage()
-gadget_star_dis = R.img('priconne/gadget/star_disabled.png').toPILImage()
-gadget_star_pink = R.img('priconne/gadget/star_pink.png').toPILImage()
-unknown_chara_icon = R.img('priconne/unit/icon_unit_100031.png').toPILImage()
 
 NAME2ID = {}
 
@@ -74,7 +77,7 @@ class Chara:
 
     def gen_icon_img(self, size, star_slot_verbose=True) -> Image:
         try:
-            pic = self.icon.toPILImage().convert('RGBA').resize((size, size), Image.LANCZOS)
+            pic = self.icon.open().convert('RGBA').resize((size, size), Image.LANCZOS)
         except FileNotFoundError:
             logger.error(f'File not found: {self.icon.path}')
             pic = unknown_chara_icon.convert('RGBA').resize((size, size), Image.LANCZOS)

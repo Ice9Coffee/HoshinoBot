@@ -14,11 +14,11 @@ async def seina(session: CommandSession):
 
 @on_command('我有个朋友说他好了', aliases=('我朋友说他好了', ), only_to_me=False)
 async def ddhaole(session: CommandSession):
-    await silence(session, 60)
+    await silence(session.ctx, 60)
     await session.send('那个朋友是不是你弟弟？')
 
 
 @on_command('我好了', only_to_me=False)
 async def nihaole(session: CommandSession):
-    await silence(session, 60)
+    await silence(session.ctx, 60)
     await session.send('不许好，憋回去！')
