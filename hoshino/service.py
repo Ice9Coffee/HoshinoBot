@@ -3,7 +3,6 @@ import re
 import sys
 import logging
 import ujson as json
-from functools import wraps
 from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
 
 import nonebot
@@ -108,7 +107,7 @@ class Service:
 
 
     @staticmethod
-    def get_loaded_services() -> Set[Service]:
+    def get_loaded_services():
         return _loaded_services.copy()
 
 
@@ -129,7 +128,7 @@ class Service:
                 return Privilege.PRIVATE_OTHER
             return Privilege.PRIVATE
         if ctx['message_type'] == 'group':
-            if not ctx['anomymous']:
+            if not ctx['anonymous']:
                 try:
                     member_info = await bot.get_group_member_info(group_id=ctx['group_id'], user_id=ctx['user_id'])
                     if member_info:
@@ -182,71 +181,71 @@ class Service:
 
     def on_message(self, arg=None):
         def deco(func):
-            bot = nonebot.get_bot()
-            @wraps
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
-                    await func(ctx)
+                    await func(nonebot.get_bot(), ctx)
+                    self.logger.info(f'Message {ctx["message_id"]} is handled.')
                     return
-            return bot.on_message(arg)(wrapper)
+            return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
 
 
     def on_keyword(self, keywords:Iterable, arg=None):
         normalized_keywords = tuple(util.normalize_str(kw) for kw in keywords)
         def deco(func):
-            @wraps
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
-                    plain_text = util.normalize_str(ctx.extract_plain_text)
+                    plain_text = util.normalize_str(ctx['message'].extract_plain_text())
                     for kw in normalized_keywords:
                         if plain_text.find(kw) >= 0:
-                            await func(ctx)
+                            await func(nonebot.get_bot(), ctx)
+                            self.logger.info(f'Message {ctx["message_id"]} is handled.')
                             return
-            return nonebot.get_bot().on_message()(wrapper)
+            return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
 
 
-    def on_rex(self, rex):
+    def on_rex(self, rex, arg=None):
         def deco(func):
-            @wraps
             async def wrapper(ctx):
-                if self.check_permission(ctx):
-                    plain_text = util.normalize_str(ctx.extract_plain_text)
+                if await self.check_permission(ctx):
+                    plain_text = util.normalize_str(ctx['message'].extract_plain_text())
                     match = rex.search(plain_text)
                     if match:
-                        await func(ctx, match)
+                        await func(nonebot.get_bot(), ctx, match)
+                        self.logger.info(f'Message {ctx["message_id"]} is handled.')
                         return
-            return nonebot.get_bot().on_message()(wrapper)            
+            return nonebot.get_bot().on_message(arg)(wrapper)            
         return deco
 
 
     def on_command(self, name, deny_tip=None, **kwargs):
         def deco(func):
-            @wraps
             async def wrapper(session:nonebot.CommandSession):
                 if await self.check_permission(session.ctx):
                     await func(session)
+                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as command.')
+                    return
                 elif deny_tip:
                     await session.send(deny_tip, at_sender=True)
-                    return
+                self.logger.info(f'Message {session.ctx["message_id"]} is handled as command. Permission denied.')
             return nonebot.on_command(name, **kwargs)(wrapper)
         return deco
 
 
     def on_natural_language(self, keywords=None, **kwargs):
         def deco(func):
-            @wraps
             async def wrapper(session):
                 if await self.check_permission(session.ctx):
                     await func(session)
+                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language.')
+                    return
             return nonebot.on_natural_language(keywords, **kwargs)(wrapper)
         return deco
 
 
     def scheduled_job(self, *args, **kwargs):
         def deco(func):
-            @wraps
             async def wrapper():
                 await func(self.get_group_list())
             return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
