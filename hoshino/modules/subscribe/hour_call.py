@@ -22,7 +22,7 @@ def get_hour_call():
 
 LAST_HOUR_CALL = -1
 
-@nonebot.scheduler.scheduled_job('cron', hour='*', minute='0-2', second='0', misfire_grace_time=30)
+@nonebot.scheduler.scheduled_job('cron', hour='*', minute='0-2', second='0', misfire_grace_time=30, coalesce=True)
 async def hour_call():
     global LAST_HOUR_CALL
     now = datetime.now(pytz.timezone('Asia/Shanghai'))
@@ -45,7 +45,7 @@ async def hour_call():
             logger.error(f'群{group} 投递hour_call失败 {type(e)}')
 
 
-@nonebot.scheduler.scheduled_job('cron', hour='5-6', minute='45', second='0', misfire_grace_time=120) # = UTC+8 1445
+@nonebot.scheduler.scheduled_job('cron', hour='5-6', minute='45', second='0', misfire_grace_time=120, coalesce=True) # = UTC+8 1445
 async def pcr_reminder():
     logger.info('pcr_reminder start')
 

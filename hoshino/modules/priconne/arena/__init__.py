@@ -46,7 +46,7 @@ async def arena_query(session:CommandSession):
     if not len(res):
         await session.finish('抱歉没有查询到解法\n（注：没有作业不代表不能拆，竞技场没有无敌的守队只有不够深的box）')
 
-    await silence(session, 30)      # 避免过快查询
+    await silence(session.ctx, 30)      # 避免过快查询
 
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
 

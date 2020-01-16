@@ -71,7 +71,7 @@ class Mikan(object):
 
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='1/3', second='15', jitter=4)
+@nonebot.scheduler.scheduled_job('cron', minute='*/3', second='15', jitter=4, coalesce=True)
 async def sche_lookup():
     
     logger.debug(f'[计划任务：sche_lookup] 启动')

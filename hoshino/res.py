@@ -32,17 +32,17 @@ class ResObj:
 
     @property
     def url(self):
-        '''
-        供酷Q使用
-        '''
+        """
+        @return: 资源文件的url，供酷Q（或其他远程服务）使用
+        """
         return urljoin(get_bot().config.RESOURCE_URL, pathname2url(self.__path))
 
 
     @property
     def path(self):
-        '''
-        供Nonebot内部使用
-        '''
+        """
+        @return: 资源文件的路径，供Nonebot内部使用
+        """
         res_dir = get_bot().config.RESOURCE_DIR
         return os.path.join(res_dir, self.__path)
 
@@ -54,7 +54,7 @@ class ResImg(ResObj):
         if get_bot().config.RESOURCE_URL:
             return MessageSegment.image(self.url)
         else:
-            return MessageSegment.image(pic2b64(self.toPILImage()))
+            return MessageSegment.image(pic2b64(self.open()))
 
-    def toPILImage(self) -> Image:
+    def open(self) -> Image:
         return Image.open(self.path)

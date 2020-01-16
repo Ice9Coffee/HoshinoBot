@@ -81,7 +81,7 @@ async def mua(session:CommandSession):
 @on_command('ban_word', aliases=('rbq', 'RBQ', '憨批', '废物', '死妈', 'a片', 'A片', '崽种', '傻逼', '傻逼玩意', '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp'), only_to_me=True)
 async def ban_word(session:CommandSession):
     await session.send('D区')
-    await silence(session, 24*60*60)
+    await silence(session.ctx, 24*60*60)
 
 
 @on_command('sayhello', aliases=('在', '在？', '在吗', '在么？', '在嘛', '在嘛？'))

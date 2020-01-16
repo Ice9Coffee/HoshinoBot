@@ -57,7 +57,7 @@ async def gacha_1(session:CommandSession):
     if get_bot().config.IS_CQPRO:
         res = f'{chara.icon.cqcode} {res}'
 
-    await silence(session, silence_time)
+    await silence(session.ctx, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     await session.send(msg)
 
@@ -91,7 +91,7 @@ async def gacha_10(session:CommandSession):
         res2 = ' '.join(result[5: ])
         res = f'{res1}\n{res2}'
 
-    await silence(session, silence_time)
+    await silence(session.ctx, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     await session.send(msg)
     if hiishi >= SUPER_LUCKY_LINE:
