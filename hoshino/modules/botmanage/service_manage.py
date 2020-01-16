@@ -4,6 +4,11 @@ from nonebot import CQHttpError
 
 from hoshino.service import Service
 
+@on_command('lssv', aliases=('查看所有服务'), permission=perm.GROUP, only_to_me=False)
+async def lssv(session:CommandSession):
+    all_service = '\n'.join([ sv.name for sv in Service.get_loaded_services()])
+    await session.send(f"服务一览：\n{all_service}")
+
 
 @on_command('enable', aliases=('启用', '开启', '打开'), permission=perm.GROUP, only_to_me=False)
 async def enable_service(session:CommandSession):
@@ -13,14 +18,15 @@ async def enable_service(session:CommandSession):
     target_name = session.current_arg
     for sv in all_service:
         if sv.name == target_name:
-            if await sv.check_permission(session.ctx, sv.manage_priv):
+            u_priv = await sv.get_user_privilege(session.ctx)
+            if u_priv >= sv.manage_priv:
                 sv.set_enable(session.ctx['group_id'])
-                session.send(f'{sv.name}服务已启用！', at_sender=True)
+                await session.send(f'{sv.name}服务已启用！', at_sender=True)
                 return
             else:
-                session.send('权限不足', at_sender=True)
+                await session.send(f'权限不足！需要：{sv.manage_priv}，您的：{u_priv}', at_sender=True)
                 return
-    session.send(f'未找到服务：{target_name}', at_sender=True)
+    await session.send(f'未找到服务：{target_name}', at_sender=True)
 
 
 @on_command('disable', aliases=('禁用', '关闭'), permission=perm.GROUP, only_to_me=False)
@@ -31,11 +37,12 @@ async def disable_service(session:CommandSession):
     target_name = session.current_arg
     for sv in all_service:
         if sv.name == target_name:
-            if await sv.check_permission(session.ctx, sv.manage_priv):
+            u_priv = await sv.get_user_privilege(session.ctx)
+            if u_priv >= sv.manage_priv:
                 sv.set_disable(session.ctx['group_id'])
-                session.send(f'{sv.name}服务已禁用！', at_sender=True)
+                await session.send(f'{sv.name}服务已禁用！', at_sender=True)
                 return
             else:
-                session.send('权限不足', at_sender=True)
+                await session.send(f'权限不足！需要：{sv.manage_priv}，您的：{u_priv}', at_sender=True)
                 return
-    session.send(f'未找到服务：{target_name}', at_sender=True)
+    await session.send(f'未找到服务：{target_name}', at_sender=True)
