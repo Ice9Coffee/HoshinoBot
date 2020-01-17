@@ -3,15 +3,16 @@ import ujson as json
 import random
 import requests
 import asyncio
-
 from lxml import etree
 from datetime import datetime
 
 import nonebot
 from nonebot import CommandSession, on_command
-from aiocqhttp.exceptions import Error as CQHttpError
 
-from hoshino.log import logger
+from hoshino.service import Service
+
+
+sv = Service('bangumi', enable_on_default=False)
 
 class Mikan(object):
     link_cache = set()
@@ -30,9 +31,9 @@ class Mikan(object):
         return Mikan.get_config()["MIKAN_TOKEN"]
 
 
-    @staticmethod
-    def get_auth_group():
-        return Mikan.get_config()["MIKAN_GROUP"]
+    # @staticmethod
+    # def get_auth_group():
+    #     return Mikan.get_config()["MIKAN_GROUP"]
 
 
     @staticmethod
@@ -42,7 +43,7 @@ class Mikan(object):
             resp = requests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=10)
             rss = etree.XML(resp.content)
         except Exception as e:
-            logger.error(f'[get_rss] Error: {e}')
+            sv.logger.error(f'[get_rss] Error: {e}')
             return []
 
         for i in rss.xpath('/rss/channel/item'):
@@ -71,20 +72,20 @@ class Mikan(object):
 
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='*/3', second='15', jitter=4, coalesce=True)
-async def sche_lookup():
+@sv.scheduled_job('cron', minute='*/3', second='15', jitter=4, coalesce=True)
+async def sche_lookup(group_list):
     
-    logger.debug(f'[计划任务：sche_lookup] 启动')
+    sv.logger.debug(f'[计划任务：sche_lookup] 启动')
     
     if not Mikan.rss_cache:
         Mikan.update_cache()
-        logger.info(f'[计划任务：sche_lookup] 订阅缓存为空，已加载至最新')
+        sv.logger.info(f'[计划任务：sche_lookup] 订阅缓存为空，已加载至最新')
         return
 
     new_bangumi = Mikan.update_cache()
     if new_bangumi:
 
-        logger.info(f'检索到{len(new_bangumi)}条番剧更新！')
+        sv.logger.info(f'检索到{len(new_bangumi)}条番剧更新！')
 
         msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in new_bangumi ]
         msg_device = [
@@ -115,23 +116,23 @@ async def sche_lookup():
         ]
 
         bot = nonebot.get_bot()
-        for group in Mikan.get_auth_group():
+        for group in group_list:
             await asyncio.sleep(1.0)  # 降低发送频率，避免被腾讯ban
             try:
                 for m in msg:
                     await asyncio.sleep(0.5)
                     await bot.send_group_msg(group_id=group, message=f'{random.choice(msg_device)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}')
-                logger.info(f'群{group} 投递番剧更新成功')
-            except CQHttpError as e:
-                logger.error(f'Error：群{group} 投递番剧更新失败 {type(e)}')
+                sv.logger.info(f'群{group} 投递番剧更新成功')
+            except Exception as e:
+                sv.logger.error(f'Error：群{group} 投递番剧更新失败 {type(e)}')
     else:
-        logger.info(f'未检索到番剧更新！')
+        sv.logger.info(f'未检索到番剧更新！')
 
-    logger.debug(f'[计划任务：sche_lookup] 完成')
+    sv.logger.debug(f'[计划任务：sche_lookup] 完成')
 
 
 
-@on_command('来点新番', aliases=('來點新番', ))
+@sv.on_command('来点新番', aliases=('來點新番', ))
 async def send_bangumi(session:CommandSession):
     if not Mikan.rss_cache:
         Mikan.update_cache()

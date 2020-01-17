@@ -6,7 +6,8 @@ from hoshino.service import Service
 
 @on_command('lssv', aliases=('查看所有服务'), permission=perm.GROUP, only_to_me=False)
 async def lssv(session:CommandSession):
-    all_service = '\n'.join([ sv.name for sv in Service.get_loaded_services()])
+    group_id = session.ctx['group_id']
+    all_service = '\n'.join([ f"{'on | ' if group_id in sv.enable_group or sv.enable_on_default and group_id not in sv.disable_group else 'off | '} {sv.name}" for sv in Service.get_loaded_services()])
     await session.send(f"服务一览：\n{all_service}")
 
 
