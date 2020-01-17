@@ -247,6 +247,7 @@ class Service:
     def scheduled_job(self, *args, **kwargs):
         def deco(func):
             async def wrapper():
-                await func(self.get_group_list())
+                gl = await self.get_group_list()
+                await func(gl)
             return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
         return deco
