@@ -9,14 +9,14 @@ from nonebot.permission import GROUP_MEMBER, GROUP_ADMIN
 from aiocqhttp.exceptions import ActionFailed
 
 from .gacha import Gacha
-from hoshino.log import logger
 from hoshino.res import R
 from hoshino.util import delete_msg, silence, concat_pic, pic2b64
+from hoshino.service import Service
 from ..chara import Chara
 
 
 __plugin_name__ = 'gacha'
-
+sv = Service('gacha')
 
 gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
                     '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋', '扭蛋10连',
@@ -25,27 +25,11 @@ gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发�
 gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋',
                    '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 
-GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如有需要 请联系维护组'
+GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n使用【启用 gacha】以启用（需管理员权限）'
 
 
-def get_config():
-    config_file = os.path.join(os.path.dirname(__file__), "config.json")
-    with open(config_file) as f:
-        config = json.load(f)
-        return config
-
-
-def check_gacha_permission(group_id):
-    config = get_config()
-    return not (group_id in config["GACHA_DISABLE_GROUP"])
-
-
-
-@on_command('gacha_1', aliases=gacha_1_aliases, only_to_me=True)
+@sv.on_command('gacha_1', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_1_aliases, only_to_me=True)
 async def gacha_1(session:CommandSession):
-
-    if not check_gacha_permission(session.ctx['group_id']):
-        await session.finish(GACHA_DISABLE_NOTICE)
 
     at = str(MessageSegment.at(session.ctx['user_id']))
     
@@ -57,16 +41,13 @@ async def gacha_1(session:CommandSession):
     if get_bot().config.IS_CQPRO:
         res = f'{chara.icon.cqcode} {res}'
 
-    await silence(session, silence_time)
+    await silence(session.ctx, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     await session.send(msg)
 
 
-@on_command('gacha_10', aliases=gacha_10_aliases, only_to_me=True)
+@sv.on_command('gacha_10', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_10_aliases, only_to_me=True)
 async def gacha_10(session:CommandSession):
-
-    if not check_gacha_permission(session.ctx['group_id']):
-        await session.finish(GACHA_DISABLE_NOTICE)
 
     SUPER_LUCKY_LINE = 170
     at = str(MessageSegment.at(session.ctx['user_id']))
@@ -91,14 +72,14 @@ async def gacha_10(session:CommandSession):
         res2 = ' '.join(result[5: ])
         res = f'{res1}\n{res2}'
 
-    await silence(session, silence_time)
+    await silence(session.ctx, silence_time)
     msg = f'{at}\n素敵な仲間が増えますよ！\n{res}'
     await session.send(msg)
     if hiishi >= SUPER_LUCKY_LINE:
         await session.send('恭喜海豹！おめでとうございます！')
 
 
-@on_command('卡池资讯', aliases=('看看卡池', '康康卡池', '卡池資訊'), only_to_me=False)
+@sv.on_command('卡池资讯', deny_tip=GACHA_DISABLE_NOTICE, aliases=('看看卡池', '康康卡池', '卡池資訊'), only_to_me=False)
 async def gacha_info(session:CommandSession):
     gacha = Gacha()
     up_chara = gacha.up

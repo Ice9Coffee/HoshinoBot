@@ -25,7 +25,7 @@ async def nlp_rank(session:NLPSession):
     if not is_jp and not is_tw:
         await session.send('请问您要查询日服还是台服的rank表？\n* 日rank\n* 台rank')
     else:
-        await silence(session, 60)
+        await silence(session.ctx, 60)
         await session.send('rank表图片较大，请稍等片刻\n不定期搬运，来源见图片，广告与本bot无关，仅供参考')
         if is_jp:
             await session.send(f'日服：{p1}{p2}{p3}')
@@ -43,4 +43,4 @@ NGA论坛：bbs.nga.cn/thread.php?fid=-10308342
 日官网：priconne-redive.jp
 台官网：www.princessconnect.so-net.tw'''
     await session.send(msg)
-    await silence(session, 60)
+    await silence(session.ctx, 60)
