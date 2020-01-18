@@ -1,32 +1,38 @@
-
+import unicodedata
 import base64
 from io import BytesIO
 from PIL import Image
 
+import zhconv
+
 from nonebot import get_bot
-from nonebot import CommandSession
-from nonebot import permission as perm
 from aiocqhttp.exceptions import ActionFailed
 
 from .log import logger
 
-async def delete_msg(session:CommandSession):
+
+async def delete_msg(ctx):
     try:
         if get_bot().config.IS_CQPRO:
-            msg_id = session.ctx['message_id']
-            await session.bot.delete_msg(message_id=msg_id)
+            msg_id = ctx['message_id']
+            await get_bot().delete_msg(message_id=msg_id)
     except ActionFailed as e:
         logger.error(f'撤回失败 retcode={e.retcode}')
+    except Exception as e:
+        logger.exception(e)
 
 
-async def silence(session:CommandSession, ban_time, ignore_super_user=False):
+async def silence(ctx, ban_time, ignore_super_user=False):
     try:
-        group_id = session.ctx['group_id']
-        user_id = session.ctx['user_id']
-        if ignore_super_user or not await perm.check_permission(session.bot, session.ctx, perm.SUPERUSER):
-            await session.bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
+        group_id = ctx['group_id']
+        user_id = ctx['user_id']
+        bot = get_bot()
+        if ignore_super_user or user_id not in bot.config.SUPERUSERS:
+            await bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
     except ActionFailed as e:
         logger.error(f'禁言失败 retcode={e.retcode}')
+    except Exception as e:
+        logger.exception(e)
 
 
 def pic2b64(pic:Image) -> str:
@@ -43,3 +49,13 @@ def concat_pic(pics, border=5):
     for i, pic in enumerate(pics):
         des.paste(pic, (0, i * (h + border)), pic)
     return des
+
+
+def normalize_str(string) -> str:
+    """
+    规范化unicode字符串 并 转为小写 并 转为简体
+    """
+    string = unicodedata.normalize('NFKC', string)
+    string = string.lower()
+    string = zhconv.convert(string, 'zh-hans')
+    return string

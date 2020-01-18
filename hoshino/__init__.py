@@ -30,3 +30,7 @@ def init(config) -> nonebot.NoneBot:
         )
 
     return bot
+
+
+def get_bot() -> nonebot.NoneBot:
+    return nonebot.get_bot()

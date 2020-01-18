@@ -46,7 +46,7 @@ async def arena_query(session:CommandSession):
     if not len(res):
         await session.finish('抱歉没有查询到解法\n（注：没有作业不代表不能拆，竞技场没有无敌的守队只有不够深的box）')
 
-    await silence(session, 30)      # 避免过快查询
+    await silence(session.ctx, 30)      # 避免过快查询
 
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
 
@@ -70,10 +70,10 @@ async def arena_query(session:CommandSession):
     defen = f'【{defen}】'
     updown = f'👍&👎：\n{updown}'
     footer = '禁言是为避免频繁查询，请打完本场竞技场后再来查询'
-    ref = 'Support by pcrdfuns'
-    msg = f'{defen}\n{header}\n{atk_team_txt}\n{updown}\n{footer}\n{ref}'
+    ref = 'Support by pcrdfans'
+    msg = f'{defen}\n{header}\n{atk_team_pic}\n{updown}\n{footer}\n{ref}'
 
-    await session.send(msg)
     logger.info('Arena sending result image...')
-    await session.send(atk_team_pic)
+    await session.send(msg)
+    # await session.send(atk_team_pic)
     logger.info('Arena result image sent!')
