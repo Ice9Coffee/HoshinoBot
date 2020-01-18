@@ -184,7 +184,7 @@ class Service:
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
                     await func(nonebot.get_bot(), ctx)
-                    self.logger.info(f'Message {ctx["message_id"]} is handled.')
+                    self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                     return
             return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
@@ -199,7 +199,7 @@ class Service:
                     for kw in normalized_keywords:
                         if plain_text.find(kw) >= 0:
                             await func(nonebot.get_bot(), ctx)
-                            self.logger.info(f'Message {ctx["message_id"]} is handled.')
+                            self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                             return
             return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
@@ -213,7 +213,7 @@ class Service:
                     match = rex.search(plain_text)
                     if match:
                         await func(nonebot.get_bot(), ctx, match)
-                        self.logger.info(f'Message {ctx["message_id"]} is handled.')
+                        self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                         return
             return nonebot.get_bot().on_message(arg)(wrapper)            
         return deco
@@ -224,11 +224,11 @@ class Service:
             async def wrapper(session:nonebot.CommandSession):
                 if await self.check_permission(session.ctx):
                     await func(session)
-                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as command.')
+                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.')
                     return
                 elif deny_tip:
                     await session.send(deny_tip, at_sender=True)
-                self.logger.info(f'Message {session.ctx["message_id"]} is handled as command. Permission denied.')
+                self.logger.info(f'Message {session.ctx["message_id"]} is a command of {func.__name__}. Permission denied.')
             return nonebot.on_command(name, **kwargs)(wrapper)
         return deco
 
@@ -238,7 +238,7 @@ class Service:
             async def wrapper(session):
                 if await self.check_permission(session.ctx):
                     await func(session)
-                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language.')
+                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language by {func.__name__}.')
                     return
             return nonebot.on_natural_language(keywords, **kwargs)(wrapper)
         return deco
@@ -248,6 +248,8 @@ class Service:
         def deco(func):
             async def wrapper():
                 gl = await self.get_group_list()
+                self.logger.info(f'Scheduled job {func.__name__} start.')
                 await func(gl)
+                self.logger.info(f'Scheduled job {func.__name__} completed.')
             return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
         return deco

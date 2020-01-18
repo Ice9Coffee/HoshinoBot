@@ -17,23 +17,12 @@ sv = Service('bangumi', enable_on_default=False)
 class Mikan(object):
     link_cache = set()
     rss_cache = []
-    config_file = os.path.join(os.path.dirname(__file__), 'config.json')
-
-    @staticmethod
-    def get_config():
-        with open(Mikan.config_file, 'r') as f:
-            config = json.load(f)
-            return config
-
 
     @staticmethod
     def get_token():
-        return Mikan.get_config()["MIKAN_TOKEN"]
-
-
-    # @staticmethod
-    # def get_auth_group():
-    #     return Mikan.get_config()["MIKAN_GROUP"]
+        with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r') as f:
+            config = json.load(f)
+            return config["MIKAN_TOKEN"]
 
 
     @staticmethod
@@ -73,13 +62,11 @@ class Mikan(object):
 
 
 @sv.scheduled_job('cron', minute='*/3', second='15', jitter=4, coalesce=True)
-async def sche_lookup(group_list):
-    
-    sv.logger.debug(f'[计划任务：sche_lookup] 启动')
+async def mikan_poller(group_list):
     
     if not Mikan.rss_cache:
         Mikan.update_cache()
-        sv.logger.info(f'[计划任务：sche_lookup] 订阅缓存为空，已加载至最新')
+        sv.logger.info(f'订阅缓存为空，已加载至最新')
         return
 
     new_bangumi = Mikan.update_cache()
@@ -127,8 +114,6 @@ async def sche_lookup(group_list):
                 sv.logger.error(f'Error：群{group} 投递番剧更新失败 {type(e)}')
     else:
         sv.logger.info(f'未检索到番剧更新！')
-
-    sv.logger.debug(f'[计划任务：sche_lookup] 完成')
 
 
 
