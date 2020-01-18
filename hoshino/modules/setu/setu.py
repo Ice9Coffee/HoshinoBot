@@ -18,23 +18,25 @@ setu_folder = R.img('setu/').path
 last_call_time = defaultdict(int)   # user_id: t in seconds
 cd_time = 5    # in seconds
 
-
-
 def get_setu():
     try:
-        x = None
-        f = None
-        while not x or not os.path.isfile(x):
-            f = random.choice(os.listdir(setu_folder))
-            x = os.path.join(setu_folder, f)
-        return R.img('setu/', f).cqcode
+        path = None
+        filename = None
+        filelist = os.listdir(setu_folder)
+        filelist = sorted(filelist, key=lambda x: os.path.getmtime(os.path.join(setu_folder, x)), reverse=True)
+        while not path or not os.path.isfile(path):
+            i = round(random.expovariate(0.01))  # 期望为 1 / λ
+            i = -1 if i >= len(filelist) else i
+            filename = filelist[i]
+            path = os.path.join(setu_folder, filename)
+        return R.img('setu/', filename).cqcode
     except Exception as e:
         sv.logger.exception(e)
-        sv.logger.exception(f'f={f}, x={x}')
+        sv.logger.exception(f'f={filename}, x={path}')
         return MessageSegment.text('Error: 挑选涩图时发生异常')
 
 
-@sv.on_rex(re.compile(r'铜|不够[涩色]|[涩色]图|来一?[点份张]'), 'group')
+@sv.on_rex(re.compile(r'不够[涩色]|[涩色]图|来一?[点份张]|看过了|铜'), 'group')
 async def setu(bot:NoneBot, ctx, match):
     """
     随机叫一份涩图，对每个用户有冷却时间

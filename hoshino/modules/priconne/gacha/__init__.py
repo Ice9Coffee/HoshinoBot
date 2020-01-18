@@ -1,17 +1,10 @@
-import re
-import os
-import ujson as json
-from datetime import datetime
-
 from nonebot import get_bot
-from nonebot import on_command, CommandSession, MessageSegment
-from nonebot.permission import GROUP_MEMBER, GROUP_ADMIN
-from aiocqhttp.exceptions import ActionFailed
+from nonebot import CommandSession, MessageSegment
+
+from hoshino.util import silence, concat_pic, pic2b64
+from hoshino.service import Service
 
 from .gacha import Gacha
-from hoshino.res import R
-from hoshino.util import delete_msg, silence, concat_pic, pic2b64
-from hoshino.service import Service
 from ..chara import Chara
 
 
