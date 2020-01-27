@@ -36,7 +36,7 @@ def get_setu():
         return MessageSegment.text('Error: 挑选涩图时发生异常')
 
 
-@sv.on_rex(re.compile(r'不够[涩色]|[涩色]图|来一?[点份张]|看过了|铜'), 'group')
+@sv.on_rex(re.compile(r'不够[涩瑟色]|[涩瑟色]图|来一?[点份张][涩瑟色]|看过了|铜'), 'group')
 async def setu(bot:NoneBot, ctx, match):
     """
     随机叫一份涩图，对每个用户有冷却时间

@@ -106,6 +106,11 @@ class Service:
         _loaded_services.add(self)
 
 
+    @property
+    def bot(self):
+        return nonebot.get_bot()
+
+
     @staticmethod
     def get_loaded_services():
         return _loaded_services.copy()
@@ -162,7 +167,8 @@ class Service:
         """
         if self.enable_on_default:
             gl = await nonebot.get_bot().get_group_list()
-            return set(gl) - self.disable_group
+            gl = set(g['group_id'] for g in gl)
+            return gl - self.disable_group
         else:
             return self.enable_group
 
@@ -219,7 +225,7 @@ class Service:
         return deco
 
 
-    def on_command(self, name, deny_tip=None, **kwargs):
+    def on_command(self, name, *, deny_tip=None, **kwargs):
         def deco(func):
             async def wrapper(session:nonebot.CommandSession):
                 if await self.check_permission(session.ctx):
