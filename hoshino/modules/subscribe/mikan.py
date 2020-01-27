@@ -61,7 +61,7 @@ class Mikan(object):
 
 
 
-@sv.scheduled_job('cron', minute='*/3', second='15', jitter=4, coalesce=True)
+@sv.scheduled_job('cron', minute='*/3', second='15', jitter=4, misfire_grace_time=10, coalesce=True)
 async def mikan_poller(group_list):
     
     if not Mikan.rss_cache:
