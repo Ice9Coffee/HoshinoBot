@@ -106,7 +106,7 @@ def download_comic(id_):
         json.dump(index, f, ensure_ascii=False)
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='*/5', second='25', jitter=4, coalesce=True)
+@nonebot.scheduler.scheduled_job('cron', minute='*/5', second='25', jitter=4, misfire_grace_time=10, coalesce=True)
 async def update_seeker():
     '''
     轮询官方四格漫画更新
@@ -142,7 +142,7 @@ async def update_seeker():
 
     bot = nonebot.get_bot()
     for group in get_subscribe_group():
-        await asyncio.sleep(0.5)  # 降低发送频率，避免被腾讯ban FIXME: sleep 不够优雅，换一种解决方式   # FIXED: asyncio.sleep即可
+        await asyncio.sleep(0.5)  # 降低发送频率，避免被腾讯ban
         try:
             await bot.send_group_msg(group_id=group, message=msg)
             logger.info(f'群{group} 投递PCR官漫更新成功')

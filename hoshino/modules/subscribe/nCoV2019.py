@@ -15,7 +15,8 @@ sv = Service('nCoV2019')
 class nCoV2019:
     
     url = "https://3g.dxy.cn/newh5/view/pneumonia"
-    news_cache = {}
+    news_cache = []
+    latest_news_id = -1
 
     @staticmethod
     def get_overview():
@@ -40,9 +41,10 @@ class nCoV2019:
         news = nCoV2019.get_news()
         new_ones = []
         for item in news:
-            if item['id'] not in nCoV2019.news_cache:
+            if item['id'] > nCoV2019.latest_news_id:
                 new_ones.append(item)
         nCoV2019.news_cache = news
+        nCoV2019.latest_news_id = news[0]['id']
         return new_ones
 
 
@@ -76,7 +78,7 @@ async def cough(session:CommandSession):
         if not data:
             return "未知省市"
         info = '\n'.join([f"{city['cityName']} 确诊{city['confirmedCount']}例" for city in data['cities'] ])
-        text = f"新型冠状病毒肺炎疫情查询\n{info}\n⏱ {time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())}\n💊 全国疫情 → t.cn/A6v1xgC0"
+        text = f"新型冠状病毒肺炎疫情\n{info}\n💊 全国疫情 → t.cn/A6v1xgC0"
         await session.send(text)
 
     else:   # show overview
@@ -95,7 +97,7 @@ async def cough_news(session:CommandSession):
     await session.send(f'新冠酱活动报告：\n{msg}')
 
 
-@sv.scheduled_job('cron', minute='*/2', second='15', jitter=4, coalesce=True)
+@sv.scheduled_job('cron', minute='*/2', second='15', jitter=4, misfire_grace_time=10, coalesce=True)
 async def news_poller(group_list):
 
     TAG = '2019-nCoV 新闻'
@@ -114,7 +116,7 @@ async def news_poller(group_list):
         for group in group_list:
             await asyncio.sleep(1.0)  # 降低发送频率，避免被腾讯ban
             try:
-                for m in msg:
+                for m in reversed(msg):
                     await asyncio.sleep(0.5)
                     await bot.send_group_msg(group_id=group, message=f'新冠酱提醒：\n{m}')
                 sv.logger.info(f'群{group} 投递{TAG}成功')
