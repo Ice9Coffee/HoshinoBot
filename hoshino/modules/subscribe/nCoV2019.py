@@ -9,18 +9,22 @@ import asyncio
 from nonebot import CommandSession, MessageSegment
 from hoshino.service import Service
 
-sv = Service('nCoV2019')
+sv = Service('nCoV2019', enable_on_default=False)
 
 
 class nCoV2019:
     
     url = "https://3g.dxy.cn/newh5/view/pneumonia"
     news_cache = []
-    latest_news_id = -1
+    news_id_cache = set()
+
+    @staticmethod
+    def _get_content():
+        return requests.get(nCoV2019.url, timeout=5).content.decode("utf-8")
 
     @staticmethod
     def get_overview():
-        resp = requests.get(nCoV2019.url).content.decode("utf-8")
+        resp = nCoV2019._get_content()
         reg = r'<script id="getStatisticsService">.+?window.getStatisticsService\s=\s(.+?)\}catch\(e\)\{\}</script>'
         result = re.search(reg, resp).group(1)
         data = json.loads(result)
@@ -29,7 +33,7 @@ class nCoV2019:
 
     @staticmethod
     def get_news():
-        resp = requests.get(nCoV2019.url).content.decode("utf-8")
+        resp = nCoV2019._get_content()
         reg = r'<script id="getTimelineService">.+?window.getTimelineService\s=\s(\[.+?\])\}catch\(e\)\{\}</script>'
         result = re.search(reg, resp).group(1)
         data = json.loads(result)
@@ -41,16 +45,16 @@ class nCoV2019:
         news = nCoV2019.get_news()
         new_ones = []
         for item in news:
-            if item['id'] > nCoV2019.latest_news_id:
+            if item['id'] not in nCoV2019.news_id_cache:
+                nCoV2019.news_id_cache.add(item['id'])
                 new_ones.append(item)
         nCoV2019.news_cache = news
-        nCoV2019.latest_news_id = news[0]['id']
         return new_ones
 
 
     @staticmethod
     def get_distribution():
-        resp = requests.get(nCoV2019.url).content.decode("utf-8")
+        resp = nCoV2019._get_content()
         reg = r'<script id="getAreaStat">.+?window.getAreaStat\s=\s(\[.+?\])\}catch\(e\)\{\}</script>'
         result = re.search(reg, resp).group(1)
         data = json.loads(result)
@@ -83,24 +87,22 @@ async def cough(session:CommandSession):
 
     else:   # show overview
         data = nCoV2019.get_overview()
-        text = f"新型冠状病毒肺炎疫情\n{data['countRemark']}{MessageSegment.image(data['imgUrl'])}{MessageSegment.image(data['dailyPic'])}"
+        text = f"新型冠状病毒肺炎疫情\n确诊{data['confirmedCount']}例  疑似{data['suspectedCount']}例  死亡{data['deadCount']}例  治愈{data['curedCount']}例\n{MessageSegment.image(data['dailyPic'])}"
         await session.send(text)
-    
+
 
 @sv.on_command('咳咳咳', only_to_me=False)
 async def cough_news(session:CommandSession):
-    if not nCoV2019.news_cache:
-        nCoV2019.update_news()
-
+    nCoV2019.update_news()
     msg = [ f"{i['infoSource']}：【{i['title']}】{i['pubDateStr']}\n{i['summary']}" for i in nCoV2019.news_cache[:min(5, len(nCoV2019.news_cache))] ]
     msg = '\n'.join(msg)
-    await session.send(f'新冠酱活动报告：\n{msg}')
+    await session.send(f'新冠活动报告：\n{msg}')
 
 
-@sv.scheduled_job('cron', minute='*/2', second='15', jitter=4, misfire_grace_time=10, coalesce=True)
+@sv.scheduled_job('cron', minute='*/15', misfire_grace_time=10, coalesce=True)
 async def news_poller(group_list):
 
-    TAG = '2019-nCoV 新闻'
+    TAG = '2019-nCoV新闻'
     
     if not nCoV2019.news_cache:
         nCoV2019.update_news()
@@ -113,14 +115,14 @@ async def news_poller(group_list):
         msg = [ f"{i['infoSource']}：【{i['title']}】{i['pubDateStr']}\n{i['summary']}" for i in news ]
 
         bot = sv.bot
-        for group in group_list:
-            await asyncio.sleep(1.0)  # 降低发送频率，避免被腾讯ban
-            try:
-                for m in reversed(msg):
-                    await asyncio.sleep(0.5)
-                    await bot.send_group_msg(group_id=group, message=f'新冠酱提醒：\n{m}')
-                sv.logger.info(f'群{group} 投递{TAG}成功')
-            except Exception as e:
-                sv.logger.error(f'Error：群{group} 投递{TAG}更新失败 {type(e)}')
+        for m in reversed(msg):
+            await asyncio.sleep(10) # 降低发送频率，避免被腾讯ban
+            for group in group_list:
+                try:
+                    await asyncio.sleep(0.5)  
+                    await bot.send_group_msg(group_id=group, message=m)
+                    sv.logger.info(f'群{group} 投递{TAG}成功')
+                except Exception as e:
+                    sv.logger.error(f'Error：群{group} 投递{TAG}更新失败 {type(e)}')
     else:
         sv.logger.info(f'未检索到{TAG}更新！')
