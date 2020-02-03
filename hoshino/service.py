@@ -43,6 +43,7 @@ class Privilege:
 _loaded_services = set()
 _re_illegal_char = re.compile(r'[\\/:*?"<>|\.]')
 _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
+_error_log_file = os.path.expanduser('~/.hoshino/error.log')
 os.makedirs(_service_config_dir, exist_ok=True)
 
 
@@ -95,13 +96,16 @@ class Service:
         self.enable_group = set(config['enable_group'])
         self.disable_group = set(config['disable_group'])
 
+        formatter = logging.Formatter('[%(asctime)s %(name)s] %(levelname)s: %(message)s')
         self.logger = logging.getLogger(name)
-        default_handler = logging.StreamHandler(sys.stdout)
-        default_handler.setFormatter(logging.Formatter(
-            '[%(asctime)s %(name)s] %(levelname)s: %(message)s'
-        ))
-        self.logger.addHandler(default_handler)
         self.logger.setLevel(logging.DEBUG if nonebot.get_bot().config.DEBUG else logging.INFO)
+        default_handler = logging.StreamHandler(sys.stdout)
+        default_handler.setFormatter(formatter)
+        error_handler = logging.FileHandler(_error_log_file, encoding='utf8')
+        error_handler.setLevel(logging.ERROR)
+        error_handler.setFormatter(formatter)
+        self.logger.addHandler(default_handler)
+        self.logger.addHandler(error_handler)
 
         _loaded_services.add(self)
 
