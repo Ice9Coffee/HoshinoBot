@@ -9,6 +9,7 @@ from .log import logger
 MODULES_ON = {
     'botmanage',
     'priconne',
+    'kancolle',
     'groupmaster',
     'subscribe',
     'translate',
