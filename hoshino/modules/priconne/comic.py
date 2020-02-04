@@ -16,12 +16,6 @@ from hoshino.service import Service
 
 sv = Service('pcr-comic')
 
-def get_config():
-    config_file = path.join(path.dirname(__file__), "config.json")
-    with open(config_file) as f:
-        config = json.load(f)
-        return config
-
 
 def load_index():
     with open(R.get('img/priconne/comic/index.json').path) as f:

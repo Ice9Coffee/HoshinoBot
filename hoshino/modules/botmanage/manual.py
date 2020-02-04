@@ -2,8 +2,7 @@ from nonebot import on_command, CommandSession
 
 @on_command('help', aliases=('manual', '帮助', '说明', '使用说明', '幫助', '說明', '使用說明'), only_to_me=False)
 async def send_help(session:CommandSession):
-    msg='''
-【帮助】
+    msg='''【帮助】
 下面是本bot支持的功能
 输入冒号后的文本即可使用
 注1：@bot 表明该功能必须at本bot才会触发
@@ -35,7 +34,6 @@ async def send_help(session:CommandSession):
 - 查看疫情新闻：咳咳咳
 + 疫情新闻推送（开启本模块后自动启用）
 
-
 通用
 - 查看本群启用的功能：服务列表
 - 启用功能：启用 service_name
@@ -44,6 +42,7 @@ async def send_help(session:CommandSession):
 - 联系作者：@bot 来杯咖啡
 
 ※调教时请注意使用频率，您的滥用可能会导致bot帐号被封禁
+※除上述之外 另有其他隐藏功能:)
 ※本bot开源 可免费使用
 ※赞助支持请直接联系作者，您的支持是本bot更新维护的动力
 '''.strip()
