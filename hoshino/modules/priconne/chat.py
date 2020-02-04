@@ -54,8 +54,8 @@ async def nlp_neigui(session:NLPSession):
         return None
 
 
-@on_natural_language(keywords={'来杯咖啡'}, permission=perm.GROUP)
-async def call_master(session:NLPSession):
+@on_command('来杯咖啡', permission=perm.GROUP)
+async def call_master(session:CommandSession):
     await session.send(MessageSegment.at(session.bot.config.SUPERUSERS[0]))
 
 
