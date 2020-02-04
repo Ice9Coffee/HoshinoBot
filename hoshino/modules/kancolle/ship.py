@@ -12,7 +12,7 @@ from hoshino.util import silence
 from hoshino.service import Service, Privilege
 
 
-sv = Service('kancolle')
+sv = Service('kc-ship', enable_on_default=False)
 
 ship_folder = R.img('ship/').path
 

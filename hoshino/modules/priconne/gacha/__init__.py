@@ -1,3 +1,7 @@
+import pytz
+from datetime import datetime, timedelta
+from collections import defaultdict
+
 from nonebot import get_bot
 from nonebot import CommandSession, MessageSegment
 
@@ -10,6 +14,10 @@ from ..chara import Chara
 
 __plugin_name__ = 'gacha'
 sv = Service('gacha')
+_last_gacha_day = -1
+_user_gacha_count = defaultdict(int)    # {user: gacha_count}
+_max_gacha_per_day = 3
+
 
 gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
                     '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋', '扭蛋10连',
@@ -18,14 +26,29 @@ gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发�
 gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋',
                    '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 
-GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n使用【启用 gacha】以启用（需管理员权限）'
+GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n使用【启用 gacha】以启用\n（需管理员权限）'
+GACHA_EXCEED_NOTICE = f'您今天已经抽过{_max_gacha_per_day}次了，欢迎明天再来！'
+
+
+def check_gacha_num(user_id):
+    global _last_gacha_day, _user_gacha_count
+    now = datetime.now(pytz.timezone('Asia/Shanghai'))
+    day = (now - timedelta(hours=5)).day
+    if day != _last_gacha_day:
+        _last_gacha_day = day
+        _user_gacha_count.clear()
+    return bool(_user_gacha_count[user_id] < _max_gacha_per_day)
 
 
 @sv.on_command('gacha_1', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_1_aliases, only_to_me=True)
 async def gacha_1(session:CommandSession):
-
+    uid = session.ctx['user_id']
     at = str(MessageSegment.at(session.ctx['user_id']))
-    
+
+    if not check_gacha_num(uid):
+        await session.finish(f'{at} {GACHA_EXCEED_NOTICE}')
+    _user_gacha_count[uid] += 0.1
+
     gacha = Gacha()
     chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
@@ -41,9 +64,13 @@ async def gacha_1(session:CommandSession):
 
 @sv.on_command('gacha_10', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_10_aliases, only_to_me=True)
 async def gacha_10(session:CommandSession):
-
     SUPER_LUCKY_LINE = 170
+    uid = session.ctx['user_id']
     at = str(MessageSegment.at(session.ctx['user_id']))
+
+    if not check_gacha_num(uid):
+        await session.finish(f'{at} {GACHA_EXCEED_NOTICE}')
+    _user_gacha_count[uid] += 1
     
     gacha = Gacha()
     result, hiishi = gacha.gacha_ten()
