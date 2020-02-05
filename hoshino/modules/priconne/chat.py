@@ -21,10 +21,6 @@ __private_send_pic_cmd = '__send_pic_' + hex(random.randint(0x1000000000000000, 
 async def say_sorry(session: CommandSession):
     await session.send('ごめんなさい！嘤嘤嘤(〒︿〒)')
 
-@on_command('arina-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'pjjc作业网', 'jjc数据库', 'pjjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'))
-async def say_arina_database(session: CommandSession):
-    await session.send('公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
-
 
 @on_command(__private_send_pic_cmd, only_to_me=False)
 async def send_pic(session:CommandSession):
@@ -58,8 +54,8 @@ async def nlp_neigui(session:NLPSession):
         return None
 
 
-@on_natural_language(keywords={'咖啡'}, permission=perm.GROUP)
-async def call_master(session:NLPSession):
+@on_command('来杯咖啡', permission=perm.GROUP)
+async def call_master(session:CommandSession):
     await session.send(MessageSegment.at(session.bot.config.SUPERUSERS[0]))
 
 

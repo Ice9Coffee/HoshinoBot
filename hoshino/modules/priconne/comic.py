@@ -12,18 +12,9 @@ from nonebot import on_natural_language, NLPSession, IntentCommand
 from hoshino.log import logger
 from hoshino.util import silence
 from hoshino.res import R
+from hoshino.service import Service
 
-
-def get_config():
-    config_file = path.join(path.dirname(__file__), "config.json")
-    with open(config_file) as f:
-        config = json.load(f)
-        return config
-
-
-def get_subscribe_group():
-    return get_config()["PCR_COMIC_SUBSCRIBE_GROUP"]
-
+sv = Service('pcr-comic')
 
 
 def load_index():
@@ -37,7 +28,7 @@ def get_pic_name(id_):
     return f'{pre}{id_}{end}'
 
 
-@on_natural_language(keywords={'官漫'}, only_to_me=True)
+@sv.on_natural_language(keywords={'官漫'}, only_to_me=True)
 async def comic(session:NLPSession):
     rex = re.compile(r'[1-9]\d{0,2}')
     arg = session.msg_text.strip()
@@ -106,8 +97,8 @@ def download_comic(id_):
         json.dump(index, f, ensure_ascii=False)
 
 
-@nonebot.scheduler.scheduled_job('cron', minute='*/5', second='25', jitter=4, coalesce=True)
-async def update_seeker():
+@sv.scheduled_job('cron', minute='*/5', second='25', misfire_grace_time=10, coalesce=True)
+async def update_seeker(group_list):
     '''
     轮询官方四格漫画更新
     若有更新则推送至订阅群
@@ -140,11 +131,10 @@ async def update_seeker():
     pic = R.img('priconne/comic', get_pic_name(episode)).cqcode
     msg = f'プリンセスコネクト！Re:Dive公式4コマ更新！\n第{episode}話 {title}\n{pic}'
 
-    bot = nonebot.get_bot()
-    for group in get_subscribe_group():
-        await asyncio.sleep(0.5)  # 降低发送频率，避免被腾讯ban FIXME: sleep 不够优雅，换一种解决方式   # FIXED: asyncio.sleep即可
+    for group in group_list:
+        await asyncio.sleep(0.5)  # 降低发送频率，避免被腾讯ban
         try:
-            await bot.send_group_msg(group_id=group, message=msg)
+            await sv.bot.send_group_msg(group_id=group, message=msg)
             logger.info(f'群{group} 投递PCR官漫更新成功')
         except CQHttpError as e:
             logger.error(f'Error：群{group} 投递PCR官漫更新失败 {type(e)}')

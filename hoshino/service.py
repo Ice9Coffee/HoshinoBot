@@ -43,6 +43,7 @@ class Privilege:
 _loaded_services = set()
 _re_illegal_char = re.compile(r'[\\/:*?"<>|\.]')
 _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
+_error_log_file = os.path.expanduser('~/.hoshino/error.log')
 os.makedirs(_service_config_dir, exist_ok=True)
 
 
@@ -95,15 +96,23 @@ class Service:
         self.enable_group = set(config['enable_group'])
         self.disable_group = set(config['disable_group'])
 
+        formatter = logging.Formatter('[%(asctime)s %(name)s] %(levelname)s: %(message)s')
         self.logger = logging.getLogger(name)
-        default_handler = logging.StreamHandler(sys.stdout)
-        default_handler.setFormatter(logging.Formatter(
-            '[%(asctime)s %(name)s] %(levelname)s: %(message)s'
-        ))
-        self.logger.addHandler(default_handler)
         self.logger.setLevel(logging.DEBUG if nonebot.get_bot().config.DEBUG else logging.INFO)
+        default_handler = logging.StreamHandler(sys.stdout)
+        default_handler.setFormatter(formatter)
+        error_handler = logging.FileHandler(_error_log_file, encoding='utf8')
+        error_handler.setLevel(logging.ERROR)
+        error_handler.setFormatter(formatter)
+        self.logger.addHandler(default_handler)
+        self.logger.addHandler(error_handler)
 
         _loaded_services.add(self)
+
+
+    @property
+    def bot(self):
+        return nonebot.get_bot()
 
 
     @staticmethod
@@ -162,7 +171,8 @@ class Service:
         """
         if self.enable_on_default:
             gl = await nonebot.get_bot().get_group_list()
-            return set(gl) - self.disable_group
+            gl = set(g['group_id'] for g in gl)
+            return gl - self.disable_group
         else:
             return self.enable_group
 
@@ -184,7 +194,7 @@ class Service:
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
                     await func(nonebot.get_bot(), ctx)
-                    self.logger.info(f'Message {ctx["message_id"]} is handled.')
+                    self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                     return
             return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
@@ -199,7 +209,7 @@ class Service:
                     for kw in normalized_keywords:
                         if plain_text.find(kw) >= 0:
                             await func(nonebot.get_bot(), ctx)
-                            self.logger.info(f'Message {ctx["message_id"]} is handled.')
+                            self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                             return
             return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
@@ -213,22 +223,22 @@ class Service:
                     match = rex.search(plain_text)
                     if match:
                         await func(nonebot.get_bot(), ctx, match)
-                        self.logger.info(f'Message {ctx["message_id"]} is handled.')
+                        self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                         return
             return nonebot.get_bot().on_message(arg)(wrapper)            
         return deco
 
 
-    def on_command(self, name, deny_tip=None, **kwargs):
+    def on_command(self, name, *, deny_tip=None, **kwargs):
         def deco(func):
             async def wrapper(session:nonebot.CommandSession):
                 if await self.check_permission(session.ctx):
                     await func(session)
-                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as command.')
+                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.')
                     return
                 elif deny_tip:
                     await session.send(deny_tip, at_sender=True)
-                self.logger.info(f'Message {session.ctx["message_id"]} is handled as command. Permission denied.')
+                self.logger.info(f'Message {session.ctx["message_id"]} is a command of {func.__name__}. Permission denied.')
             return nonebot.on_command(name, **kwargs)(wrapper)
         return deco
 
@@ -238,7 +248,7 @@ class Service:
             async def wrapper(session):
                 if await self.check_permission(session.ctx):
                     await func(session)
-                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language.')
+                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language by {func.__name__}.')
                     return
             return nonebot.on_natural_language(keywords, **kwargs)(wrapper)
         return deco
@@ -248,6 +258,8 @@ class Service:
         def deco(func):
             async def wrapper():
                 gl = await self.get_group_list()
+                self.logger.info(f'Scheduled job {func.__name__} start.')
                 await func(gl)
+                self.logger.info(f'Scheduled job {func.__name__} completed.')
             return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
         return deco
