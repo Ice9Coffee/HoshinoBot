@@ -54,11 +54,6 @@ async def nlp_neigui(session:NLPSession):
         return None
 
 
-@on_command('来杯咖啡', permission=perm.GROUP)
-async def call_master(session:CommandSession):
-    await session.send(MessageSegment.at(session.bot.config.SUPERUSERS[0]))
-
-
 @on_command('老婆', aliases=('waifu', 'laopo'))
 async def laopo(session:CommandSession):
     if not await perm.check_permission(session.bot, session.ctx, perm.SUPERUSER):

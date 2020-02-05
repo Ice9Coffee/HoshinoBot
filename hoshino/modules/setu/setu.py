@@ -18,7 +18,7 @@ sv = Service('setu', manage_priv=Privilege.SUPERUSER, enable_on_default=False)
 _last_setu_day = -1
 _user_setu_count = defaultdict(int)    # {user: gacha_count}
 _max_setu_per_day = 5
-SETU_EXCEED_NOTICE = f'您今天已经冲过{_max_setu_per_day}次了，欢迎明天再来！'
+SETU_EXCEED_NOTICE = f'您今天已经冲过{_max_setu_per_day}次了，请明天再来！'
 
 setu_folder = R.img('setu/').path
 last_call_time = defaultdict(int)   # user_id: t in seconds
@@ -55,20 +55,21 @@ def get_setu():
 @sv.on_rex(re.compile(r'不够[涩瑟色]|[涩瑟色]图|来一?[点份张].*[涩瑟色]|再来[点份张]|看过了|铜'), 'group')
 async def setu(bot:NoneBot, ctx, match):
     """随机叫一份涩图，对每个用户有冷却时间"""
-
+    
     uid = ctx['user_id']
-    if not check_setu_num(uid):
-        await bot.send(SETU_EXCEED_NOTICE, at_sender=True)
-        return
-
     now = time.time()
+    
     if now < (last_call_time[uid] + cd_time):
         await bot.send(ctx, '您冲得太快了，请稍候再冲', at_sender=True)
         return
+    last_call_time[uid] = now
+    
+    if not check_setu_num(uid):
+        await bot.send(SETU_EXCEED_NOTICE, at_sender=True)
+        return
+    _user_setu_count[uid] += 1
 
     # conditions all ok, send a setu.
-    last_call_time[uid] = now
-    _user_setu_count[uid] += 1
     try:
         await bot.send(ctx, get_setu())
     except CQHttpError:
