@@ -6,7 +6,6 @@ from nonebot import on_command, CommandSession, Message
 from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from .gacha import gacha_10_aliases, gacha_1_aliases
-from hoshino.util import silence
 from hoshino.log import logger
 
 ban_hb_title = []
