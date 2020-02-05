@@ -181,20 +181,26 @@ class Service:
         self.enable_group.add(group_id)
         self.disable_group.discard(group_id)
         _save_service_config(self)
+        self.logger.info(f'Service {self.name} is enabled at group {group_id}')
     
 
     def set_disable(self, group_id):
         self.enable_group.discard(group_id)
         self.disable_group.add(group_id)
         _save_service_config(self)
+        self.logger.info(f'Service {self.name} is disabled at group {group_id}')
 
 
     def on_message(self, arg=None):
         def deco(func):
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
-                    await func(nonebot.get_bot(), ctx)
-                    self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                    try:
+                        await func(nonebot.get_bot(), ctx)
+                        self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                    except Exception as e:
+                        self.logger.exception(e)
+                        self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
                     return
             return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
@@ -208,8 +214,12 @@ class Service:
                     plain_text = util.normalize_str(ctx['message'].extract_plain_text())
                     for kw in normalized_keywords:
                         if plain_text.find(kw) >= 0:
-                            await func(nonebot.get_bot(), ctx)
-                            self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                            try:
+                                await func(nonebot.get_bot(), ctx)
+                                self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                            except Exception as e:
+                                self.logger.exception(e)
+                                self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
                             return
             return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
@@ -222,8 +232,12 @@ class Service:
                     plain_text = util.normalize_str(ctx['message'].extract_plain_text())
                     match = rex.search(plain_text)
                     if match:
-                        await func(nonebot.get_bot(), ctx, match)
-                        self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                        try:
+                            await func(nonebot.get_bot(), ctx, match)
+                            self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                        except Exception as e:
+                            self.logger.exception(e)
+                            self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
                         return
             return nonebot.get_bot().on_message(arg)(wrapper)            
         return deco
@@ -233,8 +247,12 @@ class Service:
         def deco(func):
             async def wrapper(session:nonebot.CommandSession):
                 if await self.check_permission(session.ctx):
-                    await func(session)
-                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.')
+                    try:
+                        await func(session)
+                        self.logger.info(f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.')
+                    except Exception as e:
+                        self.logger.exception(e)
+                        self.logger.error(f'Error occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                     return
                 elif deny_tip:
                     await session.send(deny_tip, at_sender=True)
@@ -247,8 +265,12 @@ class Service:
         def deco(func):
             async def wrapper(session):
                 if await self.check_permission(session.ctx):
-                    await func(session)
-                    self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language by {func.__name__}.')
+                    try:
+                        await func(session)
+                        self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language by {func.__name__}.')
+                    except Exception as e:
+                        self.logger.exception(e)
+                        self.logger.error(f'Error occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                     return
             return nonebot.on_natural_language(keywords, **kwargs)(wrapper)
         return deco
@@ -259,7 +281,11 @@ class Service:
             async def wrapper():
                 gl = await self.get_group_list()
                 self.logger.info(f'Scheduled job {func.__name__} start.')
-                await func(gl)
-                self.logger.info(f'Scheduled job {func.__name__} completed.')
+                try:
+                    await func(gl)
+                    self.logger.info(f'Scheduled job {func.__name__} completed.')
+                except Exception as e:
+                    self.logger.exception(e)
+                    self.logger.error(f'Error occured when doing scheduled job {func.__name__}.')
             return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
         return deco
