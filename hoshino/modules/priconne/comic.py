@@ -10,7 +10,6 @@ from nonebot import on_command, CommandSession, CQHttpError
 from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from hoshino.log import logger
-from hoshino.util import silence
 from hoshino.res import R
 from hoshino.service import Service
 
