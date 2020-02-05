@@ -6,6 +6,7 @@ import ujson as json
 from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
 
 import nonebot
+from nonebot.command import _FinishException, _PauseException, SwitchException
 
 from hoshino import util
 
@@ -17,7 +18,7 @@ from hoshino import util
 {
     "name": "ServiceName",
     "use_priv": Privilege.NORMAL,
-    "manage_priv": Privilege.ADMIN,    
+    "manage_priv": Privilege.ADMIN,
     "enable_on_default": true/false,
     "enable_group": [],
     "disable_group": []
@@ -182,7 +183,7 @@ class Service:
         self.disable_group.discard(group_id)
         _save_service_config(self)
         self.logger.info(f'Service {self.name} is enabled at group {group_id}')
-    
+
 
     def set_disable(self, group_id):
         self.enable_group.discard(group_id)
@@ -239,7 +240,7 @@ class Service:
                             self.logger.exception(e)
                             self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
                         return
-            return nonebot.get_bot().on_message(arg)(wrapper)            
+            return nonebot.get_bot().on_message(arg)(wrapper)
         return deco
 
 
@@ -250,6 +251,8 @@ class Service:
                     try:
                         await func(session)
                         self.logger.info(f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.')
+                    except (_PauseException, _FinishException, SwitchException) as e:
+                        raise e
                     except Exception as e:
                         self.logger.exception(e)
                         self.logger.error(f'Error occured when {func.__name__} handling message {session.ctx["message_id"]}.')
