@@ -297,7 +297,7 @@ class Service:
 
     def scheduled_job(self, *args, **kwargs):
         def deco(func):
-            @wraps(func)
+            # @wraps(func)  #FIXME: 对scheduled_job使用wraps会报错
             async def wrapper():
                 gl = await self.get_enable_groups()
                 self.logger.info(f'Scheduled job {func.__name__} start.')
