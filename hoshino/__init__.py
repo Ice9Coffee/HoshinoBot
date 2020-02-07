@@ -3,7 +3,7 @@ import logging
 
 import nonebot
 
-from .log import logger
+from .log import logger, error_handler
 
 
 MODULES_ON = {
@@ -23,6 +23,7 @@ def init(config) -> nonebot.NoneBot:
     bot = nonebot.get_bot()
 
     logger.setLevel(logging.DEBUG if bot.config.DEBUG else logging.INFO)
+    nonebot.logger.addHandler(error_handler)
 
     for module_name in MODULES_ON:
         nonebot.load_plugins(

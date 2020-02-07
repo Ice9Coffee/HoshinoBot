@@ -3,6 +3,8 @@ import re
 import sys
 import logging
 import ujson as json
+from functools import wraps
+from collections import defaultdict
 from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
 
 import nonebot
@@ -99,7 +101,7 @@ class Service:
 
         formatter = logging.Formatter('[%(asctime)s %(name)s] %(levelname)s: %(message)s')
         self.logger = logging.getLogger(name)
-        self.logger.setLevel(logging.DEBUG if nonebot.get_bot().config.DEBUG else logging.INFO)
+        self.logger.setLevel(logging.DEBUG if self.bot.config.DEBUG else logging.INFO)
         default_handler = logging.StreamHandler(sys.stdout)
         default_handler.setFormatter(formatter)
         error_handler = logging.FileHandler(_error_log_file, encoding='utf8')
@@ -114,6 +116,10 @@ class Service:
     @property
     def bot(self):
         return nonebot.get_bot()
+
+
+    def get_self_ids(self):
+        return self.bot._connected_ws_reverse_api_clients.keys()
 
 
     @staticmethod
@@ -140,7 +146,7 @@ class Service:
         if ctx['message_type'] == 'group':
             if not ctx['anonymous']:
                 try:
-                    member_info = await bot.get_group_member_info(group_id=ctx['group_id'], user_id=ctx['user_id'])
+                    member_info = await bot.get_group_member_info(self_id=ctx['self_id'], group_id=ctx['group_id'], user_id=ctx['user_id'])
                     if member_info:
                         if member_info['role'] == 'owner':
                             return Privilege.OWNER
@@ -166,16 +172,21 @@ class Service:
         return False
 
 
-    async def get_group_list(self):
+    async def get_enable_groups(self) -> dict:
         """
         获取所有启用本服务的群
+        { group_id: [self_id1, self_id2] }
         """
-        if self.enable_on_default:
-            gl = await nonebot.get_bot().get_group_list()
-            gl = set(g['group_id'] for g in gl)
-            return gl - self.disable_group
-        else:
-            return self.enable_group
+        gl = defaultdict(list)
+        for sid in self.get_self_ids():
+            sgl = set(g['group_id'] for g in await self.bot.get_group_list(self_id=sid))
+            if self.enable_on_default:
+                sgl = sgl - self.disable_group
+            else:
+                sgl = sgl & self.enable_group
+            for g in sgl:
+                gl[g].append(sid)
+        return gl
 
 
     def set_enable(self, group_id):
@@ -194,58 +205,62 @@ class Service:
 
     def on_message(self, arg=None):
         def deco(func):
+            @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
                     try:
-                        await func(nonebot.get_bot(), ctx)
+                        await func(self.bot, ctx)
                         self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                     except Exception as e:
                         self.logger.exception(e)
                         self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
                     return
-            return nonebot.get_bot().on_message(arg)(wrapper)
+            return self.bot.on_message(arg)(wrapper)
         return deco
 
 
     def on_keyword(self, keywords:Iterable, arg=None):
         normalized_keywords = tuple(util.normalize_str(kw) for kw in keywords)
         def deco(func):
+            @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
                     plain_text = util.normalize_str(ctx['message'].extract_plain_text())
                     for kw in normalized_keywords:
                         if plain_text.find(kw) >= 0:
                             try:
-                                await func(nonebot.get_bot(), ctx)
+                                await func(self.bot, ctx)
                                 self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                             except Exception as e:
                                 self.logger.exception(e)
                                 self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
                             return
-            return nonebot.get_bot().on_message(arg)(wrapper)
+            return self.bot.on_message(arg)(wrapper)
         return deco
 
 
     def on_rex(self, rex, arg=None):
         def deco(func):
+            @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
                     plain_text = util.normalize_str(ctx['message'].extract_plain_text())
                     match = rex.search(plain_text)
                     if match:
                         try:
-                            await func(nonebot.get_bot(), ctx, match)
+                            await func(self.bot, ctx, match)
                             self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                         except Exception as e:
                             self.logger.exception(e)
                             self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
                         return
-            return nonebot.get_bot().on_message(arg)(wrapper)
+            return self.bot.on_message(arg)(wrapper)
         return deco
 
 
     def on_command(self, name, *, deny_tip=None, **kwargs):
         def deco(func):
+            @wraps(func)
             async def wrapper(session:nonebot.CommandSession):
                 if await self.check_permission(session.ctx):
                     try:
@@ -266,6 +281,7 @@ class Service:
 
     def on_natural_language(self, keywords=None, **kwargs):
         def deco(func):
+            @wraps(func)
             async def wrapper(session):
                 if await self.check_permission(session.ctx):
                     try:
@@ -281,8 +297,9 @@ class Service:
 
     def scheduled_job(self, *args, **kwargs):
         def deco(func):
+            @wraps(func)
             async def wrapper():
-                gl = await self.get_group_list()
+                gl = await self.get_enable_groups()
                 self.logger.info(f'Scheduled job {func.__name__} start.')
                 try:
                     await func(gl)

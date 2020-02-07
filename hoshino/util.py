@@ -15,7 +15,7 @@ async def delete_msg(ctx):
     try:
         if get_bot().config.IS_CQPRO:
             msg_id = ctx['message_id']
-            await get_bot().delete_msg(message_id=msg_id)
+            await get_bot().delete_msg(self_id=ctx['self_id'], message_id=msg_id)
     except ActionFailed as e:
         logger.error(f'撤回失败 retcode={e.retcode}')
     except Exception as e:
@@ -24,11 +24,12 @@ async def delete_msg(ctx):
 
 async def silence(ctx, ban_time, ignore_super_user=False):
     try:
+        self_id = ctx['self_id']
         group_id = ctx['group_id']
         user_id = ctx['user_id']
         bot = get_bot()
         if ignore_super_user or user_id not in bot.config.SUPERUSERS:
-            await bot.set_group_ban(group_id=group_id, user_id=user_id, duration=ban_time)
+            await bot.set_group_ban(self_id=self_id, group_id=group_id, user_id=user_id, duration=ban_time)
     except ActionFailed as e:
         logger.error(f'禁言失败 retcode={e.retcode}')
     except Exception as e:

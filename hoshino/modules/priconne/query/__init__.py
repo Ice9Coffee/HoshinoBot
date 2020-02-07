@@ -20,7 +20,9 @@ async def nlp_rank(session:NLPSession):
     p1 = R.img('priconne/quick/前卫rank.jpg').cqcode
     p2 = R.img('priconne/quick/中卫rank.jpg').cqcode
     p3 = R.img('priconne/quick/后卫rank.jpg').cqcode
-    p4 = R.img('priconne/quick/台rank.png').cqcode
+    p4 = R.img('priconne/quick/r16-3-1.jpg').cqcode
+    p5 = R.img('priconne/quick/r16-3-2.jpg').cqcode
+    p6 = R.img('priconne/quick/r16-3-3.jpg').cqcode
 
     if not is_jp and not is_tw:
         await session.send('请问您要查询日服还是台服的rank表？\n* 日rank\n* 台rank')
@@ -28,7 +30,7 @@ async def nlp_rank(session:NLPSession):
         await silence(session.ctx, 60)
         await session.send('rank表图片较大，请稍等片刻\n不定期搬运，来源见图片，广告与本bot无关，仅供参考')
         if is_jp:
-            await session.send(f'日服rank表暂待更新')
+            await session.send(f'R16-3 rank表：{p4}{p5}{p6}')
         if is_tw:
             await session.send(f'R15-3 rank表：{p1}{p2}{p3}')
 
