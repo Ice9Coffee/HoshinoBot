@@ -11,23 +11,23 @@ async def send_help(session:CommandSession):
     msg='''【帮助】
 下面是本bot支持的功能
 输入冒号后的文本即可使用
-注1：@bot 表明该功能必须at本bot才会触发
+注1：@bot表明该功能必须at本bot才会触发
 注2：请注意将参数用空格隔开
 ===从此开始↓一行距===
 
 公主连接Re:Dive
-- 抽卡模拟：@bot 来发十连 或 @bot 来发单抽
+- 抽卡模拟：@bot来发十连 或 @bot来发单抽
 - jjc查询：怎么拆 布丁 饭团 兔子 小仓唯
 - 查看bot卡池：看看卡池
 - rank推荐表：日服rank 或 台服rank
 - 常用网址：pcr速查
-- プリコネRe:Dive官方四格查阅：官漫123
+- プリコネRe:Dive官方四格查阅：@bot官漫123
 + プリコネRe:Dive官方四格推送（默认开启）
 - 会战管理（请见github.com/Ice-Cirno/HoshinoBot）
 
 蜜柑番剧
 * 启用本模块：开启 bangumi
-- 查看最近更新：@bot 来点新番
+- 查看最近更新：@bot来点新番
 + 番剧推送（开启本模块后自动启用）
 
 艦これ
@@ -45,7 +45,7 @@ async def send_help(session:CommandSession):
 - 启用功能：启用 service_name
 - 禁用功能：禁用 service_name
 - 机器翻译（限管理使用）： 翻译 もう一度、キミとつながる物語
-- 联系作者：@bot 来杯咖啡 你的反馈内容
+- 联系作者：@bot来杯咖啡 你的反馈内容
 
 ※调教时请注意使用频率，您的滥用可能会导致bot帐号被封禁
 ※除上述之外 另有其他隐藏功能:)
@@ -82,5 +82,5 @@ async def call_master(session:CommandSession):
     if not text:
         await session.send(MessageSegment.at(coffee))
     else:
-        await session.bot.send_private_msg(user_id=coffee, message=f'Q{uid}@群{session.ctx["group_id"]}\n{text}')
+        await session.bot.send_private_msg(self_id=session.ctx['self_id'], user_id=coffee, message=f'Q{uid}@群{session.ctx["group_id"]}\n{text}')
         await session.send(f'您的反馈已发送！\n=======\n{text}', at_sender=True)

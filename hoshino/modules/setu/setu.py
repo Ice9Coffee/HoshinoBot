@@ -65,7 +65,7 @@ async def setu(bot:NoneBot, ctx, match):
     last_call_time[uid] = now
     
     if not check_setu_num(uid):
-        await bot.send(SETU_EXCEED_NOTICE, at_sender=True)
+        await bot.send(ctx, SETU_EXCEED_NOTICE, at_sender=True)
         return
     _user_setu_count[uid] += 1
 

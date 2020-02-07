@@ -1,6 +1,7 @@
 import os
 import pytz
 import ujson as json
+import random
 from datetime import datetime
 
 import nonebot
@@ -9,6 +10,8 @@ from hoshino.log import logger
 from hoshino.service import Service
 
 sv = Service('hourcall', enable_on_default=False)
+svtw = Service('pcr-arena-reminder-tw', enable_on_default=False)
+svjp = Service('pcr-arena-reminder-jp', enable_on_default=False)
 
 def get_config():
     config_file = os.path.join(os.path.dirname(__file__), 'config.json')
@@ -40,25 +43,29 @@ async def hour_call(group_list):
         return  # 宵禁 免打扰
 
     msg = get_hour_call()[now.hour]
-    for group in group_list:
+    for group, sid in group_list.items():
         try:
-            await sv.bot.send_group_msg(group_id=group, message=msg)
+            await sv.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message=msg)
             sv.logger.info(f'群{group} 投递hour_call成功')
         except nonebot.CQHttpError as e:
             sv.logger.error(f'群{group} 投递hour_call失败 {type(e)}')
 
 
-@nonebot.scheduler.scheduled_job('cron', hour='5-6', minute='45', second='0', misfire_grace_time=120, coalesce=True) # = UTC+8 1445
-async def pcr_reminder():
-    logger.info('pcr_reminder start')
-
-    is_jp = (5 == datetime.now(pytz.timezone('UTC')).hour)
-
-    msg = f'一{"三" if is_jp else "四"}四五。骑士君、准备好背刺了吗？'
-    bot = nonebot.get_bot()
-    for group in get_config()["PCR_GROUP_JP" if is_jp else "PCR_GROUP_TW"]:
+@svtw.scheduled_job('cron', hour='6', minute='45', second='0', misfire_grace_time=120, coalesce=True) # = UTC+8 1445
+async def pcr_reminder_tw(group_list):
+    for group, sid in group_list.items():
         try:
-            await bot.send_group_msg(group_id=group, message=msg)
-            logger.info(f'群{group} 投递pcr_reminder成功')
+            await svtw.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message='骑士君、准备好背刺了吗？')
+            svtw.logger.info(f'群{group} 投递pcr_reminder_tw成功')
         except nonebot.CQHttpError as e:
-            logger.error(f'群{group} 投递pcr_reminder失败 {type(e)}')
+            svtw.logger.error(f'群{group} 投递pcr_reminder_tw失败 {type(e)}')
+
+
+@svjp.scheduled_job('cron', hour='5', minute='45', second='0', misfire_grace_time=120, coalesce=True) # = UTC+8 1345
+async def pcr_reminder_jp(group_list):
+    for group, sid in group_list.items():
+        try:
+            await svjp.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message='骑士君、准备好背刺了吗？')
+            svjp.logger.info(f'群{group} 投递pcr_reminder_jp成功')
+        except nonebot.CQHttpError as e:
+            svjp.logger.error(f'群{group} 投递pcr_reminder_jp失败 {type(e)}')
