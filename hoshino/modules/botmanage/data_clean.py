@@ -6,7 +6,7 @@ from hoshino.log import logger
 
 @nonebot.scheduler.scheduled_job('cron', hour='20', misfire_grace_time=10, coalesce=True)     #UTC+8 0400
 async def image_cleaner():
-    self_id = nonebot.get_bot()._connected_ws_reverse_api_clients.keys()[0]
+    self_id = nonebot.get_bot()._wsr_api_clients.keys()[0]
     await nonebot.get_bot().clean_data_dir(self_id=self_id, data_dir='image')
     logger.info('Image 文件夹已清理')
 

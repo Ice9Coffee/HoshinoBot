@@ -1,5 +1,5 @@
 nonebot[scheduler]~=1.3.1
-aiocqhttp~=0.6.8
+aiocqhttp~=1.1.0
 lxml>=4.4.1
 ujson>=1.35
 pytz>=2019.3
