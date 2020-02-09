@@ -119,7 +119,7 @@ class Service:
 
 
     def get_self_ids(self):
-        return self.bot._connected_ws_reverse_api_clients.keys()
+        return self.bot._wsr_api_clients.keys()
 
 
     @staticmethod
