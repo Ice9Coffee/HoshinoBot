@@ -14,7 +14,7 @@ class Gacha(object):
 
     def load_pool(self):
         config_file = path.join(path.dirname(__file__), "config.json")
-        with open(config_file) as f:
+        with open(config_file, encoding='utf8') as f:
             config = json.load(f)
             pool = config["GACHA_POOL"]
             self.up_prob = pool["up_prob"]
