@@ -12,7 +12,7 @@ class Arena(object):
     @staticmethod
     def __get_auth_key():
         config_file = path.join(path.dirname(__file__), "config.json")
-        with open(config_file) as f:
+        with open(config_file, encoding='utf8') as f:
             config = json.load(f)
             return config["AUTH_KEY"]
 

@@ -15,7 +15,7 @@ svjp = Service('pcr-arena-reminder-jp', enable_on_default=False)
 
 def get_config():
     config_file = os.path.join(os.path.dirname(__file__), 'config.json')
-    with open(config_file, 'r') as f:
+    with open(config_file, encoding='utf8') as f:
         config = json.load(f)
         return config
 

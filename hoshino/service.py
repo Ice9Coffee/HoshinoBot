@@ -62,7 +62,7 @@ def _load_service_config(service_name):
             "enable_group": [],
             "disable_group": []
         }
-    with open(config_file) as f:
+    with open(config_file, encoding='utf8') as f:
         config = json.load(f)
         return config
 

@@ -20,7 +20,8 @@ class Mikan(object):
 
     @staticmethod
     def get_token():
-        with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r') as f:
+        config_file = os.path.join(os.path.dirname(__file__), 'config.json')
+        with open(config_file, encoding='utf8') as f:
             config = json.load(f)
             return config["MIKAN_TOKEN"]
 

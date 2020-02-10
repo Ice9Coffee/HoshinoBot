@@ -18,7 +18,7 @@ sv = Service('pcr-comic')
 
 
 def load_index():
-    with open(R.get('img/priconne/comic/index.json').path) as f:
+    with open(R.get('img/priconne/comic/index.json').path, encoding='utf8') as f:
         return json.load(f)
 
 
