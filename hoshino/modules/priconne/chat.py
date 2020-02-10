@@ -54,11 +54,6 @@ async def nlp_neigui(session:NLPSession):
         return None
 
 
-@on_command('来杯咖啡', permission=perm.GROUP)
-async def call_master(session:CommandSession):
-    await session.send(MessageSegment.at(session.bot.config.SUPERUSERS[0]))
-
-
 @on_command('老婆', aliases=('waifu', 'laopo'))
 async def laopo(session:CommandSession):
     if not await perm.check_permission(session.bot, session.ctx, perm.SUPERUSER):
@@ -73,7 +68,6 @@ async def mua(session:CommandSession):
     await session.send('笨蛋~')
 
 
-
 @on_command('ban_word', aliases=('rbq', 'RBQ', '憨批', '废物', '死妈', 'a片', 'A片', '崽种', '傻逼', '傻逼玩意', '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp'), only_to_me=True)
 async def ban_word(session:CommandSession):
     await session.send('D区')
@@ -82,4 +76,4 @@ async def ban_word(session:CommandSession):
 
 @on_command('sayhello', aliases=('在', '在？', '在吗', '在么？', '在嘛', '在嘛？'))
 async def sayhello(session:CommandSession):
-    await session.send('はい！ほしのちゃんはいつもあなたのそばにいるよ')
+    await session.send('はい！私はいつも貴方の側にいますよ！')

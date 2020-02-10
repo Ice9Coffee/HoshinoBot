@@ -1,4 +1,5 @@
 import re
+import random
 import ujson as json
 import requests
 import asyncio
@@ -10,7 +11,6 @@ from nonebot import on_command, CommandSession, CQHttpError
 from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from hoshino.log import logger
-from hoshino.util import silence
 from hoshino.res import R
 from hoshino.service import Service
 
@@ -18,7 +18,7 @@ sv = Service('pcr-comic')
 
 
 def load_index():
-    with open(R.get('img/priconne/comic/index.json').path) as f:
+    with open(R.get('img/priconne/comic/index.json').path, encoding='utf8') as f:
         return json.load(f)
 
 
@@ -131,10 +131,10 @@ async def update_seeker(group_list):
     pic = R.img('priconne/comic', get_pic_name(episode)).cqcode
     msg = f'プリンセスコネクト！Re:Dive公式4コマ更新！\n第{episode}話 {title}\n{pic}'
 
-    for group in group_list:
+    for group, sid in group_list.items():
         await asyncio.sleep(0.5)  # 降低发送频率，避免被腾讯ban
         try:
-            await sv.bot.send_group_msg(group_id=group, message=msg)
+            await sv.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message=msg)
             logger.info(f'群{group} 投递PCR官漫更新成功')
         except CQHttpError as e:
             logger.error(f'Error：群{group} 投递PCR官漫更新失败 {type(e)}')

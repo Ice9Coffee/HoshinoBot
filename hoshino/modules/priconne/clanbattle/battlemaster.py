@@ -6,7 +6,7 @@ from .dao.sqlitedao import ClanDao, MemberDao, BattleDao
 
 def get_config():
     config_file = path.join(path.dirname(__file__), "config.json")
-    with open(config_file) as f:
+    with open(config_file, encoding='utf8') as f:
         config = json.load(f)
         return config
 
