@@ -94,7 +94,7 @@ async def add_member(session: CommandSession):
     alt = args.alt
     name = args.name
     try:    # 尝试获取群员信息，用以检查该成员是否在群中
-        group_member_info = await session.bot.get_group_member_info(group_id=group_id, user_id=uid)
+        group_member_info = await session.bot.get_group_member_info(self_id=session.ctx['self_id'], group_id=group_id, user_id=uid)
     except:
         await session.finish(f'Error: 无法获取到指定群员的信息，请检查{uid}是否属于本群\n（注：uid为QQ号，机器人无需九码，如有小号请指定alt参数）')
         return

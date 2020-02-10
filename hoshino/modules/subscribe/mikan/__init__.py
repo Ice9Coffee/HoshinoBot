@@ -20,7 +20,8 @@ class Mikan(object):
 
     @staticmethod
     def get_token():
-        with open(os.path.join(os.path.dirname(__file__), 'config.json'), 'r') as f:
+        config_file = os.path.join(os.path.dirname(__file__), 'config.json')
+        with open(config_file, encoding='utf8') as f:
             config = json.load(f)
             return config["MIKAN_TOKEN"]
 
@@ -102,12 +103,12 @@ async def mikan_poller(group_list):
             '试制景云(舰侦型)',
         ]
 
-        for group in group_list:
+        for group, sid in group_list.items():
             await asyncio.sleep(1.0)  # 降低发送频率，避免被腾讯ban
             try:
                 for m in msg:
                     await asyncio.sleep(0.5)
-                    await sv.bot.send_group_msg(group_id=group, message=f'{random.choice(msg_device)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}')
+                    await sv.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message=f'{random.choice(msg_device)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}')
                 sv.logger.info(f'群{group} 投递番剧更新成功')
             except Exception as e:
                 sv.logger.error(f'Error：群{group} 投递番剧更新失败 {type(e)}')

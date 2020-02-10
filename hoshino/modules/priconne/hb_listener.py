@@ -6,7 +6,6 @@ from nonebot import on_command, CommandSession, Message
 from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from .gacha import gacha_10_aliases, gacha_1_aliases
-from hoshino.util import silence
 from hoshino.log import logger
 
 ban_hb_title = []
@@ -19,6 +18,7 @@ bot = nonebot.get_bot()
 @bot.on_message('group')
 async def hb_handler(context):
     message = context['message']
+    self_id = context['self_id']
     group_id = context['group_id']
     user_id = context['user_id']
     for m in message:
@@ -26,7 +26,7 @@ async def hb_handler(context):
             try:
                 title = m['data']['title']
                 if title in ban_hb_title:
-                    bot.set_group_ban(group_id=group_id, user_id=user_id, duration= 12*60*60)
+                    bot.set_group_ban(self_id=self_id, group_id=group_id, user_id=user_id, duration= 12*60*60)
                 # sleep(0.5 + 3 * random.random())
                 # await bot.send(context, title)
             except Exception as e:
