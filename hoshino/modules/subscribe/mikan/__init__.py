@@ -11,6 +11,7 @@ from nonebot import CommandSession, on_command
 
 from hoshino.service import Service
 
+from urllib.parse import urljoin
 
 sv = Service('bangumi', enable_on_default=False)
 
@@ -25,12 +26,17 @@ class Mikan(object):
             config = json.load(f)
             return config["MIKAN_TOKEN"]
 
+    def RSS_URL():
+        Base = 'https://mikanani.me/RSS/MyBangumi'
+        Token = '?token=' + Mikan.get_token()
+        URL = urljoin(Base, Token)
+        return URL
 
     @staticmethod
     def get_rss():
         res = []
         try:
-            resp = requests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=10)
+            resp = requests.get(Mikan.RSS_URL(), timeout=10)
             rss = etree.XML(resp.content)
         except Exception as e:
             sv.logger.error(f'[get_rss] Error: {e}')
@@ -50,6 +56,7 @@ class Mikan(object):
         rss = Mikan.get_rss()
         new_bangumi = []
         flag = False
+
         for item in rss:
             if item[0] not in Mikan.link_cache:
                 flag = True
@@ -58,8 +65,6 @@ class Mikan(object):
             Mikan.link_cache = { item[0] for item in rss }
             Mikan.rss_cache = rss
         return new_bangumi
-
-
 
 
 @sv.scheduled_job('cron', minute='*/3', second='15', misfire_grace_time=10, coalesce=True)
@@ -116,7 +121,6 @@ async def mikan_poller(group_list):
         sv.logger.info(f'未检索到番剧更新！')
 
 
-
 @sv.on_command('来点新番', aliases=('來點新番', ))
 async def send_bangumi(session:CommandSession):
     if not Mikan.rss_cache:
@@ -130,4 +134,3 @@ async def send_bangumi(session:CommandSession):
 if __name__ == "__main__":
     """for test"""
     print(Mikan.get_rss())
-
