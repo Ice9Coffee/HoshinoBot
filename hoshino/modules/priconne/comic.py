@@ -9,12 +9,13 @@ from os import path
 import nonebot
 from nonebot import on_command, CommandSession, CQHttpError
 from nonebot import on_natural_language, NLPSession, IntentCommand
+from nonebot import permission as perm
 
 from hoshino.log import logger
 from hoshino.res import R
 from hoshino.service import Service
 
-sv = Service('pcr-comic')
+sv = Service('pcr-comic', enable_on_default=False)
 
 
 def load_index():
@@ -34,7 +35,7 @@ async def comic(session:NLPSession):
     arg = session.msg_text.strip()
     match = rex.search(arg)
     if not match:
-        await session.send('请输入漫画集数 如：官漫 132')
+        await session.send('请输入漫画集数 如：官漫 163')
         return
     episode = match.group()
     index = load_index()
@@ -140,3 +141,36 @@ async def update_seeker(group_list):
             logger.error(f'Error：群{group} 投递PCR官漫更新失败 {type(e)}')
 
     logger.info('计划任务：update_seeker 完成')
+
+
+@sv.on_natural_language(keywords={'缓存'}, only_to_me=True)
+async def cache_task(session:NLPSession):
+    if not await perm.check_permission(session.bot, session.ctx, perm.SUPERUSER):
+        return
+
+    await session.send('※该命令适用于初次部署时一次性缓存往期所有漫画并生成目录信息')
+    rex = re.compile(r'[1-9]\d{0,2}')
+    arg = session.msg_text.strip()
+    match = rex.search(arg)
+    if not match:
+        await session.send('※请输入共需缓存的漫画集数 如：comic缓存 163')
+        return
+
+    episode = match.group()
+    index = load_index()
+    for cache_task in range(int(episode), 0, -1):
+        if episode in index:
+            qs = urlparse(index[episode]['link']).query
+            old_id = parse_qs(qs)['id'][0]
+            if episode == old_id:
+                logger.info(f'※检测到第{cache_task}话已被缓存，将自动寻找往期漫画')
+                cache_task -= 1
+
+    if cache_task != 1:
+        await session.send(f'※开始尝试缓存至第{cache_task}话，进度见命令行')
+        cache_task = cache_task + 1
+        for id_ in range (cache_task, 0, -1): 
+            logger.info(f'※任务进度 {abs(cache_task-id_)}/{abs(cache_task-1)}')
+            id_ = str(id_)
+            download_comic(id_)
+    await session.send('※缓存任务已完成，可以正常使用了')
