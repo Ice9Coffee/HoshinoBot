@@ -71,7 +71,7 @@ class BattleMaster(object):
 
     @staticmethod
     def get_stage(round_):
-        return 3 if round_ >= 11 else 2 if round_ >= 4 else 1
+        return 4 if round_ >= 999 else 3 if round_ >= 11 else 2 if round_ >= 4 else 1
 
 
     @staticmethod
