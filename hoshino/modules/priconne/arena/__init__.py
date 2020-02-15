@@ -32,7 +32,7 @@ async def arena_query(session:CommandSession):
     defen = [ Chara.name2id(name) for name in argv ]
     for i, id_ in enumerate(defen):
         if Chara.UNKNOWN == id_:
-            await session.finish(f'编队中含未知角色{argv[i]}，请尝试使用官方译名\n您也可以前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充角色别称')
+            await session.finish(f'编队中含未知角色{argv[i]}，请尝试使用官方译名\n您可@bot来杯咖啡+反馈未收录别称\n或前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充')
     if len(defen) != len(set(defen)):
         await session.finish('编队中出现重复角色')
 
@@ -46,7 +46,7 @@ async def arena_query(session:CommandSession):
         await session.finish('查询出错，请联系维护组调教')
 
     if not len(res):
-        await session.finish('抱歉没有查询到解法\n（注：没有作业不代表不能拆，竞技场没有无敌的守队只有不够深的box）')
+        await session.finish('抱歉没有查询到解法\n※没有作业说明随便拆')
 
     await silence(session.ctx, 30)      # 避免过快查询
 
