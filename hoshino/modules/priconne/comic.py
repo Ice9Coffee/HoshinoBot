@@ -153,7 +153,7 @@ async def cache_task(session:NLPSession):
     arg = session.msg_text.strip()
     match = rex.search(arg)
     if not match:
-        await session.send('※请输入共需缓存的漫画集数 如：comic缓存 163')
+        await session.send('※请输入共需缓存的漫画集数 如：缓存 163')
         return
 
     episode = match.group()
