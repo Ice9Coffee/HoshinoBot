@@ -1,8 +1,3 @@
-'''
-聊天吹水 for Princess Connect Re:Dive
-'''
-
-
 import re
 import math
 import random
