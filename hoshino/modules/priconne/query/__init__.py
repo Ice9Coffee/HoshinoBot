@@ -10,7 +10,7 @@ from hoshino.util import silence, delete_msg
 from hoshino.res import R
 
 
-@on_natural_language(keywords={'ran表', 'Rank表', 'RANK表'}, only_to_me=False, only_short_message=True)
+@on_natural_language(keywords={'rank表', 'Rank表', 'RANK表'}, only_to_me=False, only_short_message=True)
 async def nlp_rank(session:NLPSession):
 
     arg = session.msg_text.strip()
