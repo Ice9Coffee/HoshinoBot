@@ -9,7 +9,7 @@ import nonebot
 from hoshino.service import Service
 
 
-sv = Service('kc-enshu-reminder', enable_on_default=False)
+sv = Service('kc-reminder', enable_on_default=False)
 
 # UTC+8 1400 = UTC+9 1500 = UTC+0 0600 再提前半小时提醒
 @sv.scheduled_job('cron', hour='5', minute='30', second='0', misfire_grace_time=120, coalesce=True) 
