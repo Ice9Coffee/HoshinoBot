@@ -20,7 +20,7 @@ async def send_help(session:CommandSession):
 - 抽卡模拟：@bot来发十连 或 @bot来发单抽
 - jjc查询：怎么拆+布丁+饭团+兔子+小仓唯
 - 查看bot卡池：看看卡池
-- rank推荐表：日服rank 或 台服rank
+- rank推荐表：日服rank表 或 台服rank表
 - 常用网址：pcr速查
 - プリコネRe:Dive官方四格查阅：@bot官漫123
 + プリコネRe:Dive官方四格推送（默认开启）
