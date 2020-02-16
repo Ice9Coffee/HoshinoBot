@@ -10,29 +10,27 @@ from hoshino.util import silence, delete_msg
 from hoshino.res import R
 
 
-@on_natural_language(keywords={'rank', 'Rank', 'RANK'}, only_to_me=False, only_short_message=True)
+@on_natural_language(keywords={'ran表', 'Rank表', 'RANK表'}, only_to_me=False, only_short_message=True)
 async def nlp_rank(session:NLPSession):
 
     arg = session.msg_text.strip()
     is_jp = arg.find('日') >= 0
     is_tw = arg.find('台') >= 0 or arg.find('臺') >= 0
 
-    p1 = R.img('priconne/quick/前卫rank.jpg').cqcode
-    p2 = R.img('priconne/quick/中卫rank.jpg').cqcode
-    p3 = R.img('priconne/quick/后卫rank.jpg').cqcode
-    p4 = R.img('priconne/quick/r16-3-1.jpg').cqcode
-    p5 = R.img('priconne/quick/r16-3-2.jpg').cqcode
-    p6 = R.img('priconne/quick/r16-3-3.jpg').cqcode
+    p1 = R.img('priconne/quick/r15-3.png').cqcode
+    p4 = R.img('priconne/quick/r16-4-1.png').cqcode
+    p5 = R.img('priconne/quick/r16-4-2.png').cqcode
+    p6 = R.img('priconne/quick/r16-4-3.png').cqcode
 
     if not is_jp and not is_tw:
-        await session.send('请问您要查询日服还是台服的rank表？\n* 日rank\n* 台rank')
+        await session.send('请问您要查询日服还是台服的rank表？\n*日rank表\n*台rank表')
     else:
         await silence(session.ctx, 60)
-        await session.send('rank表图片较大，请稍等片刻\n不定期搬运，来源见图片，广告与本bot无关，仅供参考')
+        await session.send('rank推荐表图片较大，请稍等片刻\n※不定期搬运，来源见图片※广告与本bot无关，仅供参考')
         if is_jp:
-            await session.send(f'R16-3 rank表：{p4}{p5}{p6}')
+            await session.send(f'R16-4 rank表：{p4}{p5}{p6}')
         if is_tw:
-            await session.send(f'R15-3 rank表：{p1}{p2}{p3}')
+            await session.send(f'R15-3 rank表：{p1}')
 
 
 @on_natural_language(keywords={'pcr速查', 'PCR速查', 'pcr常用', 'PCR常用', 'pcr图书馆'}, only_to_me=False)
