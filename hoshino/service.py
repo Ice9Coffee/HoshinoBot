@@ -282,7 +282,7 @@ class Service:
     def on_natural_language(self, keywords=None, **kwargs):
         def deco(func):
             @wraps(func)
-            async def wrapper(session):
+            async def wrapper(session:nonebot.NLPSession):
                 if await self.check_permission(session.ctx):
                     try:
                         await func(session)
