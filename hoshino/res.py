@@ -23,7 +23,7 @@ class R:
 class ResObj:
 
     def __init__(self, res_path):
-        res_dir = get_bot().config.RESOURCE_DIR
+        res_dir = os.path.expanduser(get_bot().config.RESOURCE_DIR)
         fullpath = os.path.abspath(os.path.join(res_dir, res_path))
         if not fullpath.startswith(os.path.abspath(res_dir)):
             raise ValueError('Cannot access outside RESOUCE_DIR')
@@ -43,7 +43,7 @@ class ResObj:
         """
         @return: 资源文件的路径，供Nonebot内部使用
         """
-        res_dir = get_bot().config.RESOURCE_DIR
+        res_dir = os.path.expanduser(get_bot().config.RESOURCE_DIR)
         return os.path.join(res_dir, self.__path)
 
 

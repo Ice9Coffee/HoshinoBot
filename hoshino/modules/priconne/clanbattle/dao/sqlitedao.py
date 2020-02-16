@@ -3,7 +3,7 @@ import os
 import logging
 import datetime
 
-DB_PATH = os.path.join(os.path.expanduser('~'), '.hoshino/clanbattle.db')
+DB_PATH = os.path.expanduser('~/.hoshino/clanbattle.db')
 
 class SqliteDao(object):
     def __init__(self, table, columns, fields):

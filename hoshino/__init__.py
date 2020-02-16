@@ -6,17 +6,6 @@ import nonebot
 from .log import logger, error_handler
 
 
-MODULES_ON = {
-    'botmanage',
-    'priconne',
-    'kancolle',
-    'groupmaster',
-    'subscribe',
-    'translate',
-    'setu',
-}
-
-
 def init(config) -> nonebot.NoneBot:
 
     nonebot.init(config)
@@ -25,7 +14,7 @@ def init(config) -> nonebot.NoneBot:
     logger.setLevel(logging.DEBUG if bot.config.DEBUG else logging.INFO)
     nonebot.logger.addHandler(error_handler)
 
-    for module_name in MODULES_ON:
+    for module_name in config.MODULES_ON:
         nonebot.load_plugins(
             path.join(path.dirname(__file__), 'modules', module_name),
             f'hoshino.modules.{module_name}'
