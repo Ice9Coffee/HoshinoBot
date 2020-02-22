@@ -18,11 +18,10 @@ async def arena_query(session:CommandSession):
 
     # 处理输入数据
     argv = session.current_arg.strip()
-    argv = re.sub(r'[?？呀啊哇]', ' ', argv)
+    argv = re.sub(r'[?？呀啊哇]', ' ', argv)    
     argv = argv.split()
-
     sv.logger.debug(f'竞技场查询：{argv}')
-
+    
     if 0 >= len(argv):
         await session.finish('请输入防守方角色，用空格隔开')
     if 5 < len(argv):
@@ -35,6 +34,8 @@ async def arena_query(session:CommandSession):
             await session.finish(f'编队中含未知角色{argv[i]}，请尝试使用官方译名\n您可@bot来杯咖啡+反馈未收录别称\n或前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充')
     if len(defen) != len(set(defen)):
         await session.finish('编队中出现重复角色')
+    if 1004 in defen:
+        await session.send('⚠️您正在查询普通版炸弹人\n※万圣版可用万圣炸弹人/瓜炸等别称')
 
     sv.logger.info('Arena doing query...')
     res = Arena.do_query(defen)
