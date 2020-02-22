@@ -1,6 +1,7 @@
 import os
 import re
 import sys
+import pytz
 import logging
 import ujson as json
 from functools import wraps
@@ -296,6 +297,9 @@ class Service:
 
 
     def scheduled_job(self, *args, **kwargs):
+        kwargs.setdefault('timezone', pytz.timezone('Asia/Shanghai'))
+        kwargs.setdefault('misfire_grace_time', 60)
+        kwargs.setdefault('coalesce', True)
         def deco(func):
             # @wraps(func)  #FIXME: 对scheduled_job使用wraps会报错
             async def wrapper():
