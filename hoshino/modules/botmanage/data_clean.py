@@ -4,7 +4,7 @@ from nonebot import on_command, CommandSession
 from hoshino.log import logger
 
 
-@nonebot.scheduler.scheduled_job('cron', hour='20', misfire_grace_time=10, coalesce=True)     #UTC+8 0400
+@nonebot.scheduler.scheduled_job('cron', hour='4')
 async def image_cleaner():
     self_id = list(nonebot.get_bot()._wsr_api_clients.keys())[0]
     await nonebot.get_bot().clean_data_dir(self_id=self_id, data_dir='image')

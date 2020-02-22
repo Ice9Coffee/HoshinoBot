@@ -29,19 +29,11 @@ def get_hour_call():
     return config[g]
 
 
-LAST_HOUR_CALL = -1
-
-@sv.scheduled_job('cron', hour='*', minute='0-2', second='0', misfire_grace_time=30, coalesce=True)
+@sv.scheduled_job('cron', hour='*')
 async def hour_call(group_list):
-    global LAST_HOUR_CALL
     now = datetime.now(pytz.timezone('Asia/Shanghai'))
-    if LAST_HOUR_CALL == now.hour:
-        return
-    LAST_HOUR_CALL = now.hour
-
     if 2 <= now.hour <= 4:
         return  # 宵禁 免打扰
-
     msg = get_hour_call()[now.hour]
     for group, sid in group_list.items():
         try:
@@ -51,7 +43,7 @@ async def hour_call(group_list):
             sv.logger.error(f'群{group} 投递hour_call失败 {type(e)}')
 
 
-@svtw.scheduled_job('cron', hour='6', minute='45', second='0', misfire_grace_time=120, coalesce=True) # = UTC+8 1445
+@svtw.scheduled_job('cron', hour='14', minute='45')
 async def pcr_reminder_tw(group_list):
     for group, sid in group_list.items():
         try:
@@ -61,7 +53,7 @@ async def pcr_reminder_tw(group_list):
             svtw.logger.error(f'群{group} 投递pcr_reminder_tw失败 {type(e)}')
 
 
-@svjp.scheduled_job('cron', hour='5', minute='45', second='0', misfire_grace_time=120, coalesce=True) # = UTC+8 1345
+@svjp.scheduled_job('cron', hour='13', minute='45')
 async def pcr_reminder_jp(group_list):
     for group, sid in group_list.items():
         try:
