@@ -285,6 +285,7 @@ clanbattle.db
 - gid：qq群号
 - cid：该群下的公会号
 - name：公会名
+- server：服务器
 
 
 

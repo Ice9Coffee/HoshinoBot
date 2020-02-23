@@ -3,12 +3,25 @@
 
 import re
 
+from nonebot import Message
 from nonebot import CommandSession
 from nonebot import permission as perm
 from hoshino.service import Service, Privilege
 from .battlemaster import BattleMaster
 
-sv = Service('clanbattle', manage_priv=Privilege.SUPERUSER, enable_on_default=False)
+from . import sv
+
+
+class ParseResult:
+    pass
+
+class ArgParser:
+    def __init__(self, opts:str):
+        self.opts = opts
+    
+    def parse(self, msg:Message):
+        pass
+
 
 
 @sv.on_command('添加公会', only_to_me=False)

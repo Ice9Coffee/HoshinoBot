@@ -164,7 +164,7 @@ class Service:
         required_priv = self.use_priv if required_priv == None else required_priv
         if ctx['message_type'] == 'group':
             group_id = ctx['group_id']
-            if group_id in self.enable_group or (self.enable_on_default and group_id not in self.disable_group):
+            if (group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group):
                 user_priv = await self.get_user_privilege(ctx)
                 return user_priv >= required_priv
             else:
