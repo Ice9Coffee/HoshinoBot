@@ -11,9 +11,11 @@ async def send_help(session:CommandSession):
     msg='''【帮助】
 下面是本bot支持的功能
 输入冒号后的文本即可使用
+=====注意事项=====
 ※@bot表明该功能必须at本bot才会触发（出于安全等原因考虑）
-※请将说明中的所有_号替换为空格
+※请将所有下划线符号_替换为空格
 ※开启/关闭功能限群管理操作
+※调教时请注意使用频率，您的滥用可能会导致bot帐号被封禁
 ===从此开始↓一行距===
 
 公主连接Re:Dive
@@ -24,7 +26,7 @@ async def send_help(session:CommandSession):
 - 常用网址：pcr速查
 - プリコネRe:Dive官方四格查阅：@bot官漫123
 + プリコネRe:Dive官方四格推送（默认开启）
-- 会战管理（请见github.com/Ice-Cirno/HoshinoBot）
+- 会战管理（参见github.com/Ice-Cirno/HoshinoBot）
 
 蜜柑番剧
 * 启用本模块：开启_bangumi
@@ -32,21 +34,23 @@ async def send_help(session:CommandSession):
 + 番剧推送（开启本模块后自动启用）
 
 艦これ
-+ 演习/月常远征时间提醒：开启_kc-reminder
++ 演习/月常远征提醒：开启_kc-reminder
 + 时报：开启_hourcall
 
 通用
 - 查看本群启用的功能：服务列表
 - 启用功能：启用_service-name
 - 禁用功能：禁用_service-name
-- 机器翻译（限群管理使用）： 翻译_もう一度、キミとつながる物語
+- 机器翻译（限群管理使用）：翻译_もう一度、キミとつながる物語
 - 联系作者：@bot来杯咖啡_你的反馈内容
 
-※调教时请注意使用频率，您的滥用可能会导致bot帐号被封禁
-※除文档中写明的之外 另有其他隐藏功能:)
-※本bot开源 可免费使用
-※赞助支持请直接联系作者，您的支持是本bot更新维护的动力
-※初次使用请从头仔细阅读本帮助
+========
+※除帮助中写明外 另有其他隐藏功能:)
+※服务器运行需要成本，赞助支持请私戳作者
+※本bot开源，可自行搭建
+※您的支持是本bot更新维护的动力
+
+※※初次使用请仔细阅读帮助开头的注意事项
 '''.strip()
     await session.send(msg)
 
