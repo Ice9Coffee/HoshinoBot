@@ -510,7 +510,7 @@ async def call_reserve(session: CommandSession, round_: int, boss_index: int):
         json.dump(reservation, open(reservation_path, 'w'))
         msg = f'公会战已轮到{round_}周目{bossNames[boss_index - 1]}，请尽快出刀，如需下轮请重新预约。'
         for user_id in reservation_list:
-            msg += f'\n[CQ:at,qq={user_id}]'
+            msg += f'\n{str(MessageSegment.at(user_id))}'
         await session.send(msg)
 
 
@@ -550,12 +550,12 @@ async def reserve_function(session: CommandSession, boss_index: int):
     reservation_list = reservation.get(str(boss_index), [])
 
     if user_id in reservation_list:
-        await session.send(f'[CQ:at,qq={user_id}] 你已预约过{bossNames[boss_index - 1]}，请勿重复预约')
+        await session.send(f'{str(MessageSegment.at(user_id))} 你已预约过{bossNames[boss_index - 1]}，请勿重复预约')
     else:
         reservation_list.append(user_id)
         reservation[str(boss_index)] = reservation_list
         json.dump(reservation, open(reservation_path, 'w'))
-        await session.send(f'[CQ:at,qq={user_id}] 你已成功预约{bossNames[boss_index - 1]}，当前Boss预约人数：{len(reservation_list)}')
+        await session.send(f'{str(MessageSegment.at(user_id))} 你已成功预约{bossNames[boss_index - 1]}，当前Boss预约人数：{len(reservation_list)}')
 
 
 async def unreserve_function(session: CommandSession, boss_index: int):
@@ -576,9 +576,9 @@ async def unreserve_function(session: CommandSession, boss_index: int):
         reservation_list.remove(user_id)
         reservation[str(boss_index)] = reservation_list
         json.dump(reservation, open(reservation_path, 'w'))
-        await session.send(f'[CQ:at,qq={user_id}] 已为你取削预约{bossNames[boss_index - 1]}')
+        await session.send(f'{str(MessageSegment.at(user_id))} 已为你取消预约{bossNames[boss_index - 1]}')
     else:
-        await session.send(f'[CQ:at,qq={user_id}] 你尚未预约{bossNames[boss_index - 1]}')
+        await session.send(f'{str(MessageSegment.at(user_id))} 你尚未预约{bossNames[boss_index - 1]}')
 
 
 @on_command('reserve1', aliases=('预约一王', ), only_to_me=False)
