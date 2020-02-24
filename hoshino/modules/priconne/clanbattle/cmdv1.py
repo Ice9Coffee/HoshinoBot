@@ -514,7 +514,7 @@ async def call_reserve(session: CommandSession, round_: int, boss_index: int):
         await session.send(msg)
 
 
-@on_command('see_reserve', aliases=("查询预约", ), only_to_me=False)
+@on_command('see_reserve', aliases=("查询预约", "预约查询"), only_to_me=False)
 async def _(session: CommandSession):
     context = session.ctx
     if context['message_type'] != 'group':
@@ -526,11 +526,21 @@ async def _(session: CommandSession):
     if not os.path.exists(reservation_path):
         await session.send('当前没有Boss预约')
     else:
-        msg = "当前各王预约人数："
+        msg = '当前各王预约：'
         reservation = json.load(open(reservation_path, 'r'))
         for index, r_list in reservation.items():
             name = bossNames[int(index) - 1]
-            msg += f'\n{name}：{len(r_list)}人'
+            msg += f'\n{name} {len(r_list)}人'
+            if len(r_list) > 0:
+                name_list = []
+                for uid in r_list:
+                    group_member_info = await session.bot.get_group_member_info(group_id=group_id, user_id=uid)
+                    name = group_member_info['card'].strip()
+                    if not name:
+                        name = group_member_info['nickname'].strip()
+                    name_list.append(name)
+
+                msg += f"：{'、'.join(name_list)}"
 
         await session.send(msg)
 
