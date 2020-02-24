@@ -39,6 +39,28 @@ def format_int(x: int) -> str:
     pass
 
 
+@on_command('clan-help', aliases=('会战指令',), permission=perm.GROUP, only_to_me=False)
+async def _(session: CommandSession):
+    msg = '※公会管理'
+    msg += '\n添加公会： add-clan --name 你的公会名'
+    msg += '\n加入公会： join-clan --name 你的角色名'
+    msg += '\n公会名单： list-member'
+
+    msg += '\n※报刀指令'
+    msg += '\n简易版报刀：  刀 114w r8 b1'
+    msg += '\n或者详细版： dmg 1919810 -r11 -b4 [--ext|--last|--timeout]'
+    msg += '\n其中-r：周目数 -b：Boss编号。-r11 -b4指11周目四王'
+    msg += '\next/last/timeout 分别指 补时刀/尾刀/掉刀 标志，仅能指定其中一种'
+
+    msg += '\n※公会战指令'
+    msg += '\n当前进度： 会战进度'
+    msg += '\n预约相关： 预约三王/取消预约三王/查询预约'
+    msg += '\n余刀查询： show-remain（管理员调用时将进行催刀。）'
+    msg += '\n分数排行： stat'
+
+    session.finish(msg)
+
+
 @on_command('add-clan', permission=perm.GROUP, shell_like=True, only_to_me=False)
 async def add_clan(session:CommandSession):
 
