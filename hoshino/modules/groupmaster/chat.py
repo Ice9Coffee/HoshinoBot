@@ -73,7 +73,7 @@ async def ban_word(session:CommandSession):
         msg_from += f'@[群:{ctx["group_id"]}]'
     elif ctx['message_type'] == 'discuss':
         msg_from += f'@[讨论组:{ctx["discuss_id"]}]'
-    logger.warning(f'Self: {ctx["self_id"]}, Message {ctx["message_id"]} from {msg_from}: {ctx["message"]}')
+    logger.critical(f'Self: {ctx["self_id"]}, Message {ctx["message_id"]} from {msg_from}: {ctx["message"]}')
     await session.send(random.choice(BANNED_WORD), at_sender=True)
     await silence(session.ctx, 24*60*60)
 
