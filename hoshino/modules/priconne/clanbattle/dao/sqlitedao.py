@@ -2,6 +2,8 @@ import sqlite3
 import os
 import logging
 import datetime
+from hoshino.log import logger
+from ..exception import DatabaseError
 
 DB_PATH = os.path.expanduser('~/.hoshino/clanbattle.db')
 
@@ -60,9 +62,8 @@ class ClanDao(SqliteDao):
                     '''.format(self._table, self._columns),
                     (clan['gid'], clan['cid'], clan['name'], clan['server']) )
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('ClanDao.add').error(e)
-                return -1
-            return 0
+                logger.error(f'[ClanDao.add] {e}')
+                raise DatabaseError('添加公会失败')
 
     
     def delete(self, gid, cid):
@@ -73,9 +74,8 @@ class ClanDao(SqliteDao):
                     '''.format(self._table),
                     (gid, cid) )
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('ClanDao.delete').error(e)
-                return -1
-            return 0
+                logger.error(f'[ClanDao.delete] {e}')
+                raise DatabaseError('删除公会失败')
 
     
     def modify(self, clan):
@@ -86,9 +86,8 @@ class ClanDao(SqliteDao):
                     '''.format(self._table),
                     (clan['name'], clan['server'], clan['gid'], clan['cid']) )
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('ClanDao.modify').error(e)
-                return -1
-            return 0           
+                logger.error(f'[ClanDao.modify] {e}')
+                raise DatabaseError('修改公会失败')       
 
 
     def find_one(self, gid, cid):
@@ -100,8 +99,8 @@ class ClanDao(SqliteDao):
                     (gid, cid) ).fetchone()
                 return self.row2item(ret)
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('ClanDao.find_one').error(e)
-            return None
+                logger.error(f'[ClanDao.find_one] {e}')
+                raise DatabaseError('查找公会失败')
 
 
     def find_all(self):
@@ -113,8 +112,8 @@ class ClanDao(SqliteDao):
                     ).fetchall()
                 return [self.row2item(r) for r in ret]
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('ClanDao.find_all').error(e)
-            return []       
+                logger.error(f'[ClanDao.find_all] {e}')
+                raise DatabaseError('查找公会失败')    
 
 
     def find_by_gid(self, gid):
@@ -126,8 +125,8 @@ class ClanDao(SqliteDao):
                     (gid,) ).fetchall()
                 return [self.row2item(r) for r in ret]
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('ClanDao.find_by_gid').error(e)
-            return []
+                logger.error(f'[ClanDao.find_by_gid] {e}')
+                raise DatabaseError('查找公会失败')    
 
 
 
@@ -159,9 +158,8 @@ class MemberDao(SqliteDao):
                     '''.format(self._table, self._columns),
                     (member['uid'], member['alt'], member['name'], member['gid'], member['cid']) )
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.add').error(e)
-                return -1
-            return 0
+                logger.error(f'[MemberDao.add] {e}')
+                raise DatabaseError('添加成员失败')
 
     
     def delete(self, uid, alt):
@@ -172,9 +170,8 @@ class MemberDao(SqliteDao):
                     '''.format(self._table),
                     (uid, alt) )
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.delete').error(e)
-                return -1
-            return 0
+                logger.error(f'[MemberDao.delete] {e}')
+                raise DatabaseError('删除成员失败')
 
 
     def modify(self, member):
@@ -185,9 +182,8 @@ class MemberDao(SqliteDao):
                     '''.format(self._table),
                     (member['name'], member['gid'], member['cid'], member['uid'], member['alt']) )
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.modify').error(e)
-                return -1
-            return 0           
+                logger.error(f'[MemberDao.modify] {e}')
+                raise DatabaseError('修改成员失败')       
 
 
     def find_one(self, uid, alt):
@@ -199,8 +195,8 @@ class MemberDao(SqliteDao):
                     (uid, alt) ).fetchone()
                 return self.row2item(ret)
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_one').error(e)
-            return None
+                logger.error(f'[MemberDao.find_one] {e}')
+                raise DatabaseError('查找成员失败')
 
 
     def find_all(self):
@@ -212,8 +208,8 @@ class MemberDao(SqliteDao):
                     ).fetchall()
                 return [self.row2item(r) for r in ret]
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_all').error(e)
-            return []
+                logger.error(f'[MemberDao.find_all] {e}')
+                raise DatabaseError('查找成员失败')
 
 
     def find_by(self, gid=None, cid=None, uid=None):
@@ -242,9 +238,38 @@ class MemberDao(SqliteDao):
                     cond_tup ).fetchall()
                 return [self.row2item(r) for r in ret]
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_by').error(e)
-            return []
+                logger.error(f'[MemberDao.find_by] {e}')
+                raise DatabaseError('查找成员失败')
 
+
+    def delete_by(self, gid=None, cid=None, uid=None):
+        cond_str = []
+        cond_tup = []
+        if not gid is None:
+            cond_str.append('gid=?')
+            cond_tup.append(gid)
+        if not cid is None:
+            cond_str.append('cid=?')
+            cond_tup.append(cid)
+        if not uid is None:
+            cond_str.append('uid=?')
+            cond_tup.append(uid)
+
+        if 0 == len(cond_tup):
+            raise DatabaseError('删除成员的条件有误')
+        
+        cond_str = " AND ".join(cond_str)
+        
+        with self._connect() as conn:
+            try:
+                cur = conn.execute('''
+                    DELETE FROM {0} WHERE {1}
+                    '''.format(self._table, cond_str), 
+                    cond_tup )
+                return cur.rowcount
+            except (sqlite3.DatabaseError) as e:
+                logger.error(f'[MemberDao.find_by] {e}')
+                raise DatabaseError('查找成员失败')
 
 
 class BattleDao(SqliteDao):
@@ -285,14 +310,14 @@ class BattleDao(SqliteDao):
     def add(self, challenge):
         with self._connect() as conn:
             try:
-                conn.execute('''
+                cur = conn.execute('''
                     INSERT INTO {0} ({1}) VALUES (NULL, ?, ?, ?, ?, ?, ?, ?)
                     '''.format(self._table, self._columns),
                     (challenge['uid'], challenge['alt'], challenge['time'], challenge['round'], challenge['boss'], challenge['dmg'], challenge['flag']) )
+                return cur.lastrowid
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('BattleDao.add').error(e)
-                return -1
-            return 0
+                logger.error(f'[BattleDao.add] {e}')
+                raise DatabaseError('添加记录失败')
 
     
     def delete(self, eid):
@@ -303,9 +328,8 @@ class BattleDao(SqliteDao):
                     '''.format(self._table),
                     (eid, ) )
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('BattleDao.delete').error(e)
-                return -1
-            return 0
+                logger.error(f'[BattleDao.delete] {e}')
+                raise DatabaseError('删除记录失败')
 
 
     def modify(self, challenge):
@@ -316,9 +340,8 @@ class BattleDao(SqliteDao):
                     '''.format(self._table),
                     (challenge['uid'], challenge['alt'], challenge['time'], challenge['round'], challenge['boss'], challenge['dmg'], challenge['flag'], challenge['eid']) )
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('BattleDao.modify').error(e)
-                return -1
-            return 0
+                logger.error(f'[BattleDao.modify] {e}')
+                raise DatabaseError('修改记录失败')
 
 
     def find_one(self, eid):
@@ -330,8 +353,8 @@ class BattleDao(SqliteDao):
                     (eid, ) ).fetchone()
                 return self.row2item(ret)
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('BattleDao.find_one').error(e)
-            return None
+                logger.error(f'[BattleDao.find_one] {e}')
+                raise DatabaseError('查找记录失败')
 
 
     def find_all(self):
@@ -343,8 +366,8 @@ class BattleDao(SqliteDao):
                     ).fetchall()
                 return [self.row2item(r) for r in ret]
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('BattleDao.find_all').error(e)
-            return []
+                logger.error(f'[BattleDao.find_all] {e}')
+                raise DatabaseError('查找记录失败')
 
 
     def find_by(self, uid=None, alt=None, order_by_user=False):
@@ -370,132 +393,7 @@ class BattleDao(SqliteDao):
                     cond_tup ).fetchall()
                 return [self.row2item(r) for r in ret]
             except (sqlite3.DatabaseError) as e:
-                logging.getLogger('BattleDao.find_by').error(e)
-            return []
-
-
-"""
-class SubscribeDao(SqliteDao):
-    IN_FIGHT  = 0x001
-    SUB_BOSS1 = 0x010
-    SUB_BOSS2 = 0x020
-    SUB_BOSS3 = 0x040
-    SUB_BOSS4 = 0x080
-    SUB_BOSS5 = 0x100
-
-
-    def __init__(self):
-        super().__init__(
-            table='subscribe',
-            columns='sid, uid, alt, gid, cid, flag',
-            fields='''
-            sid INTEGER PRIMARY KEY AUTOINCREMENT,
-            uid INT NOT NULL,
-            alt INT NOT NULL,
-            gid INT NOT NULL,
-            cid INT NOT NULL,
-            flag INT NOT NULL
-            ''')
-
-
-    @staticmethod
-    def row2item(r):
-        return {'sid': r[0], 'uid': r[1], 'alt': r[2], 'gid': r[3], 'cid': r[4], 'flag': r[5]} if r else None
-
-
-    def add(self, subscribe):
-        with self._connect() as conn:
-            try:
-                conn.execute('''
-                    INSERT INTO {0} ({1}) VALUES (?, ?, ?, ?, ?, ?)
-                    '''.format(self._table, self._columns),
-                    (subscribe['sid'], subscribe['uid'], subscribe['alt'], subscribe['gid'], subscribe['cid'], subscribe['flag']) )
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.add').error(e)
-                return -1
-            return 0
-
-    
-    def delete(self, sid):
-        with self._connect() as conn:
-            try:
-                conn.execute('''
-                    DELETE FROM {0} WHERE uid=? AND alt=?
-                    '''.format(self._table),
-                    (uid, alt) )
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.delete').error(e)
-                return -1
-            return 0
-
-
-    def modify(self, member):
-        with self._connect() as conn:
-            try:
-                conn.execute('''
-                    UPDATE {0} SET name=?, gid=?, cid=? WHERE uid=? AND alt=?
-                    '''.format(self._table),
-                    (member['name'], member['gid'], member['cid'], member['uid'], member['alt']) )
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.modify').error(e)
-                return -1
-            return 0           
-
-
-    def find_one(self, uid, alt):
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0} WHERE uid=? AND alt=?
-                    '''.format(self._table, self._columns),
-                    (uid, alt) ).fetchone()
-                return self.row2item(ret)
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_one').error(e)
-            return None
-
-
-    def find_all(self):
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0}
-                    '''.format(self._table, self._columns),
-                    ).fetchall()
-                return [self.row2item(r) for r in ret]
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_all').error(e)
-            return []
-
-
-    def find_by(self, gid=None, cid=None, uid=None):
-        cond_str = []
-        cond_tup = []
-        if not gid is None:
-            cond_str.append('gid=?')
-            cond_tup.append(gid)
-        if not cid is None:
-            cond_str.append('cid=?')
-            cond_tup.append(cid)
-        if not uid is None:
-            cond_str.append('uid=?')
-            cond_tup.append(uid)
-
-        if 0 == len(cond_tup):
-            return self.find_all()
-        
-        cond_str = " AND ".join(cond_str)
-        
-        with self._connect() as conn:
-            try:
-                ret = conn.execute('''
-                    SELECT {1} FROM {0} WHERE {2}
-                    '''.format(self._table, self._columns, cond_str), 
-                    cond_tup ).fetchall()
-                return [self.row2item(r) for r in ret]
-            except (sqlite3.DatabaseError) as e:
-                logging.getLogger('MemberDao.find_by').error(e)
-            return []
-"""
+                logger.error(f'[BattleDao.find_by] {e}')
+                raise DatabaseError('查找记录失败')
 
 
