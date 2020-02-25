@@ -22,6 +22,7 @@ from hoshino.service import Privilege as Priv
 from . import sv, cb_cmd
 from .argparse import ArgParser, ArgHolder, ParseResult
 from .argparse.argtype import *
+from .battlemaster import BattleMaster
 from .exception import *
 
 
@@ -104,7 +105,7 @@ async def list_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if l := len(mems):
         # 数字太多会被腾讯ban
         mems = map(lambda x: '{uid: <11,d} | {name}'.format_map(x), mems)
-        msg = f"{clan['name']}：人数 {l}/30\nQQ | 昵称\n" + '\n'.join(mems)
+        msg = f"\n{clan['name']}  人数 {l}/30\n____ QQ ____ | 昵称\n" + '\n'.join(mems)
         await bot.send(ctx, msg, at_sender=True)
     else:
         raise NotFoundError(ERROR_ZERO_MEMBER)
@@ -214,8 +215,8 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     eid = bm.add_challenge(mem['uid'], mem['alt'], round_, boss, damage, flag, now)
     aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
     max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
-    msg.append(f"记录编号E{eid}：{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害")
-    msg.append(f"{clan['name']}当前进度：{aft_round}周目{aft_boss}王\nHP={aft_hp:,d}/{max_hp:,d}\nSCOREx{score_rate:.1f}")
+    msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害")
+    msg.append(f"{clan['name']} 当前进度：\n{aft_round}周目{aft_boss}王    SCORE x{score_rate:.1f}\nHP={aft_hp:,d}/{max_hp:,d}")
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
     # 判断是否更换boss，呼叫预约
@@ -223,7 +224,7 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
         await call_reserve(bot, ctx, aft_round, aft_boss)
 
 
-@cb_cmd('出刀', ArgParser(usage='!出刀 <伤害值> (Q<qq号>)', arg_dict={
+@cb_cmd(('出刀', '报刀'), ArgParser(usage='!出刀 <伤害值> (Q<qq号>)', arg_dict={
     '': ArgHolder(tip='伤害值', type=damage_int),
     'Q': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
@@ -240,7 +241,7 @@ async def add_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await process_challenge(bot, ctx, challenge)
 
 
-@cb_cmd(('出尾刀', '收尾'), ArgParser(usage='!出尾刀 (<伤害值>) (Q<qq号>)', arg_dict={
+@cb_cmd(('出尾刀', '收尾', '尾刀'), ArgParser(usage='!出尾刀 (<伤害值>) (Q<qq号>)', arg_dict={
     '': ArgHolder(tip='伤害值', type=damage_int, default=0),
     'Q': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
@@ -257,7 +258,7 @@ async def add_challenge_last(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await process_challenge(bot, ctx, challenge)
 
 
-@cb_cmd('出补时刀', ArgParser(usage='!出补时刀 <伤害值> (Q<qq号>)', arg_dict={
+@cb_cmd(('出补时刀', '补时刀', '补时'), ArgParser(usage='!出补时刀 <伤害值> (Q<qq号>)', arg_dict={
     '': ArgHolder(tip='伤害值', type=damage_int),
     'Q': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
@@ -310,6 +311,7 @@ async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 # TODO 将预约信息转至数据库
 SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
+SUBSCRIBE_MAX = 3
 os.makedirs(SUBSCRIBE_PATH, exist_ok=True)
 
 def _load_sub(gid):
@@ -345,11 +347,13 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if not mem:
         raise NotFoundError(ERROR_MEMBER_NOTFOUND)
     
-    sub = _load_sub(bm.group)    
+    sub = _load_sub(bm.group)
     boss = args['']
     slist = sub[str(boss)]
     if uid in slist:
         await bot.send(ctx, f'您已经预约过{bm.int2kanji(boss)}王了', at_sender=True)
+    elif len(slist) >= SUBSCRIBE_MAX:
+        await bot.send(ctx, f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX}', at_sender=True)
     else:
         slist.append(uid)
         _save_sub(sub, bm.group)
@@ -389,12 +393,15 @@ async def unsubscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 
 async def call_reserve(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
-    sub = _load_sub(ctx['group_id'])
+    gid = ctx['group_id']
+    sub = _load_sub(gid)
     slist = sub[str(boss)]
     if slist:
         msg = [ f"您们预约的老{BattleMaster.int2kanji(boss)}出现啦！" ]
         msg.extend(map(lambda x: str(ms.at(x)), slist))
-        msg.append("快点出刀！错过本轮重新预约")
+        msg.append("快点出刀！错过本轮请重新预约")
+        slist.clear()
+        _save_sub(sub, gid)
         await bot.send(ctx, '\n'.join(msg))    
 
 
@@ -404,14 +411,33 @@ async def list_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     clan = bm.get_clan(1)
     if not clan:
         raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    msg = [ f"{clan['name']}当前预约情况：" ]
+    msg = [ f"\n{clan['name']}当前预约情况：" ]
     sub = _load_sub(bm.group)
     for boss in range(1, 6):
         slist = sub[str(boss)]
-        msg.append(f"Boss {boss}: {len(slist)}人")
+        msg.append(f"========\n老{bm.int2kanji(boss)}: {len(slist)}人")
         msg.extend(_gen_sublist_msg(bm, slist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
+
+@cb_cmd(('清空预约', '预约清空', '清理预约', '预约清理'), ArgParser('!清空预约', arg_dict={
+    '': ArgHolder(tip='Boss编号', type=boss_code)}))
+async def clear_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    clan = bm.get_clan(1)
+    if not clan:
+        raise NotFoundError(ERROR_CLAN_NOTFOUND)
+    if not await sv.check_permission(ctx, Priv.ADMIN):
+        raise PermissionDeniedError(ERROR_PERMISSION_DENIED + '才能清理预约队列')
+    sub = _load_sub(bm.group)
+    boss = args['']
+    slist = sub[str(boss)]
+    if slist:
+        slist.clear()
+        _save_sub(sub, bm.group)
+        await bot.send(ctx, f"{bm.int2kanji(boss)}王预约队列已清空", at_sender=True)
+    else:
+        raise NotFoundError(f"无人预约{bm.int2kanji(boss)}王")
 
 
 @cb_cmd('进度', ArgParser(usage='!进度'))
@@ -422,7 +448,7 @@ async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
         raise NotFoundError(ERROR_CLAN_NOTFOUND)
     r, b, hp = bm.get_challenge_progress(1, datetime.now())
     max_hp, score_rate = bm.get_boss_info(r, b, clan['server'])
-    msg = f"{clan['name']}当前进度：{r}周目{b}王\nHP={hp:,d}/{max_hp:,d}\nSCOREx{score_rate:.1f}"
+    msg = f"\n{clan['name']} 当前进度：\n{r}周目{b}王    SCORE x{score_rate:.1f}\nHP={hp:,d}/{max_hp:,d}"
     await bot.send(ctx, msg, at_sender=True)
 
 
@@ -434,7 +460,7 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if not clan:
         raise NotFoundError(ERROR_CLAN_NOTFOUND)
     yyyy, mm, _ = bm.get_yyyymmdd(now)
-    msg = [ f"{yyyy}年{mm}月会战{clan['name']}分数统计：" ]
+    msg = [ f"\n{yyyy}年{mm}月会战{clan['name']}分数统计：" ]
     stat = bm.stat_score(1, now)
     stat.sort(key=lambda x: x[3], reverse=True)
     for _, _, name, score in stat:
@@ -453,19 +479,15 @@ async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:
         raise PermissionDeniedError(ERROR_PERMISSION_DENIED + '才能催刀。您可以用【!查刀】查询余刀')
     rlist = bm.list_challenge_remain(1, datetime.now())
     rlist.sort(key=lambda x: x[3] + x[4], reverse=True)
-    msg = [ f"{clan['name']}今日余刀：" ]
+    msg = [ f"\n{clan['name']}今日余刀：" ]
     for uid, _, name, r_n, r_e in rlist:
         if r_n or r_e:
-            line = f"{ms.at(uid) if at_user else name} 剩"
-            if r_n:
-                line += f" {r_n}正常刀"
-            if r_e:
-                line += f" {r_e}补时刀"
+            line = f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}"
             msg.append(line)
     if len(msg) == 1:
         await bot.send(ctx, f"今日{clan['name']}所有成员均已下班！各位辛苦了！", at_sender=True)
     else:
-        msg.append("负数说明报刀有误 请注意核对")
+        msg.append("⚠️若有负数说明报刀有误 请注意核对")
         if at_user:
             msg.append("=========\n在？阿sir喊你出刀啦！")
         await bot.send(ctx, '\n'.join(msg), at_sender=True)
@@ -476,5 +498,4 @@ async def list_remain(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await _do_show_remain(bot, ctx, args, at_user=False)
 @cb_cmd('催刀', ArgParser(usage='!催刀'))
 async def urge_remain(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    await _do_show_remain(bot, ctx, args, at_user=False)
-
+    await _do_show_remain(bot, ctx, args, at_user=True)
