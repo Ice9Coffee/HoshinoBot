@@ -2,6 +2,7 @@ from os import path
 import ujson as json
 from datetime import datetime, timezone, timedelta
 from .dao.sqlitedao import ClanDao, MemberDao, BattleDao
+from .exception import NotFoundError
 
 
 def get_config():
@@ -12,8 +13,6 @@ def get_config():
 
 
 class BattleMaster(object):
-
-    NOT_FOUND = 404
 
     NORM    = BattleDao.NORM
     LAST    = BattleDao.LAST
@@ -75,6 +74,15 @@ class BattleMaster(object):
 
 
     @staticmethod
+    def get_boss_info(round_, boss, server):
+        stage = BattleMaster.get_stage(round_)
+        config = get_config()
+        boss_hp = config[ config["BOSS_HP"][server] ][ stage-1 ][ boss-1 ]
+        score_rate = config[ config["SCORE_RATE"][server] ][ stage-1 ][ boss-1 ]
+        return boss_hp, score_rate
+
+
+    @staticmethod
     def get_boss_hp(round_, boss, server):
         stage = BattleMaster.get_stage(round_)
         config = get_config()
@@ -113,64 +121,44 @@ class BattleMaster(object):
         return BattleDao(self.group, cid, yyyy, mm)
 
 
-    def has_clan(self, cid):
-        return True if self.clandao.find_one(self.group, cid) else False
-
-
-    def get_clan(self, cid):
-        return self.clandao.find_one(self.group, cid)
-
-
     def add_clan(self, cid, name, server):
         return self.clandao.add({'gid': self.group, 'cid': cid, 'name': name, 'server': server})
-
-
+    def del_clan(self, cid):
+        return self.clandao.delete(self.group, cid)
+    def mod_clan(self, cid, name, server):
+        return self.clandao.modify({'gid': self.group, 'cid': cid, 'name': name, 'server': server})
+    def has_clan(self, cid):
+        return True if self.clandao.find_one(self.group, cid) else False
+    def get_clan(self, cid):
+        return self.clandao.find_one(self.group, cid)
     def list_clan(self):
         return self.clandao.find_by_gid(self.group)
 
 
-    def mod_clan(self, cid, name):
-        return self.clandao.modify({'gid': self.group, 'cid': cid, 'name': name})
-
-
-    def del_clan(self, cid):
-        return self.clandao.delete(self.group, cid)
-
-
     def add_member(self, uid, alt, name, cid):
         return self.memberdao.add({'uid': uid, 'alt': alt, 'name': name, 'gid': self.group, 'cid': cid})
-
-
+    def del_member(self, uid, alt):
+        return self.memberdao.delete(uid, alt)
+    def clear_member(self, cid=None):
+        return self.memberdao.delete_by(gid=self.group, cid=cid)
+    def mod_member(self, uid, alt, new_name, new_cid):
+        return self.memberdao.modify({'uid': uid, 'alt': alt, 'name': new_name, 'gid': self.group, 'cid': new_cid})
     def has_member(self, uid, alt):
         mem = self.memberdao.find_one(uid, alt)
         return True if mem and mem['gid'] == self.group else False
-
-
     def get_member(self, uid, alt):
         mem = self.memberdao.find_one(uid, alt)
         return mem if mem and mem['gid'] == self.group else None
-
-
     def list_member(self, cid=None):
         return self.memberdao.find_by(gid=self.group, cid=cid)
-
-
     def list_account(self, uid):
         return self.memberdao.find_by(gid=self.group, uid=uid)
-
-    
-    def mod_member(self, uid, alt, new_name, new_cid):
-        return self.memberdao.modify({'uid': uid, 'alt': alt, 'name': new_name, 'gid': self.group, 'cid': new_cid})
-
-
-    def del_member(self, uid, alt):
-        return self.memberdao.delete(uid, alt)
 
 
     def add_challenge(self, uid, alt, round_, boss, dmg, flag, time):
         mem = self.get_member(uid, alt)
         if not mem or mem['gid'] != self.group:
-            return BattleMaster.NOT_FOUND
+            raise NotFoundError('未找到成员')
         challenge = {
             'uid':   uid,
             'alt':   alt,
@@ -183,11 +171,10 @@ class BattleMaster(object):
         dao = self.get_battledao(mem['cid'], time)
         return dao.add(challenge)
 
-
     def mod_challenge(self, eid, uid, alt, round_, boss, dmg, flag, time):
         mem = self.get_member(uid, alt)
         if not mem or mem['gid'] != self.group:
-            return BattleMaster.NOT_FOUND
+            raise NotFoundError('未找到成员')
         challenge = {
             'eid':   eid,
             'uid':   uid,
@@ -201,21 +188,17 @@ class BattleMaster(object):
         dao = self.get_battledao(mem['cid'], time)
         return dao.modify(challenge)
 
-
     def del_challenge(self, eid, cid, time):
         dao = self.get_battledao(cid, time)
         return dao.delete(eid)
-
 
     def get_challenge(self, eid, cid, time):
         dao = self.get_battledao(cid, time)
         return dao.find_one(eid)
 
-
     def list_challenge(self, cid, time):
         dao = self.get_battledao(cid, time)
         return dao.find_all()
-
 
     def list_challenge_of_user(self, uid, alt, time):
         mem = self.memberdao.find_one(uid, alt)
@@ -317,7 +300,7 @@ class BattleMaster(object):
 
     def get_challenge_progress(self, cid, time):
         '''
-        return (round_, boss, remain_hp)
+        return (round, boss, remain_hp)
         '''
         clan = self.get_clan(cid)
         if not clan:
@@ -339,5 +322,3 @@ class BattleMaster(object):
             round_, boss = self.next_boss(round_, boss)
             remain_hp = self.get_boss_hp(round_, boss, server)
         return (round_, boss, remain_hp)
-
-
