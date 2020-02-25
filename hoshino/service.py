@@ -204,7 +204,7 @@ class Service:
         self.logger.info(f'Service {self.name} is disabled at group {group_id}')
 
 
-    def on_message(self, arg=None):
+    def on_message(self, event=None):
         def deco(func):
             @wraps(func)
             async def wrapper(ctx):
@@ -214,19 +214,22 @@ class Service:
                         self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                     except Exception as e:
                         self.logger.exception(e)
-                        self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
+                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
                     return
-            return self.bot.on_message(arg)(wrapper)
+            return self.bot.on_message(event)(wrapper)
         return deco
 
 
-    def on_keyword(self, keywords:Iterable, arg=None):
+    def on_keyword(self, keywords:Iterable, normalize=False, event=None):
         normalized_keywords = tuple(util.normalize_str(kw) for kw in keywords)
         def deco(func):
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
-                    plain_text = util.normalize_str(ctx['message'].extract_plain_text())
+                    plain_text = ctx['message'].extract_plain_text()
+                    if normalize:
+                        plain_text = util.normalize_str(plain_text)
+                    ctx['plain_text'] = plain_text
                     for kw in normalized_keywords:
                         if plain_text.find(kw) >= 0:
                             try:
@@ -234,18 +237,23 @@ class Service:
                                 self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                             except Exception as e:
                                 self.logger.exception(e)
-                                self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
+                                self.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
                             return
-            return self.bot.on_message(arg)(wrapper)
+            return self.bot.on_message(event)(wrapper)
         return deco
 
 
-    def on_rex(self, rex, arg=None):
+    def on_rex(self, rex, normalize=False, event=None):
+        if isinstance(str):
+            rex = re.compile(rex)            
         def deco(func):
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
-                    plain_text = util.normalize_str(ctx['message'].extract_plain_text())
+                    plain_text = ctx['message'].extract_plain_text()
+                    if normalize:
+                        plain_text = util.normalize_str(plain_text)
+                    ctx['plain_text'] = plain_text                
                     match = rex.search(plain_text)
                     if match:
                         try:
@@ -253,9 +261,9 @@ class Service:
                             self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                         except Exception as e:
                             self.logger.exception(e)
-                            self.logger.error(f'Error occured when {func.__name__} handling message {ctx["message_id"]}.')
+                            self.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
                         return
-            return self.bot.on_message(arg)(wrapper)
+            return self.bot.on_message(event)(wrapper)
         return deco
 
 
@@ -271,7 +279,7 @@ class Service:
                         raise e
                     except Exception as e:
                         self.logger.exception(e)
-                        self.logger.error(f'Error occured when {func.__name__} handling message {session.ctx["message_id"]}.')
+                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                     return
                 elif deny_tip:
                     await session.send(deny_tip, at_sender=True)
@@ -290,7 +298,7 @@ class Service:
                         self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language by {func.__name__}.')
                     except Exception as e:
                         self.logger.exception(e)
-                        self.logger.error(f'Error occured when {func.__name__} handling message {session.ctx["message_id"]}.')
+                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                     return
             return nonebot.on_natural_language(keywords, **kwargs)(wrapper)
         return deco
@@ -310,6 +318,6 @@ class Service:
                     self.logger.info(f'Scheduled job {func.__name__} completed.')
                 except Exception as e:
                     self.logger.exception(e)
-                    self.logger.error(f'Error occured when doing scheduled job {func.__name__}.')
+                    self.logger.error(f'{type(e)} occured when doing scheduled job {func.__name__}.')
             return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
         return deco
