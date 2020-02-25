@@ -10,12 +10,10 @@ from hoshino.service import Service, Privilege
 from .argparse import ArgParser
 from .exception import *
 
-sv = Service('clanbattle', manage_priv=Privilege.SUPERUSER, enable_on_default=False)
+sv = Service('clanbattle', manage_priv=Privilege.SUPERUSER, enable_on_default=True)
 SORRY = 'ごめんなさい！嘤嘤嘤(〒︿〒)'
 
-
 _registry:Dict[str, Tuple[Callable, ArgParser]] = {}
-
 
 @sv.on_rex(re.compile(r'^[!！](.+)', re.DOTALL), event='group')
 async def _clanbattle_bus(bot:NoneBot, ctx, match):
@@ -61,11 +59,6 @@ async def cb_help(bot:NoneBot, ctx, args:ParseResult):
     msg = '''
 # PCR会战管理v2.0
 猴子也会用的会战管理
-
-## 特色
-- 命令简洁，学习简单
-- 预约Boss，自动提醒
-- 一键催刀，警察减负
 
 ## 快速开始
 > 【必读事项】
