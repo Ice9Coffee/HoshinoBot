@@ -7,6 +7,7 @@ from nonebot import on_command, CommandSession, MessageSegment
 from nonebot import on_natural_language, NLPSession, IntentCommand
 from nonebot import permission as perm
 
+from hoshino.log import logger
 from hoshino.util import silence, delete_msg
 from hoshino.res import R
 
@@ -66,7 +67,14 @@ async def mua(session:CommandSession):
 BANNED_WORD = ('rbq', 'RBQ', '憨批', '废物', '死妈', '崽种', '傻逼', '傻逼玩意', '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp', 'nmsl', 'D区', '口区')
 @on_command('ban_word', aliases=BANNED_WORD, only_to_me=True)
 async def ban_word(session:CommandSession):
-    await session.send(random.choice(BANNED_WORD))
+    ctx = session.ctx
+    msg_from = str(ctx['user_id'])
+    if ctx['message_type'] == 'group':
+        msg_from += f'@[群:{ctx["group_id"]}]'
+    elif ctx['message_type'] == 'discuss':
+        msg_from += f'@[讨论组:{ctx["discuss_id"]}]'
+    logger.critical(f'Self: {ctx["self_id"]}, Message {ctx["message_id"]} from {msg_from}: {ctx["message"]}')
+    await session.send(random.choice(BANNED_WORD), at_sender=True)
     await silence(session.ctx, 24*60*60)
 
 

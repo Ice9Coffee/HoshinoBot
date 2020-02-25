@@ -26,7 +26,7 @@ async def send_help(session:CommandSession):
 - 常用网址：pcr速查
 - プリコネRe:Dive官方四格查阅：@bot官漫123
 + プリコネRe:Dive官方四格推送（默认开启）
-- 会战管理（参见github.com/Ice-Cirno/HoshinoBot）
+- 会战管理：（使用【!帮助】召唤指南）
 
 蜜柑番剧
 * 启用本模块：开启_bangumi
