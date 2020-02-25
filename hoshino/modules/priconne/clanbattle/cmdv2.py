@@ -310,6 +310,7 @@ async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 # TODO 将预约信息转至数据库
 SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
+SUBSCRIBE_MAX = 3
 os.makedirs(SUBSCRIBE_PATH, exist_ok=True)
 
 def _load_sub(gid):
@@ -345,11 +346,13 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if not mem:
         raise NotFoundError(ERROR_MEMBER_NOTFOUND)
     
-    sub = _load_sub(bm.group)    
+    sub = _load_sub(bm.group)
     boss = args['']
     slist = sub[str(boss)]
     if uid in slist:
         await bot.send(ctx, f'您已经预约过{bm.int2kanji(boss)}王了', at_sender=True)
+    elif len(slist) > SUBSCRIBE_MAX:
+        await bot.send(ctx, f'{bm.int2kanji(boss)}王预约人数已达上限：{SUBSCRIBE_MAX} 预约失败', at_sender=True)
     else:
         slist.append(uid)
         _save_sub(sub, bm.group)
