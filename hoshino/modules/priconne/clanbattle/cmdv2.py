@@ -395,6 +395,7 @@ async def call_reserve(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
         msg = [ f"您们预约的老{BattleMaster.int2kanji(boss)}出现啦！" ]
         msg.extend(map(lambda x: str(ms.at(x)), slist))
         msg.append("快点出刀！错过本轮重新预约")
+        slist.clear()
         await bot.send(ctx, '\n'.join(msg))    
 
 
