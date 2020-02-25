@@ -244,7 +244,7 @@ class Service:
 
 
     def on_rex(self, rex, normalize=False, event=None):
-        if isinstance(str):
+        if isinstance(rex, str):
             rex = re.compile(rex)            
         def deco(func):
             @wraps(func)

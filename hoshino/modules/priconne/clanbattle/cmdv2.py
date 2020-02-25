@@ -22,6 +22,7 @@ from hoshino.service import Privilege as Priv
 from . import sv, cb_cmd
 from .argparse import ArgParser, ArgHolder, ParseResult
 from .argparse.argtype import *
+from .battlemaster import BattleMaster
 from .exception import *
 
 
@@ -215,7 +216,7 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
     max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
     msg.append(f"记录编号E{eid}：{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害")
-    msg.append(f"{clan['name']}当前进度：{aft_round}周目{aft_boss}王\nHP={aft_hp:,d}/{max_hp:,d}\nSCOREx{score_rate:.1f}")
+    msg.append(f"{clan['name']}当前进度：\n{aft_round}周目{aft_boss}王\nHP={aft_hp:,d}/{max_hp:,d}\nSCOREx{score_rate:.1f}")
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
     # 判断是否更换boss，呼叫预约
@@ -351,7 +352,7 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     slist = sub[str(boss)]
     if uid in slist:
         await bot.send(ctx, f'您已经预约过{bm.int2kanji(boss)}王了', at_sender=True)
-    elif len(slist) > SUBSCRIBE_MAX:
+    elif len(slist) >= SUBSCRIBE_MAX:
         await bot.send(ctx, f'{bm.int2kanji(boss)}王预约人数已达上限：{SUBSCRIBE_MAX} 预约失败', at_sender=True)
     else:
         slist.append(uid)

@@ -55,7 +55,7 @@ class ArgParser:
                 raise ParseError(msg, self.usage)
         
         # 检查所有参数是否以赋值
-        for name, holder in self.arg_dict:
+        for name, holder in self.arg_dict.items():
             if name not in result:
                 if holder.default is None:  # 缺失必要参数 抛异常
                     msg = f"请给出{holder.tip or '缺少的参数'}"
