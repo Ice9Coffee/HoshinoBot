@@ -55,7 +55,7 @@ async def add_clan(session:CommandSession):
 
     name = args.name
     if not name:
-        ginfo = await session.bot._get_group_info(group_id=group_id)
+        ginfo = await session.bot._get_group_info(self_id=session.ctx['self_id'], group_id=group_id)
         name = ginfo['group_name']
 
     cid = args.cid
@@ -279,7 +279,7 @@ async def process_challenge(session: CommandSession, challenge):
         elif flag & BattleMaster.LAST and damage < current_hp - 50000:
             warn_last = '本次尾刀上报后，Boss仍有较多血量，请注意核对并请尚未报刀的成员及时报刀\n'
 
-    if battlemaster.add_challenge(uid, alt, round_, boss, damage, flag, datetime.now()):
+    if battlemaster.add_challenge(uid, alt, round_, boss, damage, flag, datetime.now()) < 0:
         await session.send('记录添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)')
     else:
         after_round, after_boss, after_hp = battlemaster.get_challenge_progress(
@@ -293,8 +293,8 @@ async def process_challenge(session: CommandSession, challenge):
         await session.send(f'{warn_prog}{warn_last}{msg1}{msg2}')
 
         # 判断是否更换boss，呼叫预约
-        if after_round > current_round or (after_round == current_round and after_boss > current_boss):
-            await call_reserve(session, after_round, after_boss)
+        # if after_round > current_round or (after_round == current_round and after_boss > current_boss):
+        #     await call_reserve(session, after_round, after_boss)
 
 
 @on_command('add-challenge-e', aliases=('dmge', '刀'), permission=perm.GROUP, only_to_me=False)
@@ -497,6 +497,7 @@ async def del_challenge(session: CommandSession):
         await session.send(f'已成功删除{cid}会的{eid}号出刀记录')
 
 
+"""
 async def call_reserve(session: CommandSession, round_: int, boss_index: int):
     context = session.ctx
     group_id = context['group_id']
@@ -629,3 +630,4 @@ async def _(session: CommandSession):
 @on_command('unreserve5', aliases=('取消预约五王', ), only_to_me=False)
 async def _(session: CommandSession):
     await unreserve_function(session, 5)
+"""
