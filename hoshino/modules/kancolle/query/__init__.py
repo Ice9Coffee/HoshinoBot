@@ -58,7 +58,7 @@ async def random_equip(session:CommandSession):
     await session.send(pic, at_sender=True)
 
 
-@sv.on_rex(re.compile(r"^\*"))
+@sv.on_rex(re.compile(r"^\*"), normalize=False, event='group')
 async def kc_query(bot:NoneBot, ctx, m):
     key = ctx['message'].extract_plain_text()
     if key in DB:
