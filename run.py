@@ -1,6 +1,3 @@
-from os import path
-
-import nonebot
 import config
 import hoshino
 
