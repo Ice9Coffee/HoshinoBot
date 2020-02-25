@@ -397,7 +397,7 @@ async def call_reserve(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
         await bot.send(ctx, '\n'.join(msg))    
 
 
-@cb_cmd(('查询预约', '预约查询'), ArgParser('!查询预约'))
+@cb_cmd(('查询预约', '预约查询', '查看预约', '预约查看'), ArgParser('!查询预约'))
 async def list_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     clan = bm.get_clan(1)
