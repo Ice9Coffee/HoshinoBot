@@ -31,23 +31,23 @@ async def _clanbattle_bus(bot:NoneBot, ctx, match):
         except Exception as e:
             sv.logger.exception(e)
             sv.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
-            await bot.send(ctx, 'Error: 机器人出现未预料的错误\n{SORRY}\n※请及时联系维护组', at_sender=True)
+            await bot.send(ctx, f'Error: 机器人出现未预料的错误\n{SORRY}\n※请及时联系维护组', at_sender=True)
 
 
 def cb_cmd(name, parser:ArgParser) -> Callable:
-    name = util.normalize_str(name)
-    def _(func) -> Callable:
-        if isinstance(name, str):
-            name = (name, )
-        if not isinstance(name, Iterable):
-            raise ValueError('`name` of cb_cmd must be `str` or `Iterable[str]`')
-        names = map(lambda x: util.normalize_str(x), name)
+    if isinstance(name, str):
+        name = (name, )
+    if not isinstance(name, Iterable):
+        raise ValueError('`name` of cb_cmd must be `str` or `Iterable[str]`')
+    names = map(lambda x: util.normalize_str(x), name)
+    def deco(func) -> Callable:
         for n in names:
             if n in _registry:
                 sv.logger.warning(f'出现重名命令：{func.__name__} 与 {_registry[n].__name__}命令名冲突')
             else:
                 _registry[n] = (func, parser)
         return func
+    return deco
 
 
 from .cmdv1 import *
