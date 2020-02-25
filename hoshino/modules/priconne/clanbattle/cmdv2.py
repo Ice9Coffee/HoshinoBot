@@ -310,6 +310,7 @@ async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 # TODO 将预约信息转至数据库
 SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
+os.makedirs(SUBSCRIBE_PATH, exist_ok=True)
 
 def _load_sub(gid):
     filename = os.path.join(SUBSCRIBE_PATH, f"{gid}.json")
