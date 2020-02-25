@@ -2,8 +2,6 @@ import random
 import asyncio
 
 import nonebot
-from nonebot import on_command, CommandSession, Message
-from nonebot import on_natural_language, NLPSession, IntentCommand
 
 from .gacha import gacha_10_aliases, gacha_1_aliases
 from hoshino.log import logger

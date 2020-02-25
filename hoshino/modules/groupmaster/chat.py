@@ -1,8 +1,3 @@
-'''
-聊天吹水 for Princess Connect Re:Dive
-'''
-
-
 import re
 import math
 import random
@@ -68,9 +63,10 @@ async def mua(session:CommandSession):
     await session.send('笨蛋~')
 
 
-@on_command('ban_word', aliases=('rbq', 'RBQ', '憨批', '废物', '死妈', 'a片', 'A片', '崽种', '傻逼', '傻逼玩意', '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp'), only_to_me=True)
+BANNED_WORD = ('rbq', 'RBQ', '憨批', '废物', '死妈', '崽种', '傻逼', '傻逼玩意', '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp', 'nmsl', 'D区', '口区')
+@on_command('ban_word', aliases=BANNED_WORD, only_to_me=True)
 async def ban_word(session:CommandSession):
-    await session.send('D区')
+    await session.send(random.choice(BANNED_WORD))
     await silence(session.ctx, 24*60*60)
 
 

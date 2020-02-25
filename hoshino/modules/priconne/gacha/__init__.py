@@ -26,7 +26,7 @@ gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发�
 gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋',
                    '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 
-GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n使用【启用 gacha】以启用\n（需管理员权限）'
+GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n使用【启用 gacha】以启用\n（需群管理）'
 GACHA_EXCEED_NOTICE = f'您今天已经抽过{_max_gacha_per_day}次了，欢迎明天再来！'
 
 

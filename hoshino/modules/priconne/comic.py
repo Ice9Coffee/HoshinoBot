@@ -1,16 +1,13 @@
+import os
 import re
 import random
 import ujson as json
 import requests
 import asyncio
 from urllib.parse import urljoin, urlparse, parse_qs
-from os import path
 
-import nonebot
-from nonebot import on_command, CommandSession, CQHttpError
-from nonebot import on_natural_language, NLPSession, IntentCommand
+from nonebot import CQHttpError, NLPSession
 
-from hoshino.log import logger
 from hoshino.res import R
 from hoshino.service import Service
 
@@ -34,7 +31,7 @@ async def comic(session:NLPSession):
     arg = session.msg_text.strip()
     match = rex.search(arg)
     if not match:
-        await session.send('请输入漫画集数 如：官漫 132')
+        await session.send('请输入漫画集数 如：官漫132')
         return
     episode = match.group()
     index = load_index()
@@ -52,15 +49,15 @@ def download_img(save_path, link):
     从link下载图片保存至save_path（目录+文件名）
     会覆盖原有文件，需保证目录存在
     '''
-    logger.info(f'download_img from {link}')
+    sv.logger.info(f'download_img from {link}')
     resp = requests.get(link, stream=True)
-    logger.info(f'status_code={resp.status_code}')
+    sv.logger.info(f'status_code={resp.status_code}')
     if 200 == resp.status_code:
         if re.search(r'image', resp.headers['content-type'], re.I):
-            logger.info(f'is image, saving to {save_path}')
+            sv.logger.info(f'is image, saving to {save_path}')
             with open(save_path, 'wb') as f:
                 f.write(resp.content)
-                logger.info('saved!')
+                sv.logger.info('saved!')
 
 
 def download_comic(id_):
@@ -69,16 +66,15 @@ def download_comic(id_):
     episode_num可能会小于id
     '''
     base = 'https://comic.priconne-redive.jp/api/detail/'
-    save_dir = path.join(nonebot.get_bot().config.RESOURCE_DIR, 'img/priconne/comic/')
+    save_dir = R.img('priconne/comic/').path
     index = load_index()
 
-
     # 先从api获取detail，其中包含图片真正的链接
-    logger.info(f'getting comic {id_} ...')
+    sv.logger.info(f'getting comic {id_} ...')
     url = base + id_
-    logger.info(f'url={url}')
+    sv.logger.info(f'url={url}')
     resp = requests.get(url)
-    logger.info(f'status_code={resp.status_code}')
+    sv.logger.info(f'status_code={resp.status_code}')
     if 200 != resp.status_code:
         return
     data = resp.json()[0]
@@ -87,17 +83,17 @@ def download_comic(id_):
     title = data['title']
     link = data['cartoon']
     index[episode] = {'title': title, 'link': link}
-    logger.info(f'episode={index[episode]}')
+    sv.logger.info(f'episode={index[episode]}')
 
     # 下载图片并保存
-    download_img(path.join(save_dir, get_pic_name(episode)), link)
+    download_img(os.path.join(save_dir, get_pic_name(episode)), link)
 
     # 保存官漫目录信息
-    with open(path.join(save_dir, 'index.json'), 'w', encoding='utf8') as f:
+    with open(os.path.join(save_dir, 'index.json'), 'w', encoding='utf8') as f:
         json.dump(index, f, ensure_ascii=False)
 
 
-@sv.scheduled_job('cron', minute='*/5', second='25', misfire_grace_time=10, coalesce=True)
+@sv.scheduled_job('cron', minute='*/5', second='25')
 async def update_seeker(group_list):
     '''
     轮询官方四格漫画更新
@@ -120,11 +116,11 @@ async def update_seeker(group_list):
         qs = urlparse(index[episode]['link']).query
         old_id = parse_qs(qs)['id'][0]
         if id_ == old_id:
-            logger.info('未检测到官漫更新')
+            sv.logger.info('未检测到官漫更新')
             return
     
     # 确定已有更新，下载图片
-    logger.info(f'发现更新 id={id_}')
+    sv.logger.info(f'发现更新 id={id_}')
     download_comic(id_)
 
     # 推送至各个订阅群
@@ -135,8 +131,8 @@ async def update_seeker(group_list):
         await asyncio.sleep(0.5)  # 降低发送频率，避免被腾讯ban
         try:
             await sv.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message=msg)
-            logger.info(f'群{group} 投递PCR官漫更新成功')
+            sv.logger.info(f'群{group} 投递PCR官漫更新成功')
         except CQHttpError as e:
-            logger.error(f'Error：群{group} 投递PCR官漫更新失败 {type(e)}')
+            sv.logger.error(f'Error：群{group} 投递PCR官漫更新失败 {type(e)}')
 
-    logger.info('计划任务：update_seeker 完成')
+    sv.logger.info('计划任务：update_seeker 完成')
