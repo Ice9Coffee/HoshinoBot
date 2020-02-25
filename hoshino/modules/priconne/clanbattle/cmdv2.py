@@ -353,7 +353,7 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if uid in slist:
         await bot.send(ctx, f'您已经预约过{bm.int2kanji(boss)}王了', at_sender=True)
     elif len(slist) >= SUBSCRIBE_MAX:
-        await bot.send(ctx, f'{bm.int2kanji(boss)}王预约人数已达上限：{SUBSCRIBE_MAX} 预约失败', at_sender=True)
+        await bot.send(ctx, f'{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX}！预约失败', at_sender=True)
     else:
         slist.append(uid)
         _save_sub(sub, bm.group)
@@ -393,13 +393,15 @@ async def unsubscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 
 async def call_reserve(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
-    sub = _load_sub(ctx['group_id'])
+    gid = ctx['group_id']
+    sub = _load_sub(gid)
     slist = sub[str(boss)]
     if slist:
         msg = [ f"您们预约的老{BattleMaster.int2kanji(boss)}出现啦！" ]
         msg.extend(map(lambda x: str(ms.at(x)), slist))
-        msg.append("快点出刀！错过本轮重新预约")
+        msg.append("快点出刀！错过本轮请重新预约")
         slist.clear()
+        _save_sub(sub, gid)
         await bot.send(ctx, '\n'.join(msg))    
 
 
@@ -413,10 +415,29 @@ async def list_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     sub = _load_sub(bm.group)
     for boss in range(1, 6):
         slist = sub[str(boss)]
-        msg.append(f"Boss {boss}: {len(slist)}人")
+        msg.append(f"========\n老{bm.int2kanji(boss)}: {len(slist)}人")
         msg.extend(_gen_sublist_msg(bm, slist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
+
+@cb_cmd(('清空预约', '预约清空', '清理预约', '预约清理'), ArgParser('!清空预约', arg_dict={
+    '': ArgHolder(tip='Boss编号', type=boss_code)}))
+async def clear_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    clan = bm.get_clan(1)
+    if not clan:
+        raise NotFoundError(ERROR_CLAN_NOTFOUND)
+    if not await sv.check_permission(ctx, Priv.ADMIN):
+        raise PermissionDeniedError(ERROR_PERMISSION_DENIED + '才能清理预约队列')
+    sub = _load_sub(bm.group)
+    boss = args['']
+    slist = sub[str(boss)]
+    if slist:
+        slist.clear()
+        _save_sub(sub, bm.group)
+        await bot.send(ctx, f"{bm.int2kanji(boss)}王预约队列已清空", at_sender=True)
+    else:
+        raise NotFoundError(f"无人预约{bm.int2kanji(boss)}王")
 
 
 @cb_cmd('进度', ArgParser(usage='!进度'))
@@ -461,16 +482,16 @@ async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:
     msg = [ f"{clan['name']}今日余刀：" ]
     for uid, _, name, r_n, r_e in rlist:
         if r_n or r_e:
-            line = f"{ms.at(uid) if at_user else name} 剩"
+            line = f"{ms.at(uid) if at_user else name} 剩余"
             if r_n:
-                line += f" {r_n}正常刀"
+                line += f" 正常刀{r_n}"
             if r_e:
-                line += f" {r_e}补时刀"
+                line += f" 补时刀{r_e}"
             msg.append(line)
     if len(msg) == 1:
         await bot.send(ctx, f"今日{clan['name']}所有成员均已下班！各位辛苦了！", at_sender=True)
     else:
-        msg.append("负数说明报刀有误 请注意核对")
+        msg.append("⚠️若有负数说明报刀有误 请注意核对")
         if at_user:
             msg.append("=========\n在？阿sir喊你出刀啦！")
         await bot.send(ctx, '\n'.join(msg), at_sender=True)
@@ -481,5 +502,4 @@ async def list_remain(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await _do_show_remain(bot, ctx, args, at_user=False)
 @cb_cmd('催刀', ArgParser(usage='!催刀'))
 async def urge_remain(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    await _do_show_remain(bot, ctx, args, at_user=False)
-
+    await _do_show_remain(bot, ctx, args, at_user=True)

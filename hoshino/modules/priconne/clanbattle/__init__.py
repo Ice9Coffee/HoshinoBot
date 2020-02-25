@@ -7,6 +7,7 @@ from typing import Callable, Dict, Tuple, Iterable
 from nonebot import NoneBot
 from hoshino import util
 from hoshino.service import Service, Privilege
+from hoshino.res import R
 from .argparse import ArgParser
 from .exception import *
 
@@ -56,7 +57,7 @@ from .cmdv2 import *
 
 @cb_cmd('帮助', ArgParser('!帮助'))
 async def cb_help(bot:NoneBot, ctx, args:ParseResult):
-    msg = '''
+    msg = f'''
 # PCR会战管理v2.0
 猴子也会用的会战管理
 
@@ -94,6 +95,7 @@ async def cb_help(bot:NoneBot, ctx, args:ParseResult):
 ```
 
 ## 命令一览
+{R.img('priconne/quick/Hoshino会战.png').cqcode}
 请见：github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/priconne/clanbattle
 '''
     await bot.send(ctx, msg, at_sender=True)
