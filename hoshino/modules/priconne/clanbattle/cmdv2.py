@@ -159,6 +159,10 @@ async def batch_add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await bot.send(ctx, msg, at_sender=True)
 
 
+def _gen_progress_text(clan_name, round_, boss, hp, max_hp, score_rate):
+    return f"{clan_name} 当前进度：\n{round_}周目 {boss}王    SCORE x{score_rate:.1f}\nHP={hp:,d}/{max_hp:,d}"
+
+
 async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     """
     处理一条报刀 需要保证challenge['flag']的正确性
@@ -203,7 +207,7 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
     max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
     msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害")
-    msg.append(f"{clan['name']} 当前进度：\n{aft_round}周目{aft_boss}王    SCORE x{score_rate:.1f}\nHP={aft_hp:,d}/{max_hp:,d}")
+    msg.append(_gen_progress_text(clan['name'], aft_round, aft_boss, aft_hp, max_hp, score_rate))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
     # 判断是否更换boss，呼叫预约
@@ -337,10 +341,7 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     else:
         slist.append(uid)
         _save_sub(sub, bm.group)
-        msg = [
-            f'已为您预约{bm.int2kanji(boss)}王！',
-            f'该Boss当前预约人数：{len(slist)}',
-        ]
+        msg = [ f'已为您预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}' ]
         msg.extend(_gen_sublist_msg(bm, slist))
         await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
@@ -359,10 +360,7 @@ async def unsubscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if uid in slist:
         slist.remove(uid)
         _save_sub(sub, bm.group)
-        msg = [
-            f'已为您取消预约{bm.int2kanji(boss)}王！',
-            f'该Boss当前预约人数：{len(slist)}',
-        ]
+        msg = [ f'\n已为您取消预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}' ]
         msg.extend(_gen_sublist_msg(bm, slist))
         await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
@@ -424,14 +422,17 @@ async def add_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     uid = ctx['user_id']
     clan = _check_clan(bm)
+    _check_member(bm, uid, bm.group)
     sub = _load_sub(bm.group)
     sub.setdefault(SUBSCRIBE_TREE_KEY, [])
     if uid in sub[SUBSCRIBE_TREE_KEY]:
-        await bot.send(ctx, f"您已在树上", at_sender=True)
-    else:
-        sub[SUBSCRIBE_TREE_KEY].append(uid)
-        _save_sub(sub, bm.group)
-        await bot.send(ctx, f"\n您已上树，本Boss被击败时将会通知您\n目前{clan['name']}树上共{len(sub[SUBSCRIBE_TREE_KEY])}人", at_sender=True)
+        raise AlreadyExistError("您已在树上")
+    sub[SUBSCRIBE_TREE_KEY].append(uid)
+    _save_sub(sub, bm.group)
+    msg = [ "\n您已上树，本Boss被击败时将会通知您",
+           f"目前{clan['name']}树上共{len(sub[SUBSCRIBE_TREE_KEY])}人" ]
+    msg.extend(_gen_sublist_msg(bm, sub[SUBSCRIBE_TREE_KEY]))
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
 @cb_cmd(('进度', '进度查询', '查询进度', '进度查看', '查看进度'), ArgParser(usage='!进度'))
@@ -440,8 +441,8 @@ async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
     clan = _check_clan(bm)
     r, b, hp = bm.get_challenge_progress(1, datetime.now())
     max_hp, score_rate = bm.get_boss_info(r, b, clan['server'])
-    msg = f"\n{clan['name']} 当前进度：\n{r}周目{b}王    SCORE x{score_rate:.1f}\nHP={hp:,d}/{max_hp:,d}"
-    await bot.send(ctx, msg, at_sender=True)
+    msg = _gen_progress_text(clan['name'], r, b, hp, max_hp, score_rate)
+    await bot.send(ctx, '\n' + msg, at_sender=True)
 
 
 @cb_cmd('统计', ArgParser(usage='!统计'))

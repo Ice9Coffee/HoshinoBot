@@ -21,6 +21,10 @@ class NotFoundError(ClanBattleError):
     pass
 
 
+class AlreadyExistError(ClanBattleError):
+    pass
+
+
 class PermissionDeniedError(ClanBattleError):
     pass
 

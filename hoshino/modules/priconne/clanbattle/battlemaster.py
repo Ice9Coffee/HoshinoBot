@@ -75,6 +75,7 @@ class BattleMaster(object):
 
     @staticmethod
     def get_boss_info(round_, boss, server):
+        """@return: boss_max_hp, score_rate"""
         stage = BattleMaster.get_stage(round_)
         config = get_config()
         boss_hp = config[ config["BOSS_HP"][server] ][ stage-1 ][ boss-1 ]
