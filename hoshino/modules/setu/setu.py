@@ -14,7 +14,7 @@ from hoshino.util import silence
 from hoshino.service import Service, Privilege
 
 
-sv = Service('setu', manage_priv=Privilege.SUPERUSER, enable_on_default=False)
+sv = Service('setu', manage_priv=Privilege.SUPERUSER, enable_on_default=False, visible=False)
 _last_setu_day = -1
 _user_setu_count = defaultdict(int)    # {user: gacha_count}
 _max_setu_per_day = 5
@@ -41,8 +41,8 @@ def get_setu():
         filelist = os.listdir(setu_folder)
         filelist = sorted(filelist, key=lambda x: os.path.getmtime(os.path.join(setu_folder, x)), reverse=True)
         while not path or not os.path.isfile(path):
-            i = round(random.expovariate(0.02))  # 期望为 1 / λ
-            i = random.randint(0, len(filelist) - 1) if i >= len(filelist) else i
+            # i = round(random.expovariate(0.02))  # 期望为 1 / λ
+            i = random.randint(0, len(filelist) - 1) # if i >= len(filelist) else i
             filename = filelist[i]
             path = os.path.join(setu_folder, filename)
         return R.img('setu/', filename).cqcode

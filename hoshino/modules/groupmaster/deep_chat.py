@@ -4,7 +4,7 @@ from hoshino import aiorequests
 from nonebot import NoneBot
 from hoshino.service import Service, Privilege
 
-sv = Service('deepchat', manage_priv=Privilege.SUPERUSER, enable_on_default=False)
+sv = Service('deepchat', manage_priv=Privilege.SUPERUSER, enable_on_default=False, visible=False)
 
 api = 'http://127.0.0.1:7777/message'
 
