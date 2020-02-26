@@ -73,7 +73,7 @@ async def list_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
     clans = bm.list_clan()
     if len(clans):
         clans = map(lambda x: f"{x['cid']}会：{x['name']} {server_name(x['server'])}", clans)
-        msg = ['本群公会：'].extend(clans)
+        msg = ['本群公会：', *clans]
         await bot.send(ctx, '\n'.join(msg), at_sender=True)
     else:
         raise NotFoundError(ERROR_CLAN_NOTFOUND)
@@ -110,7 +110,7 @@ async def list_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if l := len(mems):
         # 数字太多会被腾讯ban
         mems = map(lambda x: '{uid: <11,d} | {name}'.format_map(x), mems)
-        msg = [f"\n{clan['name']}   {l}/30 人\n____ QQ ____ | 昵称"].extend(mems)
+        msg = [ f"\n{clan['name']}   {l}/30 人\n____ QQ ____ | 昵称", *mems]
         await bot.send(ctx, '\n'.join(msg), at_sender=True)
     else:
         raise NotFoundError(ERROR_ZERO_MEMBER)
@@ -472,8 +472,7 @@ async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:
     msg = [ f"\n{clan['name']}今日余刀：" ]
     for uid, _, name, r_n, r_e in rlist:
         if r_n or r_e:
-            line = f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}"
-            msg.append(line)
+            msg.append(f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}")
     if len(msg) == 1:
         await bot.send(ctx, f"今日{clan['name']}所有成员均已下班！各位辛苦了！", at_sender=True)
     else:
