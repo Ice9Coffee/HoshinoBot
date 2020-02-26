@@ -4,8 +4,11 @@ from hoshino import util
 from ..exception import ParseError
 from ..battlemaster import BattleMaster
 
-_rex_dint = re.compile(r'^(\d+)([wk]?)$', re.I)
 _unit_rate = {'': 1, 'k': 1000, 'w': 10000}
+_rex_dint = re.compile(r'^(\d+)([wk]?)$', re.I)
+_rex1_bcode = re.compile(r'^老?([1-5])王?$')
+_rex2_bcode = re.compile(r'^老?([一二三四五])王?$')
+_rex_rcode = re.compile(r'^[1-9]\d{0,2}$')
 
 def damage_int(x:str) -> int:
     x = util.normalize_str(x)
@@ -18,14 +21,16 @@ def damage_int(x:str) -> int:
 
 def boss_code(x:str) -> int:
     x = util.normalize_str(x)
-    if re.match(r'^[1-5]$', x):
-        return int(x)
-    raise ParseError('Boss编号不合法')
-    
+    if m := _rex1_bcode.match(x):
+        return int(m.group(1))
+    elif m := _rex2_bcode.match(x):
+        return '零一二三四五'.find(m.group(1))
+    raise ParseError('Boss编号不合法 应为1-5的整数')
+
 
 def round_code(x:str) -> int:
     x = util.normalize_str(x)
-    if re.match(r'^[1-9]\d{0,2}$', x):
+    if _rex_rcode.match(x):
         return int(x)
     raise ParseError('周目数不合法 应为不大于999的非负整数')
 

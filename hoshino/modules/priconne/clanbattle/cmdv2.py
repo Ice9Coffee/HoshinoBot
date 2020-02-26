@@ -36,14 +36,28 @@ ERROR_MEMBER_NOTFOUND = f'未找到成员：请使用【{USAGE_ADD_MEMBER}】加
 ERROR_PERMISSION_DENIED = '权限不足：需*群管理*以上权限'
 
 
+def _check_clan(bm:BattleMaster):
+    clan = bm.get_clan(1)
+    if not clan:
+        raise NotFoundError(ERROR_CLAN_NOTFOUND)
+    return clan
+
+def _check_member(bm:BattleMaster, uid:int, alt:int, tip=None):
+    mem = bm.get_member(uid, alt) or bm.get_member(uid, 0) # 兼容cmdv1
+    if not mem:
+        raise NotFoundError(tip or ERROR_MEMBER_NOTFOUND)
+    return mem
+
+async def _check_admin(ctx:Context_T, tip:str=''):
+    if not await sv.check_permission(ctx, Priv.ADMIN):
+        raise PermissionDeniedError(ERROR_PERMISSION_DENIED + tip)
+
+
 @cb_cmd('建会', ArgParser(usage=USAGE_ADD_CLAN, arg_dict={
         'N': ArgHolder(tip='公会名'),
         'S': ArgHolder(tip='服务器地区', type=server_code)}))
 async def add_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    
-    if not await sv.check_permission(ctx, Priv.ADMIN):
-        raise PermissionDeniedError(ERROR_PERMISSION_DENIED)
-    
+    await _check_admin(ctx)
     bm = BattleMaster(ctx['group_id'])
     if bm.has_clan(1):
         bm.mod_clan(1, args.N, args.S)
@@ -55,13 +69,12 @@ async def add_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 @cb_cmd('查看公会', ArgParser('!查看公会'))
 async def list_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    
     bm = BattleMaster(ctx['group_id'])
     clans = bm.list_clan()
     if len(clans):
         clans = map(lambda x: f"{x['cid']}会：{x['name']} {server_name(x['server'])}", clans)
-        msg = '本群公会：\n' + '\n'.join(clans)
-        await bot.send(ctx, msg, at_sender=True)
+        msg = ['本群公会：', *clans]
+        await bot.send(ctx, '\n'.join(msg), at_sender=True)
     else:
         raise NotFoundError(ERROR_CLAN_NOTFOUND)
 
@@ -70,23 +83,19 @@ async def list_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
         'N': ArgHolder(tip='昵称'),
         'Q': ArgHolder(tip='qq号', type=int, default=0)}))
 async def add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    
     bm = BattleMaster(ctx['group_id'])
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    
+    clan = _check_clan(bm)
     uid = args.Q or args.at or ctx['user_id']
     if uid != ctx['user_id']:
-        if not await sv.check_permission(ctx, Priv.ADMIN):
-            raise PermissionDeniedError(ERROR_PERMISSION_DENIED + '才能添加其他人')
+        await _check_admin(ctx, '才能添加其他人')
         try:    # 尝试获取群员信息，用以检查该成员是否在群中
             await bot.get_group_member_info(self_id=ctx['self_id'], group_id=bm.group, user_id=uid)
         except:
             raise NotFoundError(f'Error: 无法获取群员信息，请检查{uid}是否属于本群')
     
-    if bm.has_member(uid, bm.group):
-        bm.mod_member(uid, bm.group, args.N, 1)
+    mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0)     # 兼容cmdv1
+    if mem:
+        bm.mod_member(uid, mem['alt'], args.N, 1)
         await bot.send(ctx, f'成员{ms.at(uid)}昵称已修改为{args.N}')
     else:
         bm.add_member(uid, bm.group, args.N, 1)
@@ -95,18 +104,14 @@ async def add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 @cb_cmd(('查看成员', '成员查看'), ArgParser(USAGE_LIST_MEMBER))
 async def list_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    
     bm = BattleMaster(ctx['group_id'])
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    
+    clan = _check_clan(bm)
     mems = bm.list_member(1)
     if l := len(mems):
         # 数字太多会被腾讯ban
         mems = map(lambda x: '{uid: <11,d} | {name}'.format_map(x), mems)
-        msg = f"\n{clan['name']}  人数 {l}/30\n____ QQ ____ | 昵称\n" + '\n'.join(mems)
-        await bot.send(ctx, msg, at_sender=True)
+        msg = [ f"\n{clan['name']}   {l}/30 人\n____ QQ ____ | 昵称", *mems]
+        await bot.send(ctx, '\n'.join(msg), at_sender=True)
     else:
         raise NotFoundError(ERROR_ZERO_MEMBER)
 
@@ -114,43 +119,29 @@ async def list_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
 @cb_cmd('退会', ArgParser(usage='!退会 (Q<qq号>)', arg_dict={
         'Q': ArgHolder(tip='qq号', type=int, default=0)}))
 async def del_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    
     bm = BattleMaster(ctx['group_id'])
     uid = args.Q or args.at or ctx['user_id']
-    mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) # 兼容cmdv1
-    if not mem:
-        raise NotFoundError('公会内无此成员')
+    mem = _check_member(bm, uid, bm.group, '公会内无此成员')
     if uid != ctx['user_id']:
-        if not await sv.check_permission(ctx, Priv.ADMIN):
-            raise PermissionDeniedError(ERROR_PERMISSION_DENIED + '才能踢人')
-
+        await _check_admin(ctx, '才能踢人')
     bm.del_member(uid, mem['alt'])
     await bot.send(ctx, f"成员{mem['name']}已从公会删除", at_sender=True)
 
 
 @cb_cmd('清空成员', ArgParser('!清空成员'))
 async def clear_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    
-    if not await sv.check_permission(ctx, Priv.ADMIN):
-        raise PermissionDeniedError(ERROR_PERMISSION_DENIED)
-    
     bm = BattleMaster(ctx['group_id'])
-    if not bm.has_clan(1):
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    msg = '公会已清空！' if bm.clear_member(1) else '公会内无成员'
+    clan = _check_clan(bm)
+    await _check_admin(ctx)
+    msg = f"{clan['name']}已清空！" if bm.clear_member(1) else f"{clan['name']}已无成员"
     await bot.send(ctx, msg, at_sender=True)
 
 
 @cb_cmd('一键入会', ArgParser('!一键入会'))
 async def batch_add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
-    
-    if not await sv.check_permission(ctx, Priv.ADMIN):
-        raise PermissionDeniedError(ERROR_PERMISSION_DENIED)
-
     bm = BattleMaster(ctx['group_id'])
-    if not bm.has_clan(1):
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-
+    clan = _check_clan(bm)
+    await _check_admin(ctx)
     mlist = await bot.get_group_member_list(group_id=bm.group)
     if len(mlist) > 40:
         raise ClanBattleError('群员过多！一键入会仅限40人以内群使用')
@@ -168,6 +159,10 @@ async def batch_add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await bot.send(ctx, msg, at_sender=True)
 
 
+def _gen_progress_text(clan_name, round_, boss, hp, max_hp, score_rate):
+    return f"{clan_name} 当前进度：\n{round_}周目 {BattleMaster.int2kanji(boss)}王    SCORE x{score_rate:.1f}\nHP={hp:,d}/{max_hp:,d}"
+
+
 async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     """
     处理一条报刀 需要保证challenge['flag']的正确性
@@ -175,12 +170,8 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     
     bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    mem = bm.get_member(ch.uid, ch.alt) or bm.get_member(ch.uid, 0) # 兼容cmdv1
-    if not mem:
-        raise NotFoundError(ERROR_MEMBER_NOTFOUND)
+    clan = _check_clan(bm)
+    mem = _check_member(bm, ch.uid, ch.alt)
     
     cur_round, cur_boss, cur_hp = bm.get_challenge_progress(1, now)
     round_ = ch.round or cur_round
@@ -216,12 +207,12 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
     max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
     msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害")
-    msg.append(f"{clan['name']} 当前进度：\n{aft_round}周目{aft_boss}王    SCORE x{score_rate:.1f}\nHP={aft_hp:,d}/{max_hp:,d}")
+    msg.append(_gen_progress_text(clan['name'], aft_round, aft_boss, aft_hp, max_hp, score_rate))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
     # 判断是否更换boss，呼叫预约
     if aft_round != cur_round or aft_boss != cur_boss:
-        await call_reserve(bot, ctx, aft_round, aft_boss)
+        await call_subscribe(bot, ctx, aft_round, aft_boss)
 
 
 @cb_cmd(('出刀', '报刀'), ArgParser(usage='!出刀 <伤害值> (Q<qq号>)', arg_dict={
@@ -296,22 +287,20 @@ async def add_challenge_timeout(bot:NoneBot, ctx:Context_T, args:ParseResult):
 async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
+    clan = _check_clan(bm)
     ch = bm.get_challenge(args.E, 1, now)
     if not ch:
         raise NotFoundError(f'未找到出刀记录E{args.E}')
     if ch['uid'] != ctx['user_id']:
-        if not await sv.check_permission(ctx, Priv.ADMIN):
-            raise PermissionDeniedError(ERROR_PERMISSION_DENIED + '才能删除其他人的记录')
+        await _check_admin(ctx, '才能删除其他人的记录')
     bm.del_challenge(args.E, 1, now)
     await bot.send(ctx, f"{clan['name']}已删除{ms.at(ch['uid'])}的出刀记录E{args.E}", at_sender=True)
 
 
 # TODO 将预约信息转至数据库
 SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
-SUBSCRIBE_MAX = 3
+SUBSCRIBE_MAX = 4
+SUBSCRIBE_TREE_KEY = '0'
 os.makedirs(SUBSCRIBE_PATH, exist_ok=True)
 
 def _load_sub(gid):
@@ -320,7 +309,7 @@ def _load_sub(gid):
         with open(filename, 'r', encoding='utf8') as f:
             return json.load(f)
     else:
-        return {'1':[], '2':[], '3':[], '4':[], '5':[]}
+        return {'1':[], '2':[], '3':[], '4':[], '5':[], SUBSCRIBE_TREE_KEY:[]}
 
 
 def _save_sub(sub, gid):
@@ -329,8 +318,8 @@ def _save_sub(sub, gid):
         json.dump(sub, f, ensure_ascii=False)
 
 
-def _gen_sublist_msg(bm:BattleMaster, sublist:List[int]):
-    mems = map(lambda x: bm.get_member(x, bm.group) or bm.get_member(x, 0) or {'name': str(x)}, sublist)
+def _gen_namelist_text(bm:BattleMaster, uidlist:List[int]):
+    mems = map(lambda x: bm.get_member(x, bm.group) or bm.get_member(x, 0) or {'name': str(x)}, uidlist)
     mems = map(lambda x: x['name'], mems)
     return mems
 
@@ -340,29 +329,22 @@ def _gen_sublist_msg(bm:BattleMaster, sublist:List[int]):
 async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     uid = ctx['user_id']
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0)     # 兼容cmdv1
-    if not mem:
-        raise NotFoundError(ERROR_MEMBER_NOTFOUND)
-    
+    _check_clan(bm)
+    _check_member(bm, uid, bm.group)
     sub = _load_sub(bm.group)
     boss = args['']
     slist = sub[str(boss)]
     if uid in slist:
-        await bot.send(ctx, f'您已经预约过{bm.int2kanji(boss)}王了', at_sender=True)
-    elif len(slist) >= SUBSCRIBE_MAX:
-        await bot.send(ctx, f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX}', at_sender=True)
-    else:
+        raise AlreadyExistError(f'您已经预约过{bm.int2kanji(boss)}王了')
+    msg = ['']
+    if len(slist) < SUBSCRIBE_MAX:
         slist.append(uid)
         _save_sub(sub, bm.group)
-        msg = [
-            f'已为您预约{bm.int2kanji(boss)}王！',
-            f'该Boss当前预约人数：{len(slist)}',
-        ]
-        msg.extend(_gen_sublist_msg(bm, slist))
-        await bot.send(ctx, '\n'.join(msg), at_sender=True)
+        msg.append(f'已为您预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}')
+    else:
+        msg.append(f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX}')
+    msg.extend(_gen_namelist_text(bm, slist))
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
 @cb_cmd(('取消预约', '预约取消'), ArgParser(usage='!取消预约 <Boss号>', arg_dict={
@@ -370,53 +352,52 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
 async def unsubscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     uid = ctx['user_id']
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0)     # 兼容cmdv1
-    if not mem:
-        raise NotFoundError(ERROR_MEMBER_NOTFOUND)
-    
+    _check_clan(bm)
+    _check_member(bm, uid, bm.group)
     sub = _load_sub(bm.group)    
     boss = args['']
-    slist = sub[str(boss)]
-    
-    if uid in slist:
-        slist.remove(uid)
-        _save_sub(sub, bm.group)
-        msg = [
-            f'已为您取消预约{bm.int2kanji(boss)}王！',
-            f'该Boss当前预约人数：{len(slist)}',
-        ]
-        msg.extend(_gen_sublist_msg(bm, slist))
-        await bot.send(ctx, '\n'.join(msg), at_sender=True)
+    slist = sub[str(boss)]    
+    if uid not in slist:
+        raise NotFoundError(f'您没有预约{bm.int2kanji(boss)}王')
+    slist.remove(uid)
+    _save_sub(sub, bm.group)
+    msg = [ f'\n已为您取消预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}' ]
+    msg.extend(_gen_namelist_text(bm, slist))
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
-async def call_reserve(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
+async def call_subscribe(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
     gid = ctx['group_id']
+    msg = []
     sub = _load_sub(gid)
-    slist = sub[str(boss)]
+    slist = sub.get(str(boss), [])
+    tlist = sub.get(SUBSCRIBE_TREE_KEY, [])
     if slist:
-        msg = [ f"您们预约的老{BattleMaster.int2kanji(boss)}出现啦！" ]
+        msg.append(f"您们预约的老{BattleMaster.int2kanji(boss)}出现啦！")
         msg.extend(map(lambda x: str(ms.at(x)), slist))
         msg.append("快点出刀！错过本轮请重新预约")
+    if slist and tlist:
+        msg.append("==========")
+    if tlist:
+        msg.append(f"以下成员可以下树了")
+        msg.extend(map(lambda x: str(ms.at(x)), tlist))
+    if slist or tlist:
         slist.clear()
+        tlist.clear()
         _save_sub(sub, gid)
-        await bot.send(ctx, '\n'.join(msg))    
+        await bot.send(ctx, '\n'.join(msg))  
 
 
 @cb_cmd(('查询预约', '预约查询', '查看预约', '预约查看'), ArgParser('!查询预约'))
 async def list_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
+    clan = _check_clan(bm)
     msg = [ f"\n{clan['name']}当前预约情况：" ]
     sub = _load_sub(bm.group)
     for boss in range(1, 6):
         slist = sub[str(boss)]
         msg.append(f"========\n老{bm.int2kanji(boss)}: {len(slist)}人")
-        msg.extend(_gen_sublist_msg(bm, slist))
+        msg.extend(_gen_namelist_text(bm, slist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
@@ -424,11 +405,8 @@ async def list_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     '': ArgHolder(tip='Boss编号', type=boss_code)}))
 async def clear_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    if not await sv.check_permission(ctx, Priv.ADMIN):
-        raise PermissionDeniedError(ERROR_PERMISSION_DENIED + '才能清理预约队列')
+    clan = _check_clan(bm)
+    await _check_admin(ctx, '才能清理预约队列')
     sub = _load_sub(bm.group)
     boss = args['']
     slist = sub[str(boss)]
@@ -440,25 +418,39 @@ async def clear_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
         raise NotFoundError(f"无人预约{bm.int2kanji(boss)}王")
 
 
-@cb_cmd('进度', ArgParser(usage='!进度'))
+@cb_cmd(('挂树', '上树'), ArgParser('!挂树'))
+async def add_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    uid = ctx['user_id']
+    clan = _check_clan(bm)
+    _check_member(bm, uid, bm.group)
+    sub = _load_sub(bm.group)
+    sub.setdefault(SUBSCRIBE_TREE_KEY, [])
+    if uid in sub[SUBSCRIBE_TREE_KEY]:
+        raise AlreadyExistError("您已在树上")
+    sub[SUBSCRIBE_TREE_KEY].append(uid)
+    _save_sub(sub, bm.group)
+    msg = [ "\n您已上树，本Boss被击败时将会通知您",
+           f"目前{clan['name']}树上共{len(sub[SUBSCRIBE_TREE_KEY])}人" ]
+    msg.extend(_gen_namelist_text(bm, sub[SUBSCRIBE_TREE_KEY]))
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)
+
+
+@cb_cmd(('进度', '进度查询', '查询进度', '进度查看', '查看进度'), ArgParser(usage='!进度'))
 async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
+    clan = _check_clan(bm)
     r, b, hp = bm.get_challenge_progress(1, datetime.now())
     max_hp, score_rate = bm.get_boss_info(r, b, clan['server'])
-    msg = f"\n{clan['name']} 当前进度：\n{r}周目{b}王    SCORE x{score_rate:.1f}\nHP={hp:,d}/{max_hp:,d}"
-    await bot.send(ctx, msg, at_sender=True)
+    msg = _gen_progress_text(clan['name'], r, b, hp, max_hp, score_rate)
+    await bot.send(ctx, '\n' + msg, at_sender=True)
 
 
 @cb_cmd('统计', ArgParser(usage='!统计'))
 async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
+    clan = _check_clan(bm)
     yyyy, mm, _ = bm.get_yyyymmdd(now)
     msg = [ f"\n{yyyy}年{mm}月会战{clan['name']}分数统计：" ]
     stat = bm.stat_score(1, now)
@@ -472,18 +464,15 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:bool):
     bm = BattleMaster(ctx['group_id'])
-    clan = bm.get_clan(1)
-    if not clan:
-        raise NotFoundError(ERROR_CLAN_NOTFOUND)
-    if at_user and not await sv.check_permission(ctx, Priv.ADMIN):
-        raise PermissionDeniedError(ERROR_PERMISSION_DENIED + '才能催刀。您可以用【!查刀】查询余刀')
+    clan = _check_clan(bm)
+    if at_user:
+        await _check_admin(ctx, '才能催刀。您可以用【!查刀】查询余刀')
     rlist = bm.list_challenge_remain(1, datetime.now())
     rlist.sort(key=lambda x: x[3] + x[4], reverse=True)
     msg = [ f"\n{clan['name']}今日余刀：" ]
     for uid, _, name, r_n, r_e in rlist:
         if r_n or r_e:
-            line = f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}"
-            msg.append(line)
+            msg.append(f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}")
     if len(msg) == 1:
         await bot.send(ctx, f"今日{clan['name']}所有成员均已下班！各位辛苦了！", at_sender=True)
     else:
