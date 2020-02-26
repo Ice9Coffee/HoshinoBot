@@ -73,8 +73,8 @@ async def list_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
     clans = bm.list_clan()
     if len(clans):
         clans = map(lambda x: f"{x['cid']}会：{x['name']} {server_name(x['server'])}", clans)
-        msg = '本群公会：\n' + '\n'.join(clans)
-        await bot.send(ctx, msg, at_sender=True)
+        msg = ['本群公会：'].extend(clans)
+        await bot.send(ctx, '\n'.join(msg), at_sender=True)
     else:
         raise NotFoundError(ERROR_CLAN_NOTFOUND)
 
@@ -110,8 +110,8 @@ async def list_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if l := len(mems):
         # 数字太多会被腾讯ban
         mems = map(lambda x: '{uid: <11,d} | {name}'.format_map(x), mems)
-        msg = f"\n{clan['name']}  人数 {l}/30\n____ QQ ____ | 昵称\n" + '\n'.join(mems)
-        await bot.send(ctx, msg, at_sender=True)
+        msg = [f"\n{clan['name']}   {l}/30 人\n____ QQ ____ | 昵称"].extend(mems)
+        await bot.send(ctx, '\n'.join(msg), at_sender=True)
     else:
         raise NotFoundError(ERROR_ZERO_MEMBER)
 
@@ -318,8 +318,8 @@ def _save_sub(sub, gid):
         json.dump(sub, f, ensure_ascii=False)
 
 
-def _gen_sublist_msg(bm:BattleMaster, sublist:List[int]):
-    mems = map(lambda x: bm.get_member(x, bm.group) or bm.get_member(x, 0) or {'name': str(x)}, sublist)
+def _gen_namelist_text(bm:BattleMaster, uidlist:List[int]):
+    mems = map(lambda x: bm.get_member(x, bm.group) or bm.get_member(x, 0) or {'name': str(x)}, uidlist)
     mems = map(lambda x: x['name'], mems)
     return mems
 
@@ -335,15 +335,16 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     boss = args['']
     slist = sub[str(boss)]
     if uid in slist:
-        await bot.send(ctx, f'您已经预约过{bm.int2kanji(boss)}王了', at_sender=True)
-    elif len(slist) >= SUBSCRIBE_MAX:
-        await bot.send(ctx, f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX}', at_sender=True)
-    else:
+        raise AlreadyExistError(f'您已经预约过{bm.int2kanji(boss)}王了')
+    msg = ['']
+    if len(slist) < SUBSCRIBE_MAX:
         slist.append(uid)
         _save_sub(sub, bm.group)
-        msg = [ f'已为您预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}' ]
-        msg.extend(_gen_sublist_msg(bm, slist))
-        await bot.send(ctx, '\n'.join(msg), at_sender=True)
+        msg.append(f'已为您预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}')
+    else:
+        msg.append(f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX}')
+    msg.extend(_gen_namelist_text(bm, slist))
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
 @cb_cmd(('取消预约', '预约取消'), ArgParser(usage='!取消预约 <Boss号>', arg_dict={
@@ -355,22 +356,22 @@ async def unsubscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     _check_member(bm, uid, bm.group)
     sub = _load_sub(bm.group)    
     boss = args['']
-    slist = sub[str(boss)]
-    
-    if uid in slist:
-        slist.remove(uid)
-        _save_sub(sub, bm.group)
-        msg = [ f'\n已为您取消预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}' ]
-        msg.extend(_gen_sublist_msg(bm, slist))
-        await bot.send(ctx, '\n'.join(msg), at_sender=True)
+    slist = sub[str(boss)]    
+    if uid not in slist:
+        raise NotFoundError(f'您没有预约{bm.int2kanji(boss)}王')
+    slist.remove(uid)
+    _save_sub(sub, bm.group)
+    msg = [ f'\n已为您取消预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}' ]
+    msg.extend(_gen_namelist_text(bm, slist))
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
 async def call_subscribe(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
     gid = ctx['group_id']
     msg = []
     sub = _load_sub(gid)
-    slist = sub.get(str(boss))
-    tlist = sub.get(SUBSCRIBE_TREE_KEY)
+    slist = sub.get(str(boss), [])
+    tlist = sub.get(SUBSCRIBE_TREE_KEY, [])
     if slist:
         msg.append(f"您们预约的老{BattleMaster.int2kanji(boss)}出现啦！")
         msg.extend(map(lambda x: str(ms.at(x)), slist))
@@ -380,7 +381,7 @@ async def call_subscribe(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
     if tlist:
         msg.append(f"以下成员可以下树了")
         msg.extend(map(lambda x: str(ms.at(x)), tlist))
-    if slist or tlist:    
+    if slist or tlist:
         slist.clear()
         tlist.clear()
         _save_sub(sub, gid)
@@ -396,7 +397,7 @@ async def list_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     for boss in range(1, 6):
         slist = sub[str(boss)]
         msg.append(f"========\n老{bm.int2kanji(boss)}: {len(slist)}人")
-        msg.extend(_gen_sublist_msg(bm, slist))
+        msg.extend(_gen_namelist_text(bm, slist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
@@ -431,7 +432,7 @@ async def add_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
     _save_sub(sub, bm.group)
     msg = [ "\n您已上树，本Boss被击败时将会通知您",
            f"目前{clan['name']}树上共{len(sub[SUBSCRIBE_TREE_KEY])}人" ]
-    msg.extend(_gen_sublist_msg(bm, sub[SUBSCRIBE_TREE_KEY]))
+    msg.extend(_gen_namelist_text(bm, sub[SUBSCRIBE_TREE_KEY]))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
