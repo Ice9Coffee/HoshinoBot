@@ -436,7 +436,7 @@ async def add_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
-@cb_cmd(('进度', '进度查询', '查询进度', '进度查看', '查看进度'), ArgParser(usage='!进度'))
+@cb_cmd(('进度', '进度查询', '查询进度', '进度查看', '查看进度', '状态'), ArgParser(usage='!进度'))
 async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
