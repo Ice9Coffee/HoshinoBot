@@ -99,9 +99,9 @@ class BattleMaster(object):
 
     @staticmethod
     def int2kanji(x):
-        kanji = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十']
-        return kanji[x]
-
+        if 0 <= x <= 50:
+            return '零一二三四五六七八九十⑪⑫⑬⑭⑮⑯⑰⑱⑲廿㉑㉒㉓㉔㉕㉖㉗㉘㉙卅㉛㉜㉝㉞㉟㊱㊲㊳㊴㊵㊶㊷㊸㊹㊺㊻㊼㊽㊾㊿'[x]
+        raise ValueError("'x' should in range [0, 50]")
 
     @staticmethod
     def get_server_code(server_name):
