@@ -42,7 +42,11 @@ async def _(bot, ctx):
         await bot.send(ctx, R.img('内鬼.png').cqcode)
 
 
-BANNED_WORD = ('rbq', 'RBQ', '憨批', '废物', '死妈', '崽种', '傻逼', '傻逼玩意', '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp', 'nmsl', 'D区', '口区', '我是你爹')
+BANNED_WORD = (
+    'rbq', 'RBQ', '憨批', '废物', '死妈', '崽种', '傻逼', '傻逼玩意', 
+    '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp', 
+    'nmsl', 'D区', '口区', '我是你爹', 'nmbiss'
+)
 @sv.on_command('ban_word', aliases=BANNED_WORD, only_to_me=True)
 async def ban_word(session):
     ctx = session.ctx
