@@ -160,7 +160,7 @@ async def batch_add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 
 def _gen_progress_text(clan_name, round_, boss, hp, max_hp, score_rate):
-    return f"{clan_name} 当前进度：\n{round_}周目 {boss}王    SCORE x{score_rate:.1f}\nHP={hp:,d}/{max_hp:,d}"
+    return f"{clan_name} 当前进度：\n{round_}周目 {BattleMaster.int2kanji(boss)}王    SCORE x{score_rate:.1f}\nHP={hp:,d}/{max_hp:,d}"
 
 
 async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
