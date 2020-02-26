@@ -1,3 +1,5 @@
+from functools import cmp_to_key
+
 from nonebot import on_command, CommandSession 
 from nonebot import permission as perm 
 from nonebot import CQHttpError
@@ -6,9 +8,18 @@ from hoshino.service import Service
 
 @on_command('lssv', aliases=('查看所有服务', '查看所有功能', '功能', '功能列表', '服务列表', '菜单'), permission=perm.GROUP, only_to_me=False)
 async def lssv(session:CommandSession):
-    group_id = session.ctx['group_id']
-    all_service = '\n'.join([ f"{'on | ' if group_id in sv.enable_group or sv.enable_on_default and group_id not in sv.disable_group else 'off | '} {sv.name}" for sv in Service.get_loaded_services()])
-    await session.send(f"服务一览：\n{all_service}")
+    verbose_all = session.current_arg_text == '-a' or session.current_arg_text == '--all'
+    gid = session.ctx['group_id']
+    msg = ["服务一览："]
+    svs = Service.get_loaded_services()
+    svs = map(lambda sv: (sv, (gid in sv.enable_group) or (sv.enable_on_default and gid not in sv.disable_group)), svs)
+    key = cmp_to_key(lambda x, y: (y[1] - x[1]) or (-1 if x[0].name < y[0].name else 1 if x[0].name > y[0].name else 0))
+    svs = sorted(svs, key=key)
+    for sv, on in svs:
+        if sv.visible or verbose_all:
+            x = '○' if on else '×'
+            msg.append(f"|{x}| {sv.name}")
+    await session.send('\n'.join(msg))
 
 
 @on_command('enable', aliases=('启用', '开启', '打开'), permission=perm.GROUP, only_to_me=False)

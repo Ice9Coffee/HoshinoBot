@@ -16,7 +16,7 @@ from nonebot import CommandSession, MessageSegment
 from hoshino import aiorequests
 from hoshino.service import Service
 
-sv = Service('nCoV2019', enable_on_default=False)
+sv = Service('nCoV2019', enable_on_default=False, visible=False)
 
 _api = "https://lab.isaaclin.cn/nCoV/api/"
 _timeout = 10

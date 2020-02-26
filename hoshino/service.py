@@ -23,6 +23,7 @@ from hoshino import util
     "use_priv": Privilege.NORMAL,
     "manage_priv": Privilege.ADMIN,
     "enable_on_default": true/false,
+    "visible": true/false,
     "enable_group": [],
     "disable_group": []
 }
@@ -60,6 +61,7 @@ def _load_service_config(service_name):
             "use_priv": Privilege.NORMAL,
             "manage_priv": Privilege.ADMIN,
             "enable_on_default": True,
+            "visible": True,
             "enable_group": [],
             "disable_group": []
         }
@@ -76,27 +78,28 @@ def _save_service_config(service):
             "use_priv": service.use_priv,
             "manage_priv": service.manage_priv,
             "enable_on_default": service.enable_on_default,
+            "visible": service.visible,
             "enable_group": service.enable_group,
             "disable_group": service.disable_group
-        }, f, ensure_ascii=False)
+        }, f, ensure_ascii=False, indent=2)
 
 
 
 class Service:
-    __slots__ = (
-        'name', 'use_priv', 'manage_priv', 'enable_on_default', 'enable_group', 'disable_group',
-        'logger'
-    )
 
-    def __init__(self, name, use_priv=None, manage_priv=None, enable_on_default=None):
-
+    def __init__(self, name, use_priv=None, manage_priv=None, enable_on_default=None, visible=None):
+        """
+        定义一个服务
+        配置的优先级别：程序指定 > 配置文件 > 缺省值
+        """
         assert not _re_illegal_char.search(name), 'Service name cannot contain character in [\\/:*?"<>|.]'
         config = _load_service_config(name)
 
         self.name = name
-        self.use_priv = config['use_priv'] if use_priv == None else use_priv
-        self.manage_priv = config['manage_priv'] if manage_priv == None else manage_priv
-        self.enable_on_default = config['enable_on_default'] if enable_on_default == None else enable_on_default
+        self.use_priv = config.get('use_priv', Privilege.NORMAL) if use_priv is None else use_priv
+        self.manage_priv = config.get('manage_priv', Privilege.ADMIN) if manage_priv is None else manage_priv
+        self.enable_on_default = config.get('enable_on_default', True) if enable_on_default is None else enable_on_default
+        self.visible = config.get('visible', True) if visible is None else visible
         self.enable_group = set(config['enable_group'])
         self.disable_group = set(config['disable_group'])
 
@@ -124,7 +127,7 @@ class Service:
 
 
     @staticmethod
-    def get_loaded_services():
+    def get_loaded_services() -> Set["Service"]:
         return _loaded_services.copy()
 
 
@@ -221,6 +224,8 @@ class Service:
 
 
     def on_keyword(self, keywords:Iterable, normalize=False, event=None):
+        if isinstance(keywords, str):
+            keywords = (keywords, )
         normalized_keywords = tuple(util.normalize_str(kw) for kw in keywords)
         def deco(func):
             @wraps(func)
@@ -234,7 +239,7 @@ class Service:
                         if plain_text.find(kw) >= 0:
                             try:
                                 await func(self.bot, ctx)
-                                self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                                self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}, triggered by keyword.')
                             except Exception as e:
                                 self.logger.exception(e)
                                 self.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
@@ -258,7 +263,7 @@ class Service:
                     if match:
                         try:
                             await func(self.bot, ctx, match)
-                            self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                            self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}, triggered by rex.')
                         except Exception as e:
                             self.logger.exception(e)
                             self.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
@@ -309,11 +314,10 @@ class Service:
         kwargs.setdefault('misfire_grace_time', 60)
         kwargs.setdefault('coalesce', True)
         def deco(func):
-            # @wraps(func)  #FIXME: 对scheduled_job使用wraps会报错
             async def wrapper():
-                gl = await self.get_enable_groups()
-                self.logger.info(f'Scheduled job {func.__name__} start.')
                 try:
+                    self.logger.info(f'Scheduled job {func.__name__} start.')
+                    gl = await self.get_enable_groups()
                     await func(gl)
                     self.logger.info(f'Scheduled job {func.__name__} completed.')
                 except Exception as e:
