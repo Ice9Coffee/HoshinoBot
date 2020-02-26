@@ -35,8 +35,8 @@ async def random_repeater(context):
         if not is_repeated:     # 机器人尚未复读过，开始测试复读
             if random.random() < p:    # 概率测试通过，复读并设flag
                 try:
-                    await bot.send(context, msg)
                     group_stat[group_id] = (msg, True, 0)
+                    await bot.send(context, msg)
                 except CQHttpError as e:
                     logger.error(f'复读失败: {type(e)}')
             else:                      # 概率测试失败，蓄力
