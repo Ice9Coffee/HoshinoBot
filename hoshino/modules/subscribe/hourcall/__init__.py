@@ -1,12 +1,10 @@
-import os
 import pytz
-import ujson as json
 import random
 from datetime import datetime
 
 import nonebot
 
-from hoshino.log import logger
+from hoshino import util
 from hoshino.service import Service
 
 sv = Service('hourcall', enable_on_default=False)
@@ -14,10 +12,7 @@ svtw = Service('pcr-arena-reminder-tw', enable_on_default=False)
 svjp = Service('pcr-arena-reminder-jp', enable_on_default=False)
 
 def get_config():
-    config_file = os.path.join(os.path.dirname(__file__), 'config.json')
-    with open(config_file, encoding='utf8') as f:
-        config = json.load(f)
-        return config
+    return util.load_config(__file__)
 
 
 def get_hour_call():

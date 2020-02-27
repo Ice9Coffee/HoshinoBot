@@ -1,7 +1,6 @@
 import re
 
-from nonebot import on_command, CommandSession, MessageSegment
-from aiocqhttp.exceptions import ActionFailed
+from nonebot import CommandSession, MessageSegment
 
 from hoshino import get_bot
 from hoshino.util import silence, concat_pic, pic2b64

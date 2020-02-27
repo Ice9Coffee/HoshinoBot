@@ -1,15 +1,11 @@
-from os import path
-import ujson as json
 from datetime import datetime, timezone, timedelta
+
+from hoshino import util
 from .dao.sqlitedao import ClanDao, MemberDao, BattleDao
 from .exception import NotFoundError
 
-
 def get_config():
-    config_file = path.join(path.dirname(__file__), "config.json")
-    with open(config_file, encoding='utf8') as f:
-        config = json.load(f)
-        return config
+    return util.load_config(__file__)
 
 
 class BattleMaster(object):
