@@ -1,16 +1,11 @@
-import os
-import ujson as json
 import random
 import requests
 import asyncio
 from lxml import etree
 from datetime import datetime
 
-import nonebot
-from nonebot import CommandSession, on_command
-
+from hoshino import util
 from hoshino.service import Service
-
 
 sv = Service('bangumi', enable_on_default=False)
 
@@ -20,10 +15,8 @@ class Mikan(object):
 
     @staticmethod
     def get_token():
-        config_file = os.path.join(os.path.dirname(__file__), 'config.json')
-        with open(config_file, encoding='utf8') as f:
-            config = json.load(f)
-            return config["MIKAN_TOKEN"]
+        config = util.load_config(__file__)
+        return config["MIKAN_TOKEN"]
 
 
     @staticmethod
@@ -118,7 +111,7 @@ async def mikan_poller(group_list):
 
 
 @sv.on_command('来点新番', aliases=('來點新番', ))
-async def send_bangumi(session:CommandSession):
+async def send_bangumi(session):
     if not Mikan.rss_cache:
         Mikan.update_cache()
 
