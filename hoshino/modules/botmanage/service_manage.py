@@ -12,7 +12,7 @@ async def lssv(session:CommandSession):
     gid = session.ctx['group_id']
     msg = ["服务一览："]
     svs = Service.get_loaded_services()
-    svs = map(lambda sv: (sv, (gid in sv.enable_group) or (sv.enable_on_default and gid not in sv.disable_group)), svs)
+    svs = map(lambda sv: (sv, sv.check_enabled(gid)), svs)
     key = cmp_to_key(lambda x, y: (y[1] - x[1]) or (-1 if x[0].name < y[0].name else 1 if x[0].name > y[0].name else 0))
     svs = sorted(svs, key=key)
     for sv, on in svs:
