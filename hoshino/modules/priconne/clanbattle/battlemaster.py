@@ -43,7 +43,8 @@ class BattleMaster(object):
         会战为每月最后一星期，编程时认为mm月的会战一定在mm月20日至mm+1月10日之间，每日以5:00 UTC+8为界。
         注意：返回的年月日并不一定是自然时间，如2019年9月2日04:00:00我们认为对应2019年8月会战，日期仍为1号，将返回(2019,8,1)
         '''
-        time = time.astimezone(timezone(timedelta(hours=zone_num-5)))  # UTC+3 的0点恰好可以作为 UTC+8 的分界线
+        # 日台服均为当地时间凌晨5点更新，故减5
+        time = time.astimezone(timezone(timedelta(hours=zone_num-5)))
         yyyy = time.year
         mm = time.month
         dd = time.day
@@ -219,7 +220,7 @@ class BattleMaster(object):
         return self.filt_challenge_of_day(self.list_challenge_of_user(uid, alt, time), time, zone_num)
 
 
-    def stat_challenge(self, cid, time, only_one_day=True):
+    def stat_challenge(self, cid, time, only_one_day=True, zone_num:int=8):
         '''
         统计每个成员的出刀
         return [(member, [challenge])]
@@ -230,7 +231,7 @@ class BattleMaster(object):
         for m in mem:
             challens = dao.find_by(uid=m['uid'], alt=m['alt'])
             if only_one_day:
-                challens = self.filt_challenge_of_day(challens, time)
+                challens = self.filt_challenge_of_day(challens, time, zone_num)
             ret.append((m, challens))
         return ret
 
@@ -242,10 +243,10 @@ class BattleMaster(object):
         '''
         clan = self.get_clan(cid)
         if not clan:
-            return []
+            raise NotFoundError(f'未找到公会{cid}')
         server = clan['server']
         ret = []
-        stat = self.stat_challenge(cid, time, only_one_day=False)
+        stat = self.stat_challenge(cid, time, only_one_day=False, zone_num=self.get_timezone_num(server))
         for mem, challens in stat:
             score = 0
             for ch in challens:
@@ -282,8 +283,11 @@ class BattleMaster(object):
                     norm = norm + 1
             return norm, last, ext, timeout
 
+        clan = self.get_clan(cid)
+        if not clan:
+            raise NotFoundError(f'未找到公会{cid}')
         ret = []
-        stat = self.stat_challenge(cid, time, only_one_day=True)
+        stat = self.stat_challenge(cid, time, only_one_day=True, zone_num=self.get_timezone_num(clan['server']))
         for mem, challens in stat:
             norm, last, ext, timeout = count(challens)
             r = (
