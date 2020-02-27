@@ -16,7 +16,7 @@ __plugin_name__ = 'gacha'
 sv = Service('gacha')
 _last_gacha_day = -1
 _user_gacha_count = defaultdict(int)    # {user: gacha_count}
-_max_gacha_per_day = 10
+_max_gacha_per_day = 5
 
 
 gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
