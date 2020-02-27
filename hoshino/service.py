@@ -52,7 +52,7 @@ _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
 _error_log_file = os.path.expanduser('~/.hoshino/error.log')
 os.makedirs(_service_config_dir, exist_ok=True)
 
-_black_list_group = {}
+_black_list_group = {}  # Dict[group_id, expr_time]
 
 
 def _load_service_config(service_name):
@@ -173,8 +173,8 @@ class Service:
 
     @staticmethod
     def check_block_group(group_id):
-        if datetime.now() > _black_list_group[group_id]:
-            del _black_list_group[group_id]
+        if group_id in _black_list_group and datetime.now() > _black_list_group[group_id]:
+            del _black_list_group[group_id]     # 拉黑时间过期
         return bool(group_id in _black_list_group)
 
 
