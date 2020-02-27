@@ -1,20 +1,19 @@
 import time
 import requests
 import ujson as json
-from os import path
 
-from hoshino.log import logger
+from hoshino import util
+from . import sv
 from ..chara import Chara
 
+logger = sv.logger
 
 class Arena(object):
 
     @staticmethod
     def __get_auth_key():
-        config_file = path.join(path.dirname(__file__), "config.json")
-        with open(config_file, encoding='utf8') as f:
-            config = json.load(f)
-            return config["AUTH_KEY"]
+        config = util.load_config(__file__)
+        return config["AUTH_KEY"]
 
 
     @staticmethod

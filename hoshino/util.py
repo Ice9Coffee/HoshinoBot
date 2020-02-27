@@ -1,15 +1,27 @@
-import unicodedata
+import os
 import base64
+import zhconv
+import unicodedata
+import ujson as json
 from io import BytesIO
 from PIL import Image
-
-import zhconv
 
 from nonebot import get_bot
 from aiocqhttp.exceptions import ActionFailed
 
 from .log import logger
 
+
+def load_config(inbuilt_file_var):
+    """
+    Just use `config = load_config(__file__)`,
+    you can get the config.json as a dict.
+    """
+    filename = os.path.join(os.path.dirname(inbuilt_file_var), 'config.json')
+    with open(filename, encoding='utf8') as f:
+        config = json.load(f)
+        return config
+    
 
 async def delete_msg(ctx):
     try:

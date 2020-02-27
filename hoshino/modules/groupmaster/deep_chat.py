@@ -11,7 +11,7 @@ api = 'http://127.0.0.1:7777/message'
 @sv.on_message('group')
 async def deepchat(bot:NoneBot, ctx):
     msg = ctx['message'].extract_plain_text()
-    if random.random() > 0.050 or not msg:
+    if random.random() > 0.030 or not msg:
         return
     payload = {
         "msg": msg,
