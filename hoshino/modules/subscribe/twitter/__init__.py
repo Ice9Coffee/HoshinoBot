@@ -37,7 +37,7 @@ async def _poll_new_tweets(account:str):
     else:       # on other times
         params = {
             'screen_name': account,
-            'count': '5',
+            'count': '10',
             'since_id': str(_latest_tweet_id[account])
         }
         rsp = await twt_request(_url_timeline, params)
@@ -52,16 +52,21 @@ async def twt_request(*args, **kwargs):
 
 
 # Requests/15-min window: 900  == 1 req/s
-@sv.scheduled_job('interval', seconds=len(_latest_tweet_id)*2)
+_subr_num = len(_latest_tweet_id)
+_freq = 30 * _subr_num
+sv.logger.info(f"twitter_poller works at {_subr_num} / {_freq} seconds")
+
+@sv.scheduled_job('interval', seconds=_freq)
 async def twitter_poller(_):
     bot = sv.bot
     buf = {}
     for account in _latest_tweet_id:
         try:
-            await asyncio.sleep(1)
             buf[account] = await _poll_new_tweets(account)
             if l := len(buf[account]):
                 sv.logger.info(f"成功获取@{account}的新推文{l}条")
+            else:
+                sv.logger.info(f"未检测到@{account}的新推文")
         except Exception as e:
             sv.logger.exception(e)
             sv.logger.error(f"获取@{account}的推文时出现异常{type(e)}")
@@ -70,12 +75,15 @@ async def twitter_poller(_):
         groups = await ssv.get_enable_groups()
         for gid, selfs in groups.items():
             try:
+                flag = False
                 for account in subr_list:
                     twts = buf.get(account, [])
                     for twt in twts:
                         await asyncio.sleep(0.5)
                         await bot.send_group_msg(self_id=random.choice(selfs), group_id=gid, message=twt)
-                ssv.logger.info(f'群{gid} 投递推特订阅成功')
+                        flag = True
+                if flag:
+                    ssv.logger.info(f'群{gid} 投递推特订阅成功')
             except Exception as e:
                 ssv.logger.exception(e)
                 ssv.logger.error(f'群{gid} 投递推特订阅失败 {type(e)}')
