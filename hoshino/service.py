@@ -4,6 +4,7 @@ import sys
 import pytz
 import logging
 import ujson as json
+from datetime import datetime, timedelta
 from functools import wraps
 from collections import defaultdict
 from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
@@ -50,6 +51,8 @@ _re_illegal_char = re.compile(r'[\\/:*?"<>|\.]')
 _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
 _error_log_file = os.path.expanduser('~/.hoshino/error.log')
 os.makedirs(_service_config_dir, exist_ok=True)
+
+_black_list_group = {}
 
 
 def _load_service_config(service_name):
@@ -161,15 +164,31 @@ class Service:
                 except nonebot.CQHttpError:
                     pass
         return Privilege.NORMAL
+    
+    
+    @staticmethod
+    def set_block_group(group_id, time):
+        _black_list_group[group_id] = datetime.now() + time
+
+
+    @staticmethod
+    def check_block_group(group_id):
+        if datetime.now() > _black_list_group[group_id]:
+            del _black_list_group[group_id]
+        return bool(group_id in _black_list_group)
+
+
+    def check_enabled(self, group_id):
+        return bool((group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group))
 
 
     async def check_permission(self, ctx, required_priv=None):
         required_priv = self.use_priv if required_priv == None else required_priv
         if ctx['message_type'] == 'group':
             group_id = ctx['group_id']
-            if (group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group):
+            if self.check_enabled(group_id) and not self.check_block_group(group_id):
                 user_priv = await self.get_user_privilege(ctx)
-                return user_priv >= required_priv
+                return bool(user_priv >= required_priv)
             else:
                 return False
         # TODO: 处理私聊权限。暂时不允许任何私聊
