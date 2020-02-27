@@ -18,7 +18,7 @@ _subr_dic = {
     Service('pcr-twitter', enable_on_default=False): ['priconne_redive'] 
 }
 
-for ids in _subr_dic:
+for _, ids in _subr_dic.items():
     for account in ids:
         _latest_tweet_id[account] = 0   # initialize
 
@@ -42,7 +42,7 @@ async def _poll_new_tweets(account:str):
         }
         rsp = await twt_request(_url_timeline, params)
         _update_latest_tweet_id(account, rsp)
-        return map(lambda item: f"@{account}\n{item['created_at']}\n\n{item['text']}", rsp.get_iterator())
+        return list(map(lambda item: f"@{account}\n{item['created_at']}\n\n{item['text']}", rsp.get_iterator()))
 
 
 @wraps(api.request)
@@ -51,15 +51,17 @@ async def twt_request(*args, **kwargs):
         None, partial(api.request, *args, **kwargs))
 
 
-# Requests/15-min window: 900
-@sv.scheduled_job('interval', minutes=1)
+# Requests/15-min window: 900  == 1 req/s
+@sv.scheduled_job('interval', seconds=len(_latest_tweet_id)*2)
 async def twitter_poller(_):
     bot = sv.bot
     buf = {}
     for account in _latest_tweet_id:
         try:
+            await asyncio.sleep(1)
             buf[account] = await _poll_new_tweets(account)
-            sv.logger.info(f"获取到{len(buf[account])}条@{account}的推文")
+            if l := len(buf[account]):
+                sv.logger.info(f"成功获取@{account}的新推文{l}条")
         except Exception as e:
             sv.logger.exception(e)
             sv.logger.error(f"获取@{account}的推文时出现异常{type(e)}")
@@ -71,6 +73,7 @@ async def twitter_poller(_):
                 for account in subr_list:
                     twts = buf.get(account, [])
                     for twt in twts:
+                        await asyncio.sleep(0.5)
                         await bot.send_group_msg(self_id=random.choice(selfs), group_id=gid, message=twt)
                 ssv.logger.info(f'群{gid} 投递推特订阅成功')
             except Exception as e:
