@@ -10,7 +10,7 @@ from hoshino.log import logger
 from hoshino.service import Service
 
 bot = nonebot.get_bot()
-BLANK_MESSAGE = Message(MessageSegment(''))
+BLANK_MESSAGE = Message(MessageSegment.text(''))
 
 @message_preprocessor
 async def black_list(bot, ctx):
