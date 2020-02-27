@@ -1,7 +1,6 @@
-from os import path
-import ujson as json
 import random
 
+from hoshino import util
 from ..chara import Chara
 
 
@@ -13,18 +12,16 @@ class Gacha(object):
 
 
     def load_pool(self):
-        config_file = path.join(path.dirname(__file__), "config.json")
-        with open(config_file, encoding='utf8') as f:
-            config = json.load(f)
-            pool = config["GACHA_POOL"]
-            self.up_prob = pool["up_prob"]
-            self.s3_prob = pool["s3_prob"]
-            self.s2_prob = pool["s2_prob"]
-            self.s1_prob = 1000 - self.s2_prob - self.s3_prob
-            self.up = pool["up"]
-            self.star3 = pool["star3"]
-            self.star2 = pool["star2"]
-            self.star1 = pool["star1"]
+        config = util.load_config(__file__)
+        pool = config["GACHA_POOL"]
+        self.up_prob = pool["up_prob"]
+        self.s3_prob = pool["s3_prob"]
+        self.s2_prob = pool["s2_prob"]
+        self.s1_prob = 1000 - self.s2_prob - self.s3_prob
+        self.up = pool["up"]
+        self.star3 = pool["star3"]
+        self.star2 = pool["star2"]
+        self.star1 = pool["star1"]
 
 
     def gacha_one(self, up_prob:int, s3_prob:int, s2_prob:int, s1_prob:int=None):

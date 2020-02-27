@@ -1,19 +1,11 @@
-from hoshino.service import Service
-
 import os
 import re
-import time
 import random
-import ujson as json
-from collections import defaultdict
-from urllib.parse import quote
 
-from nonebot import on_command, CommandSession, MessageSegment, NoneBot
-from nonebot.exceptions import CQHttpError
-
+from nonebot import on_command, CommandSession, NoneBot
+from hoshino import util
 from hoshino.res import R
-from hoshino.util import silence
-from hoshino.service import Service, Privilege
+from hoshino.service import Service
 
 sv = Service('kc-query', enable_on_default=False)
 
@@ -21,17 +13,15 @@ ship_folder = R.img('kancolle/ship/').path
 equip_folder = R.img('kancolle/equip/').path
 
 def load_data():
-    config_file = os.path.join(os.path.dirname(__file__), 'config.json')
-    with open(config_file, encoding='utf8') as f:
-        config = json.load(f)
-        db = config["data"]
-        rex = re.compile(r"\[CQ:image,file=(.*)\]")
-        for k, v in db.items():
-            m = rex.search(v)
-            if m:
-                img = str(R.img('kancolle/', m.group(1)).cqcode)
-                db[k] = rex.sub(img, v)
-        return db
+    config = util.load_config(__file__)
+    db = config["data"]
+    rex = re.compile(r"\[CQ:image,file=(.*)\]")
+    for k, v in db.items():
+        m = rex.search(v)
+        if m:
+            img = str(R.img('kancolle/', m.group(1)).cqcode)
+            db[k] = rex.sub(img, v)
+    return db
 
 DB = load_data()
 
