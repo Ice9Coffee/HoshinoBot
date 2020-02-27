@@ -15,29 +15,29 @@ async def say_sorry(session):
     await session.send('ごめんなさい！嘤嘤嘤(〒︿〒)')
 
 @sv.on_command('老婆', aliases=('waifu', 'laopo'))
-async def _(session):
+async def waifu(session):
     if not await sv.check_permission(session.ctx, Priv.SUPERUSER):
         await session.send(R.img('喊谁老婆呢.jpg').cqcode)
     else:
         await session.send('mua~')
 
 @sv.on_command('mua')
-async def _(session):
+async def mua(session):
     await session.send('笨蛋~')
 
 
 @sv.on_keyword({'确实', '有一说一', 'u1s1', 'yysy'}, normalize=True)
-async def _(bot, ctx):
+async def queshi(bot, ctx):
     if random.random() < 0.05:
         await bot.send(ctx, R.img('确实.jpg').cqcode)
 
 @sv.on_keyword({'会战', '刀'}, normalize=True)
-async def _(bot, ctx):
+async def clanba(bot, ctx):
     if random.random() < 0.03:
         await bot.send(ctx, R.img('我的天啊你看看都几点了.jpg').cqcode)
 
 @sv.on_keyword({'内鬼'}, normalize=True)
-async def _(bot, ctx):
+async def neigui(bot, ctx):
     if random.random() < 0.10:
         await bot.send(ctx, R.img('内鬼.png').cqcode)
 
