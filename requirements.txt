@@ -7,3 +7,4 @@ requests>=2.22.0
 sogou_tr_free>=0.0.6
 zhconv>=1.4.0
 Pillow>=6.2.1
+TwitterAPI>=2.5.10
