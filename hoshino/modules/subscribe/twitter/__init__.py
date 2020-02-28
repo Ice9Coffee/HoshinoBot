@@ -53,7 +53,7 @@ async def twt_request(*args, **kwargs):
 
 # Requests/15-min window: 900  == 1 req/s
 _subr_num = len(_latest_tweet_id)
-_freq = 30 * _subr_num
+_freq = 20 * _subr_num
 sv.logger.info(f"twitter_poller works at {_subr_num} / {_freq} seconds")
 
 @sv.scheduled_job('interval', seconds=_freq)
