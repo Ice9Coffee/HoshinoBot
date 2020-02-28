@@ -24,11 +24,12 @@ def download_img(save_path, link):
             print(f'content=type is image, saving to {save_path}', end='...')
             img = Image.open(BytesIO(resp.content))
             img.save(save_path)
-            print('OK')
+            print('OK', end='')
+    print('\n', end='')
 
 
 if __name__ == "__main__":
-    for yy in range(19, 12, -1):
+    for yy in range(20, 12, -1):
         for mm in range(12, 0, -1):
             for ss in range(1, 21):
                 url = get_url(yy, mm, ss)
