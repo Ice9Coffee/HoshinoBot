@@ -27,7 +27,7 @@ gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来�
                    '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 
 GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n使用【启用 gacha】以启用\n（需群管理）'
-GACHA_EXCEED_NOTICE = f'您今天已经抽过{_max_gacha_per_day}次了，欢迎明天再来！'
+GACHA_EXCEED_NOTICE = f'您今天已经抽过{_max_gacha_per_day * 1500}钻了，欢迎明天再来！'
 
 
 def check_gacha_num(user_id):
