@@ -27,7 +27,6 @@ async def ls_service(session: CommandSession, service_name:str):
     all_services = Service.get_loaded_services()
     for sv in all_services:
         if sv.name == service_name:
-            
             on_g = '\n'.join(map(lambda x: str(x), sv.enable_group))
             off_g = '\n'.join(map(lambda x: str(x), sv.disable_group))
             default_ = '开启' if sv.enable_on_default else '关闭'

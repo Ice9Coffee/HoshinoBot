@@ -14,14 +14,6 @@ from hoshino.log import logger
 
 from .battlemaster import BattleMaster
 
-__plugin_name__ = 'clanbattle'
-
-bossNames = ['一王', '二王', '三王', '四王', '五王']
-default_reservation = {str(i):  [] for i in range(1, 6)}
-reservations_folder = 'reservations'
-if not os.path.exists(reservations_folder):
-    os.mkdir(reservations_folder)
-
 
 def get_digi(x: int):
     '''
@@ -34,9 +26,6 @@ def get_digi(x: int):
         ans = ans + 1
         x = x // 10
     return ans
-
-def format_int(x: int) -> str:
-    pass
 
 
 @on_command('add-clan', permission=perm.GROUP, shell_like=True, only_to_me=False)

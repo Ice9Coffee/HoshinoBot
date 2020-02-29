@@ -4,6 +4,7 @@ import sys
 import pytz
 import logging
 import ujson as json
+from datetime import datetime, timedelta
 from functools import wraps
 from collections import defaultdict
 from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
@@ -49,7 +50,10 @@ _loaded_services = set()
 _re_illegal_char = re.compile(r'[\\/:*?"<>|\.]')
 _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
 _error_log_file = os.path.expanduser('~/.hoshino/error.log')
+_critical_log_file = os.path.expanduser('~/.hoshino/critical.log')
 os.makedirs(_service_config_dir, exist_ok=True)
+
+_black_list_group = {}  # Dict[group_id, expr_time]
 
 
 def _load_service_config(service_name):
@@ -111,8 +115,12 @@ class Service:
         error_handler = logging.FileHandler(_error_log_file, encoding='utf8')
         error_handler.setLevel(logging.ERROR)
         error_handler.setFormatter(formatter)
+        critical_handler = logging.FileHandler(_critical_log_file, encoding='utf8')
+        critical_handler.setLevel(logging.CRITICAL)
+        critical_handler.setFormatter(formatter)        
         self.logger.addHandler(default_handler)
         self.logger.addHandler(error_handler)
+        self.logger.addHandler(critical_handler)
 
         _loaded_services.add(self)
 
@@ -161,15 +169,31 @@ class Service:
                 except nonebot.CQHttpError:
                     pass
         return Privilege.NORMAL
+    
+    
+    @staticmethod
+    def set_block_group(group_id, time):
+        _black_list_group[group_id] = datetime.now() + time
+
+
+    @staticmethod
+    def check_block_group(group_id):
+        if group_id in _black_list_group and datetime.now() > _black_list_group[group_id]:
+            del _black_list_group[group_id]     # 拉黑时间过期
+        return bool(group_id in _black_list_group)
+
+
+    def check_enabled(self, group_id):
+        return bool((group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group))
 
 
     async def check_permission(self, ctx, required_priv=None):
         required_priv = self.use_priv if required_priv == None else required_priv
         if ctx['message_type'] == 'group':
             group_id = ctx['group_id']
-            if (group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group):
+            if self.check_enabled(group_id) and not self.check_block_group(group_id):
                 user_priv = await self.get_user_privilege(ctx)
-                return user_priv >= required_priv
+                return bool(user_priv >= required_priv)
             else:
                 return False
         # TODO: 处理私聊权限。暂时不允许任何私聊
@@ -207,8 +231,8 @@ class Service:
         self.logger.info(f'Service {self.name} is disabled at group {group_id}')
 
 
-    def on_message(self, event=None):
-        def deco(func):
+    def on_message(self, event=None) -> Callable:
+        def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
@@ -223,11 +247,11 @@ class Service:
         return deco
 
 
-    def on_keyword(self, keywords:Iterable, normalize=False, event=None):
+    def on_keyword(self, keywords:Iterable, normalize=False, event=None) -> Callable:
         if isinstance(keywords, str):
             keywords = (keywords, )
         normalized_keywords = tuple(util.normalize_str(kw) for kw in keywords)
-        def deco(func):
+        def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
@@ -248,14 +272,15 @@ class Service:
         return deco
 
 
-    def on_rex(self, rex, normalize=False, event=None):
+    def on_rex(self, rex, normalize=False, event=None) -> Callable:
         if isinstance(rex, str):
             rex = re.compile(rex)            
-        def deco(func):
+        def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
                     plain_text = ctx['message'].extract_plain_text()
+                    plain_text = plain_text.strip()
                     if normalize:
                         plain_text = util.normalize_str(plain_text)
                     ctx['plain_text'] = plain_text                
@@ -272,8 +297,8 @@ class Service:
         return deco
 
 
-    def on_command(self, name, *, deny_tip=None, **kwargs):
-        def deco(func):
+    def on_command(self, name, *, deny_tip=None, **kwargs) -> Callable:
+        def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(session:nonebot.CommandSession):
                 if await self.check_permission(session.ctx):
@@ -293,8 +318,8 @@ class Service:
         return deco
 
 
-    def on_natural_language(self, keywords=None, **kwargs):
-        def deco(func):
+    def on_natural_language(self, keywords=None, **kwargs) -> Callable:
+        def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(session:nonebot.NLPSession):
                 if await self.check_permission(session.ctx):
@@ -309,11 +334,11 @@ class Service:
         return deco
 
 
-    def scheduled_job(self, *args, **kwargs):
+    def scheduled_job(self, *args, **kwargs) -> Callable:
         kwargs.setdefault('timezone', pytz.timezone('Asia/Shanghai'))
         kwargs.setdefault('misfire_grace_time', 60)
         kwargs.setdefault('coalesce', True)
-        def deco(func):
+        def deco(func) -> Callable:
             async def wrapper():
                 try:
                     self.logger.info(f'Scheduled job {func.__name__} start.')
