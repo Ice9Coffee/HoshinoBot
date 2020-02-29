@@ -29,6 +29,7 @@ def _check_hbtitle_is_cmd(ctx, title):
 
 @bot.on_message('group')
 async def hb_handler(ctx):
+    self_id = ctx['self_id']
     user_id = ctx['user_id']
     group_id = ctx['group_id']
     first_msg_seg = ctx['message'][0]
@@ -36,8 +37,13 @@ async def hb_handler(ctx):
         title = first_msg_seg['data']['title']
         if _check_hbtitle_is_cmd(ctx, title):
             Service.set_block_group(group_id, timedelta(hours=1))
-            Service.set_block_user(user_id, timedelta(hours=24))
+            Service.set_block_user(user_id, timedelta(days=30))
             util.silence(ctx, 7 * 24 * 60 * 60)
             msg_from = f"{ctx['user_id']}@[群:{ctx['group_id']}]"
             logger.critical(f'Self: {ctx["self_id"]}, Message {ctx["message_id"]} from {msg_from} detected as abuse: {ctx["message"]}')
-            await bot.send(ctx, "检测到滥用行为，您的操作已被记录并加入黑名单24小时。\nbot拒绝响应本群消息1小时", at_sender=True)
+            await bot.send(ctx, "检测到滥用行为，您的操作已被记录并加入黑名单。\nbot拒绝响应本群消息1小时", at_sender=True)
+            try:
+                await bot.set_group_kick(self_id=self_id, group_id=group_id, user_id=user_id, reject_add_request=True)
+                logger.critical(f"已将{user_id}移出群{group_id}")
+            except:
+                pass

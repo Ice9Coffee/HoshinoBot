@@ -194,6 +194,8 @@ class Service:
 
     @staticmethod
     def check_block_user(user_id):
+        if user_id in nonebot.get_bot().config.SUPERUSERS:
+            return False
         if user_id in _black_list_user and datetime.now() > _black_list_user[user_id]:
             del _black_list_user[user_id]       # 拉黑时间过期
         return bool(user_id in _black_list_user)
