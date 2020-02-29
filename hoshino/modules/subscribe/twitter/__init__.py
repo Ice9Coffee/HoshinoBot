@@ -15,7 +15,8 @@ _url_timeline = 'statuses/user_timeline'
 _latest_tweet_id = {}      # { account: tweet_id }
 _subr_dic = {
     Service('kc-twitter', enable_on_default=False): ['KanColle_STAFF', 'C2_STAFF'],
-    Service('pcr-twitter', enable_on_default=False): ['priconne_redive'] 
+    Service('pcr-twitter', enable_on_default=False): ['priconne_redive'],
+    Service('pripri-twitter', enable_on_default=False): ['pripri_anime'],
 }
 
 for _, ids in _subr_dic.items():
@@ -53,7 +54,7 @@ async def twt_request(*args, **kwargs):
 
 # Requests/15-min window: 900  == 1 req/s
 _subr_num = len(_latest_tweet_id)
-_freq = 20 * _subr_num
+_freq = 15 * _subr_num
 sv.logger.info(f"twitter_poller works at {_subr_num} / {_freq} seconds")
 
 @sv.scheduled_job('interval', seconds=_freq)
