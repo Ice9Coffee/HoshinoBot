@@ -1,4 +1,5 @@
 import random
+from datetime import timedelta
 
 from hoshino import util
 from hoshino.res import R
@@ -45,16 +46,19 @@ async def chat_neigui(bot, ctx):
 BANNED_WORD = (
     'rbq', 'RBQ', '憨批', '废物', '死妈', '崽种', '傻逼', '傻逼玩意', 
     '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp', 
-    'nmsl', 'D区', '口区', '我是你爹', 'nmbiss', '弱智'
+    'nmsl', 'D区', '口区', '我是你爹', 'nmbiss', '弱智', '给爷爬', '杂种爬'
 )
 @sv.on_command('ban_word', aliases=BANNED_WORD, only_to_me=True)
 async def ban_word(session):
     ctx = session.ctx
-    msg_from = str(ctx['user_id'])
+    user_id = ctx['user_id']
+    msg_from = str(user_id)
     if ctx['message_type'] == 'group':
         msg_from += f'@[群:{ctx["group_id"]}]'
     elif ctx['message_type'] == 'discuss':
         msg_from += f'@[讨论组:{ctx["discuss_id"]}]'
     sv.logger.critical(f'Self: {ctx["self_id"]}, Message {ctx["message_id"]} from {msg_from}: {ctx["message"]}')
-    await session.send(random.choice(BANNED_WORD), at_sender=True)
+    await session.send(random.choice(BANNED_WORD))
+    Service.set_block_user(user_id, timedelta(hours=24))
+    await session.send("被加入黑名单24小时", at_sender=True)
     await util.silence(session.ctx, 24*60*60)

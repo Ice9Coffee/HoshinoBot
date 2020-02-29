@@ -54,6 +54,7 @@ _critical_log_file = os.path.expanduser('~/.hoshino/critical.log')
 os.makedirs(_service_config_dir, exist_ok=True)
 
 _black_list_group = {}  # Dict[group_id, expr_time]
+_black_list_user = {}   # Dict[user_id, expr_time]
 
 
 def _load_service_config(service_name):
@@ -142,9 +143,12 @@ class Service:
     @staticmethod
     async def get_user_privilege(ctx):
         bot = nonebot.get_bot()
-        if ctx['user_id'] in bot.config.SUPERUSERS:
+        uid = ctx['user_id']
+        if uid in bot.config.SUPERUSERS:
             return Privilege.SUPERUSER
-        # TODO: Black list & White list
+        if Service.check_block_user(uid):
+            return Privilege.BLACK
+        # TODO: White list
         if ctx['message_type'] == 'private':
             if ctx['sub_type'] == 'friend':
                 return Privilege.PRIVATE_FRIEND
@@ -158,7 +162,7 @@ class Service:
         if ctx['message_type'] == 'group':
             if not ctx['anonymous']:
                 try:
-                    member_info = await bot.get_group_member_info(self_id=ctx['self_id'], group_id=ctx['group_id'], user_id=ctx['user_id'])
+                    member_info = await bot.get_group_member_info(self_id=ctx['self_id'], group_id=ctx['group_id'], user_id=uid)
                     if member_info:
                         if member_info['role'] == 'owner':
                             return Privilege.OWNER
@@ -177,10 +181,22 @@ class Service:
 
 
     @staticmethod
+    def set_block_user(user_id, time):
+        _black_list_user[user_id] = datetime.now() + time
+
+
+    @staticmethod
     def check_block_group(group_id):
         if group_id in _black_list_group and datetime.now() > _black_list_group[group_id]:
             del _black_list_group[group_id]     # 拉黑时间过期
         return bool(group_id in _black_list_group)
+
+
+    @staticmethod
+    def check_block_user(user_id):
+        if user_id in _black_list_user and datetime.now() > _black_list_user[user_id]:
+            del _black_list_user[user_id]       # 拉黑时间过期
+        return bool(user_id in _black_list_user)
 
 
     def check_enabled(self, group_id):
