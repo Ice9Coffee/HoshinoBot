@@ -1,7 +1,7 @@
 import time
-import requests
 import ujson as json
 
+from hoshino import aiorequests
 from hoshino import util
 from . import sv
 from ..chara import Chara
@@ -17,7 +17,7 @@ class Arena(object):
 
 
     @staticmethod
-    def do_query(id_list):
+    async def do_query(id_list):
         
         id_list = [ x * 100 + 1 for x in id_list ]
         logger.debug(f'id_list={id_list}')
@@ -30,8 +30,8 @@ class Arena(object):
         
         logger.info(f'Arena query payload={json.dumps(payload)}')
         
-        resp = requests.post('https://api.pcrdfans.com/x/v1/search', headers=header, data=json.dumps(payload))
-        res = resp.json()
+        resp = await aiorequests.post('https://api.pcrdfans.com/x/v1/search', headers=header, data=json.dumps(payload))
+        res = await resp.json()
         logger.debug(f'len(res)={len(res)}')
 
         if res['code']:
