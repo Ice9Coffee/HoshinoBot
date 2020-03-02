@@ -2,12 +2,12 @@ import os
 import re
 import random
 import ujson as json
-import requests
 import asyncio
 from urllib.parse import urljoin, urlparse, parse_qs
 
 from nonebot import CQHttpError, NLPSession
 
+from hoshino import aiorequests
 from hoshino.res import R
 from hoshino.service import Service
 
@@ -44,23 +44,23 @@ async def comic(session:NLPSession):
     await session.send(msg)
 
 
-def download_img(save_path, link):
+async def download_img(save_path, link):
     '''
     从link下载图片保存至save_path（目录+文件名）
     会覆盖原有文件，需保证目录存在
     '''
     sv.logger.info(f'download_img from {link}')
-    resp = requests.get(link, stream=True)
+    resp = await aiorequests.get(link, stream=True)
     sv.logger.info(f'status_code={resp.status_code}')
     if 200 == resp.status_code:
         if re.search(r'image', resp.headers['content-type'], re.I):
             sv.logger.info(f'is image, saving to {save_path}')
             with open(save_path, 'wb') as f:
-                f.write(resp.content)
+                f.write(await resp.content)
                 sv.logger.info('saved!')
 
 
-def download_comic(id_):
+async def download_comic(id_):
     '''
     下载指定id的官方四格漫画，同时更新漫画目录index.json
     episode_num可能会小于id
@@ -73,11 +73,12 @@ def download_comic(id_):
     sv.logger.info(f'getting comic {id_} ...')
     url = base + id_
     sv.logger.info(f'url={url}')
-    resp = requests.get(url)
+    resp = await aiorequests.get(url)
     sv.logger.info(f'status_code={resp.status_code}')
     if 200 != resp.status_code:
         return
-    data = resp.json()[0]
+    data = await resp.json()
+    data = data[0]
 
     episode = data['episode_num']
     title = data['title']
@@ -86,7 +87,7 @@ def download_comic(id_):
     sv.logger.info(f'episode={index[episode]}')
 
     # 下载图片并保存
-    download_img(os.path.join(save_dir, get_pic_name(episode)), link)
+    await download_img(os.path.join(save_dir, get_pic_name(episode)), link)
 
     # 保存官漫目录信息
     with open(os.path.join(save_dir, 'index.json'), 'w', encoding='utf8') as f:
@@ -94,7 +95,7 @@ def download_comic(id_):
 
 
 @sv.scheduled_job('cron', minute='*/5', second='25')
-async def update_seeker(group_list):
+async def update_seeker():
     '''
     轮询官方四格漫画更新
     若有更新则推送至订阅群
@@ -103,8 +104,8 @@ async def update_seeker(group_list):
     index = load_index()
 
     # 获取最新漫画信息
-    resp = requests.get(index_api, timeout=10)
-    data = resp.json()
+    resp = await aiorequests.get(index_api, timeout=10)
+    data = await resp.json()
     id_ = data['latest_cartoon']['id']
     episode = data['latest_cartoon']['episode_num']
     title = data['latest_cartoon']['title']
@@ -118,21 +119,12 @@ async def update_seeker(group_list):
         if id_ == old_id:
             sv.logger.info('未检测到官漫更新')
             return
-    
+
     # 确定已有更新，下载图片
     sv.logger.info(f'发现更新 id={id_}')
-    download_comic(id_)
+    await download_comic(id_)
 
     # 推送至各个订阅群
     pic = R.img('priconne/comic', get_pic_name(episode)).cqcode
     msg = f'プリンセスコネクト！Re:Dive公式4コマ更新！\n第{episode}話 {title}\n{pic}'
-
-    for group, sid in group_list.items():
-        await asyncio.sleep(0.5)  # 降低发送频率，避免被腾讯ban
-        try:
-            await sv.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message=msg)
-            sv.logger.info(f'群{group} 投递PCR官漫更新成功')
-        except CQHttpError as e:
-            sv.logger.error(f'Error：群{group} 投递PCR官漫更新失败 {type(e)}')
-
-    sv.logger.info('计划任务：update_seeker 完成')
+    await sv.broad_cast(msg, 'PCR官方四格', 0.5)

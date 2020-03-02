@@ -33,7 +33,7 @@ async def arena_query(session:CommandSession):
         await session.send('⚠️您正在查询普通版炸弹人\n※万圣版可用万圣炸弹人/瓜炸等别称')
 
     sv.logger.info('Arena doing query...')
-    res = Arena.do_query(defen)
+    res = await Arena.do_query(defen)
     sv.logger.info('Arena got response!')
 
 
