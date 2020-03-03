@@ -1,3 +1,4 @@
+import re
 import pytz
 import random
 import asyncio
@@ -39,7 +40,20 @@ def update_latest_info(account:str, rsp:TwitterResponse):
 def time_formatter(time_str):
     dt = datetime.strptime(time_str, r"%a %b %d %H:%M:%S %z %Y")
     dt = dt.astimezone(pytz.timezone('Asia/Shanghai'))
-    return f"{util.month_name(dt.month)}{util.date_name(dt.day)} {util.time_name(dt.hour, dt.minute)}"
+    return f"{util.month_name(dt.month)}{util.date_name(dt.day)}・{util.time_name(dt.hour, dt.minute)}"
+
+
+def tweet_formatter(item):
+    name = item['user']['name']
+    time = time_formatter(item['created_at'])
+    text = item['full_text']
+    try:
+        img = item['entities']['media'][0]['media_url']
+        assert re.match(r'\.(jpg|jpeg|png|gif|jfif|webp)$', img, re.I)
+        img = f"\n{ms.image(img)}"
+    except:
+        img = ''
+    return f"@{name}\n{time}\n\n{text}{img}"
 
 
 async def poll_new_tweets(account:str):
@@ -53,16 +67,18 @@ async def poll_new_tweets(account:str):
             'screen_name': account,
             'count': '10',
             'since_id': str(latest_info[account]['last_tweet_id']),
-            'tweet_mode': 'extended',        
+            'tweet_mode': 'extended',
+            'include_rts': False,            
         }
         rsp = await twt_request(URL_TIMELINE, params)
         old_profile_image = latest_info[account]['profile_image']
         update_latest_info(account, rsp)
         new_profile_image = latest_info[account]['profile_image']
-        
-        tweets = list(map(lambda item: f"@{item['user']['name']}\n{time_formatter(item['created_at'])}\n\n{item['full_text']}", rsp.get_iterator()))
-        if new_profile_image != old_profile_image:
-            tweets.append(f"@{account} 更换了头像\n{ms.image(new_profile_image)}")
+
+        tweets = list(map(tweet_formatter, rsp.get_iterator()))
+        if new_profile_image != old_profile_image and old_profile_image:
+            big_img = re.sub(r'_normal(\.(jpg|jpeg|png|gif|jfif|webp))$', r'\1', new_profile_image, re.I)
+            tweets.append(f"@{account} 更换了头像\n{ms.image(big_img)}")
         return tweets
 
 
