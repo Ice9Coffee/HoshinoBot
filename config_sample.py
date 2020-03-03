@@ -27,4 +27,5 @@ MODULES_ON = {
     # 'subscribe',
     # 'setu',
     # 'translate',
+    # 'dice',
 }
