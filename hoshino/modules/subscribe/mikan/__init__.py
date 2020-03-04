@@ -53,61 +53,47 @@ class Mikan(object):
         return new_bangumi
 
 
-
+DEVICES = [
+    '22号对水上电探改四(后期调整型)',
+    '15m二重测距仪+21号电探改二',
+    'FuMO25 雷达',
+    'SK+SG 雷达',
+    'SG 雷达(初期型)',
+    'GFCS Mk.37',
+    '潜水舰搭载电探&逆探(E27)',
+    'HF/DF+Type144/147 ASDIC',
+    '三式指挥联络机(对潜)',
+    'O号观测机改二',
+    'S-51J改',
+    '二式陆上侦察机(熟练)',
+    '东海(九〇一空)',
+    '二式大艇',
+    'PBY-5A Catalina',
+    '零式水上侦察机11型乙(熟练)',
+    '紫云',
+    'Ar196改',
+    'Ro.43水侦',
+    'OS2U',
+    'S9 Osprey',
+    '彩云(东加罗林空)',
+    '彩云(侦四)',
+    '试制景云(舰侦型)',
+]
 
 @sv.scheduled_job('cron', minute='*/3', second='15')
-async def mikan_poller(group_list):
-    
+async def mikan_poller():
     if not Mikan.rss_cache:
         Mikan.update_cache()
         sv.logger.info(f'订阅缓存为空，已加载至最新')
         return
-
     new_bangumi = Mikan.update_cache()
-    if new_bangumi:
-
-        sv.logger.info(f'检索到{len(new_bangumi)}条番剧更新！')
-
-        msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in new_bangumi ]
-        msg_device = [
-            '22号对水上电探改四(后期调整型)',
-            '15m二重测距仪+21号电探改二',
-            'FuMO25 雷达',
-            'SK+SG 雷达',
-            'SG 雷达(初期型)',
-            'GFCS Mk.37',
-            '潜水舰搭载电探&逆探(E27)',
-            'HF/DF+Type144/147 ASDIC',
-            '三式指挥联络机(对潜)',
-            'O号观测机改二',
-            'S-51J改',
-            '二式陆上侦察机(熟练)',
-            '东海(九〇一空)',
-            '二式大艇',
-            'PBY-5A Catalina',
-            '零式水上侦察机11型乙(熟练)',
-            '紫云',
-            'Ar196改',
-            'Ro.43水侦',
-            'OS2U',
-            'S9 Osprey',
-            '彩云(东加罗林空)',
-            '彩云(侦四)',
-            '试制景云(舰侦型)',
-        ]
-
-        for group, sid in group_list.items():
-            await asyncio.sleep(1.0)  # 降低发送频率，避免被腾讯ban
-            try:
-                for m in msg:
-                    await asyncio.sleep(0.5)
-                    await sv.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message=f'{random.choice(msg_device)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}')
-                sv.logger.info(f'群{group} 投递番剧更新成功')
-            except Exception as e:
-                sv.logger.error(f'Error：群{group} 投递番剧更新失败 {type(e)}')
-    else:
+    if not new_bangumi:
         sv.logger.info(f'未检索到番剧更新！')
-
+    else:
+        sv.logger.info(f'检索到{len(new_bangumi)}条番剧更新！')
+        msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲下载 {i[0]}' for i in new_bangumi ]
+        randomiser = lambda m: f'{random.choice(DEVICES)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}'
+        await sv.broad_cast(msg, '蜜柑番剧', 0.5, randomiser)
 
 
 @sv.on_command('来点新番', aliases=('來點新番', ))

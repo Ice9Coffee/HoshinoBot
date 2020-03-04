@@ -25,34 +25,21 @@ def get_hour_call():
 
 
 @sv.scheduled_job('cron', hour='*')
-async def hour_call(group_list):
+async def hour_call():
     now = datetime.now(pytz.timezone('Asia/Shanghai'))
     if 2 <= now.hour <= 4:
         return  # 宵禁 免打扰
     msg = get_hour_call()[now.hour]
-    for group, sid in group_list.items():
-        try:
-            await sv.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message=msg)
-            sv.logger.info(f'群{group} 投递hour_call成功')
-        except nonebot.CQHttpError as e:
-            sv.logger.error(f'群{group} 投递hour_call失败 {type(e)}')
+    await sv.broad_cast(msg, 'hourcall', 0)
 
 
 @svtw.scheduled_job('cron', hour='14', minute='45')
-async def pcr_reminder_tw(group_list):
-    for group, sid in group_list.items():
-        try:
-            await svtw.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message='骑士君、准备好背刺了吗？')
-            svtw.logger.info(f'群{group} 投递pcr_reminder_tw成功')
-        except nonebot.CQHttpError as e:
-            svtw.logger.error(f'群{group} 投递pcr_reminder_tw失败 {type(e)}')
+async def pcr_reminder_tw():
+    msg = '骑士君、准备好背刺了吗？'
+    await svtw.broad_cast(msg, 'pcr-reminder-tw', 0.2)
 
 
 @svjp.scheduled_job('cron', hour='13', minute='45')
-async def pcr_reminder_jp(group_list):
-    for group, sid in group_list.items():
-        try:
-            await svjp.bot.send_group_msg(self_id=random.choice(sid), group_id=group, message='骑士君、准备好背刺了吗？')
-            svjp.logger.info(f'群{group} 投递pcr_reminder_jp成功')
-        except nonebot.CQHttpError as e:
-            svjp.logger.error(f'群{group} 投递pcr_reminder_jp失败 {type(e)}')
+async def pcr_reminder_jp():
+    msg = '骑士君、准备好背刺了吗？'
+    await svjp.broad_cast(msg, 'pcr-reminder-jp', 0.2)

@@ -85,9 +85,12 @@ class nCoV2019:
     #                 return each
     #     return None
 
+@sv.on_command('咳', aliases=('咳咳', '咳咳咳', '咳咳咳咳'), only_to_me=False)
+async def cough_redirect(session):
+    await session.send('请见丁香园： https://ncov.dxy.cn/ncovh5/view/pneumonia')
 
 
-@sv.on_command('咳咳', only_to_me=False)
+# @sv.on_command('咳咳', only_to_me=False)
 async def cough(session:CommandSession):
     session.finish('请见丁香园： https://ncov.dxy.cn/ncovh5/view/pneumonia')
     name = session.current_arg_text
@@ -119,7 +122,7 @@ def _make_msg(news_item):
     return "{infoSource}：【{title}】{pubDateStr}\n{summary}\n▲{sourceUrl}".format(**news_item)
 
 
-@sv.on_command('咳咳咳', only_to_me=False)
+# @sv.on_command('咳咳咳', only_to_me=False)
 async def cough_news(session:CommandSession):
     session.finish('请见丁香园： https://ncov.dxy.cn/ncovh5/view/pneumonia')
     # await nCoV2019.update_news()
