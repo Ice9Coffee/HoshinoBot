@@ -12,10 +12,13 @@ from hoshino.service import Service
 
 sv = Service('pcr-query')
 
-p1 = R.img('priconne/quick/r15-3.png').cqcode
-p4 = R.img('priconne/quick/r16-4-1.png').cqcode
-p5 = R.img('priconne/quick/r16-4-2.png').cqcode
-p6 = R.img('priconne/quick/r16-4-3.png').cqcode
+try:
+    p1 = R.img('priconne/quick/r15-3.png').cqcode
+    p4 = R.img('priconne/quick/r16-4-1.png').cqcode
+    p5 = R.img('priconne/quick/r16-4-2.png').cqcode
+    p6 = R.img('priconne/quick/r16-4-3.png').cqcode
+except Exception as e:
+    sv.logger.exception(e)
 
 
 @sv.on_rex(r'^(\*?([日台])服?)?rank', normalize=True, event='group')

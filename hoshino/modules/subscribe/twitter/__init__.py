@@ -21,12 +21,20 @@ subr_dic = {
     Service('kc-twitter', enable_on_default=False): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi'],
     Service('pcr-twitter', enable_on_default=False): ['priconne_redive'],
     Service('pripri-twitter', enable_on_default=False): ['pripri_anime'],
+    Service('shiratama-twitter', enable_on_default=False): ['shiratamacaron'],
+    Service('kc-doujin-twitter', enable_on_default=False): ['suzukitoto0323', 'watanohara2'],
 }
 
 latest_info = {}      # { account: {last_tweet_id: int, profile_image: str } }
 for _, ids in subr_dic.items():     # initialize
     for account in ids:
         latest_info[account] = {'last_tweet_id': 0, 'profile_image': ''}
+
+
+@wraps(api.request)
+async def twt_request(*args, **kwargs):
+    return await asyncio.get_event_loop().run_in_executor(
+        None, partial(api.request, *args, **kwargs))
 
 
 def update_latest_info(account:str, rsp:TwitterResponse):
@@ -49,7 +57,7 @@ def tweet_formatter(item):
     text = item['full_text']
     try:
         img = item['entities']['media'][0]['media_url']
-        assert re.match(r'\.(jpg|jpeg|png|gif|jfif|webp)$', img, re.I)
+        assert re.search(r'\.(jpg|jpeg|png|gif|jfif|webp)$', img, re.I)
         img = f"\n{ms.image(img)}"
     except:
         img = ''
@@ -66,7 +74,7 @@ async def poll_new_tweets(account:str):
         params = {
             'screen_name': account,
             'count': '10',
-            'since_id': str(latest_info[account]['last_tweet_id']),
+            'since_id': latest_info[account]['last_tweet_id'],
             'tweet_mode': 'extended',
             'include_rts': False,            
         }
@@ -82,15 +90,11 @@ async def poll_new_tweets(account:str):
         return tweets
 
 
-@wraps(api.request)
-async def twt_request(*args, **kwargs):
-    return await asyncio.get_event_loop().run_in_executor(
-        None, partial(api.request, *args, **kwargs))
 
 
 # Requests/15-min window: 900  == 1 req/s
 _subr_num = len(latest_info)
-_freq = 10 * _subr_num
+_freq = 8 * _subr_num
 sv.logger.info(f"twitter_poller works at {_subr_num} / {_freq} seconds")
 
 @sv.scheduled_job('interval', seconds=_freq)
@@ -112,3 +116,24 @@ async def twitter_poller():
         for account in subr_list:
             twts.extend(buf.get(account, []))
         await ssv.broad_cast(twts, ssv.name, 0.5)
+
+@sv.on_command('看推')      # for test
+async def one_tweet(session):
+    args = session.current_arg_text.split()
+    try:
+        account = args[0]
+    except:
+        account = 'KanColle_STAFF'
+    try:
+        count = max(int(args[1]), 10)
+    except:
+        count = 3
+    params = {
+        'screen_name': account,
+        'count': count,
+        'tweet_mode': 'extended',
+    }
+    rsp = await twt_request(URL_TIMELINE, params)
+    twts = list(map(tweet_formatter, rsp.get_iterator()))
+    for t in twts:
+        await session.send(t)
