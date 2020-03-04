@@ -18,6 +18,26 @@ class AsyncResponse:
     @property
     def ok(self) -> bool:
         return self.raw_response.ok
+    
+    @property
+    def status_code(self) -> int:
+        return self.raw_response.status_code
+    
+    @property
+    def headers(self):
+        return self.raw_response.headers
+    
+    @property
+    def url(self):
+        return self.raw_response.url
+    
+    @property
+    def encoding(self):
+        return self.raw_response.encoding
+    
+    @property
+    def cookies(self):
+        return self.raw_response.cookies
 
     def __repr__(self):
         return '<AsyncResponse [%s]>' % self.raw_response.status_code
