@@ -2,7 +2,9 @@ import os
 import re
 import sys
 import pytz
+import random
 import logging
+import asyncio
 import ujson as json
 from datetime import datetime, timedelta
 from functools import wraps
@@ -194,6 +196,8 @@ class Service:
 
     @staticmethod
     def check_block_user(user_id):
+        if user_id in nonebot.get_bot().config.SUPERUSERS:
+            return False
         if user_id in _black_list_user and datetime.now() > _black_list_user[user_id]:
             del _black_list_user[user_id]       # 拉黑时间过期
         return bool(user_id in _black_list_user)
@@ -355,14 +359,32 @@ class Service:
         kwargs.setdefault('misfire_grace_time', 60)
         kwargs.setdefault('coalesce', True)
         def deco(func) -> Callable:
+            @wraps(func)
             async def wrapper():
                 try:
                     self.logger.info(f'Scheduled job {func.__name__} start.')
-                    gl = await self.get_enable_groups()
-                    await func(gl)
+                    await func()
                     self.logger.info(f'Scheduled job {func.__name__} completed.')
                 except Exception as e:
                     self.logger.exception(e)
                     self.logger.error(f'{type(e)} occured when doing scheduled job {func.__name__}.')
             return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
         return deco
+
+
+    async def broad_cast(self, msgs, TAG='', interval_time=0.5, randomiser=None):
+        bot = self.bot
+        if isinstance(msgs, str):
+            msgs = (msgs, )
+        glist = await self.get_enable_groups()
+        for gid, selfids in glist.items():
+            try:
+                for msg in msgs:
+                    await asyncio.sleep(interval_time)
+                    msg = randomiser(msg) if randomiser else msg
+                    await bot.send_group_msg(self_id=random.choice(selfids), group_id=gid, message=msg)
+                if l := len(msgs):
+                    self.logger.info(f"群{gid} 投递{TAG}成功 共{l}条消息")
+            except Exception as e:
+                self.logger.exception(e)
+                self.logger.error(f"群{gid} 投递{TAG}失败 {type(e)}")

@@ -12,10 +12,13 @@ from hoshino.service import Service
 
 sv = Service('pcr-query')
 
-p1 = R.img('priconne/quick/r15-3.png').cqcode
-p4 = R.img('priconne/quick/r16-4-1.png').cqcode
-p5 = R.img('priconne/quick/r16-4-2.png').cqcode
-p6 = R.img('priconne/quick/r16-4-3.png').cqcode
+try:
+    p1 = R.img('priconne/quick/r15-3.png').cqcode
+    p4 = R.img('priconne/quick/r16-4-1.png').cqcode
+    p5 = R.img('priconne/quick/r16-4-2.png').cqcode
+    p6 = R.img('priconne/quick/r16-4-3.png').cqcode
+except Exception as e:
+    sv.logger.exception(e)
 
 
 @sv.on_rex(r'^(\*?([日台])服?)?rank', normalize=True, event='group')
@@ -60,4 +63,10 @@ async def yukari_sheet(bot, ctx):
 ※图为PVP测试
 ※对面羊驼或中后卫坦时 有可能充歪
 ※我方羊驼算一号位'''
+    await bot.send(ctx, msg, at_sender=True)
+
+
+@sv.on_rex(r'^(一个顶俩|(成语)?接龙)', normalize=True, event='group')
+async def dragon(bot, ctx, match):
+    msg = f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}\n龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame\n镜像 ht🐲tps:/🐲/hoshino.monster/KyaruMiniGame\n网站内有全词条和搜索，或需科学上网"
     await bot.send(ctx, msg, at_sender=True)
