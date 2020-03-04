@@ -36,10 +36,10 @@ async def hour_call():
 @svtw.scheduled_job('cron', hour='14', minute='45')
 async def pcr_reminder_tw():
     msg = '骑士君、准备好背刺了吗？'
-    await sv.broad_cast(msg, 'pcr-reminder-tw', 0.2)
+    await svtw.broad_cast(msg, 'pcr-reminder-tw', 0.2)
 
 
 @svjp.scheduled_job('cron', hour='13', minute='45')
 async def pcr_reminder_jp():
     msg = '骑士君、准备好背刺了吗？'
-    await sv.broad_cast(msg, 'pcr-reminder-jp', 0.2)
+    await svjp.broad_cast(msg, 'pcr-reminder-jp', 0.2)
