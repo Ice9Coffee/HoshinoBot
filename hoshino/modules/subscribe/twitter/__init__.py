@@ -28,7 +28,10 @@ subr_dic = {
 latest_info = {}      # { account: {last_tweet_id: int, profile_image: str } }
 for _, ids in subr_dic.items():     # initialize
     for account in ids:
-        latest_info[account] = {'last_tweet_id': 0, 'profile_image': ''}
+        latest_info[account] = {'last_tweet_id': 0, 'profile_image': '', 'media_only': False}
+
+for account in ('shiratamacaron', 'suzukitoto0323', 'watanohara2'):
+    latest_info[account]['media_only'] = True
 
 
 @wraps(api.request)
@@ -64,6 +67,13 @@ def tweet_formatter(item):
     return f"@{name}\n{time}\n\n{text}{img}"
 
 
+def has_media(item):
+    try:
+        return bool(item['entities']['media'][0]['media_url'])
+    except:
+        return False
+
+
 async def poll_new_tweets(account:str):
     if not latest_info[account]['last_tweet_id']:   # on the 1st time
         params = {'screen_name': account, 'count': '1'}
@@ -83,7 +93,10 @@ async def poll_new_tweets(account:str):
         update_latest_info(account, rsp)
         new_profile_image = latest_info[account]['profile_image']
 
-        tweets = list(map(tweet_formatter, rsp.get_iterator()))
+        items = rsp.get_iterator()
+        if latest_info[account]['media_only']:
+            items = filter(has_media, items)
+        tweets = list(map(tweet_formatter, items))
         if new_profile_image != old_profile_image and old_profile_image:
             big_img = re.sub(r'_normal(\.(jpg|jpeg|png|gif|jfif|webp))$', r'\1', new_profile_image, re.I)
             tweets.append(f"@{account} 更换了头像\n{ms.image(big_img)}")
@@ -125,7 +138,7 @@ async def one_tweet(session):
     except:
         account = 'KanColle_STAFF'
     try:
-        count = max(int(args[1]), 10)
+        count = max(int(args[1]), 15)
     except:
         count = 3
     params = {
@@ -134,6 +147,10 @@ async def one_tweet(session):
         'tweet_mode': 'extended',
     }
     rsp = await twt_request(URL_TIMELINE, params)
-    twts = list(map(tweet_formatter, rsp.get_iterator()))
+    items = rsp.get_iterator()
+    if account in latest_info and latest_info[account]['media_only']:
+        items = filter(has_media, items)
+    twts = list(map(tweet_formatter, items))
     for t in twts:
         await session.send(t)
+        await asyncio.sleep(0.5)
