@@ -34,23 +34,34 @@ def check_setu_num(user_id):
     return bool(_user_setu_count[user_id] < _max_setu_per_day)
 
 
-def get_setu():
-    try:
-        path = None
-        filename = None
+def setu_gener():
+    while True:
         filelist = os.listdir(setu_folder)
-        filelist = sorted(filelist, key=lambda x: os.path.getmtime(os.path.join(setu_folder, x)), reverse=True)
-        while not path or not os.path.isfile(path):
-            # i = round(random.expovariate(0.02))  # 期望为 1 / λ
-            i = random.randint(0, len(filelist) - 1) # if i >= len(filelist) else i
-            filename = filelist[i]
-            path = os.path.join(setu_folder, filename)
-        return R.img('setu/', filename).cqcode
-    except Exception as e:
-        sv.logger.exception(e)
-        sv.logger.exception(f'f={filename}, x={path}')
-        return MessageSegment.text('Error: 挑选涩图时发生异常')
+        random.shuffle(filelist)
+        for filename in filelist:
+            if os.path.isfile(os.path.join(setu_folder, filename)):
+                yield R.img('setu/', filename).cqcode
+                
+setu_gener = setu_gener()
 
+def get_setu():
+    return setu_gener.__next__()
+    # try:
+    #     path = None
+    #     filename = None
+    #     filelist = os.listdir(setu_folder)
+    #     filelist = sorted(filelist, key=lambda x: os.path.getmtime(os.path.join(setu_folder, x)), reverse=True)
+    #     while not path or not os.path.isfile(path):
+    #         # i = round(random.expovariate(0.02))  # 期望为 1 / λ
+    #         i = random.randint(0, len(filelist) - 1) # if i >= len(filelist) else i
+    #         filename = filelist[i]
+    #         path = os.path.join(setu_folder, filename)
+    #     return R.img('setu/', filename).cqcode
+    # except Exception as e:
+    #     sv.logger.exception(e)
+    #     sv.logger.exception(f'f={filename}, x={path}')
+    #     return MessageSegment.text('Error: 挑选涩图时发生异常')
+    
 
 @sv.on_rex(re.compile(r'不够[涩瑟色]|[涩瑟色]图|来一?[点份张].*[涩瑟色]|再来[点份张]|看过了|铜'), normalize=True, event='group')
 async def setu(bot:NoneBot, ctx, match):
