@@ -1,6 +1,5 @@
 import os
 import base64
-import ujson as json
 
 from io import BytesIO
 from PIL import Image

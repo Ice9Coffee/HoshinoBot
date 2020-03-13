@@ -13,7 +13,8 @@ from hoshino.service import Service
 sv = Service('pcr-query')
 
 try:
-    p1 = R.img('priconne/quick/r15-3.png').cqcode
+    p1 = R.img('priconne/quick/r15-4-0.png').cqcode
+    p2 = R.img('priconne/quick/r15-4.png').cqcode
     p4 = R.img('priconne/quick/r16-4-1.png').cqcode
     p5 = R.img('priconne/quick/r16-4-2.png').cqcode
     p6 = R.img('priconne/quick/r16-4-3.png').cqcode
@@ -33,10 +34,10 @@ async def rank_sheet(bot, ctx, match):
         if is_jp:
             await bot.send(ctx, f'R16-4 rank表：{p4}{p5}{p6}', at_sender=True)
         if is_tw:
-            await bot.send(ctx, f'R15-3 rank表：{p1}', at_sender=True)
+            await bot.send(ctx, f'R15-4 rank表：{p1}{p2}', at_sender=True)
 
 
-@sv.on_rex(r'^(pcr(速查|常用)|图书馆)', normalize=True, event='group')
+@sv.on_rex(r'^(pcr(速查|常用)|(pcr)?图书馆)', normalize=True, event='group')
 async def query_sites(bot, ctx, match):
     msg='''
 图书馆(繁中)：pcredivewiki.tw
