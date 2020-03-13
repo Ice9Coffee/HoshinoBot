@@ -1,9 +1,12 @@
 import os
 import re
 import random
-import ujson as json
 import asyncio
 from urllib.parse import urljoin, urlparse, parse_qs
+try:
+    import ujson as json
+except:
+    import json
 
 from nonebot import CQHttpError, NLPSession
 

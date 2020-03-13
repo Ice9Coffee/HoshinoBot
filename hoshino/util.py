@@ -2,9 +2,12 @@ import os
 import base64
 import zhconv
 import unicodedata
-import ujson as json
 from io import BytesIO
 from PIL import Image
+try:
+    import ujson as json
+except:
+    import json
 
 from nonebot import get_bot
 from aiocqhttp.exceptions import ActionFailed

@@ -10,9 +10,12 @@ PCR会战管理命令 v2
 """
 
 import os
-import ujson as json
 from datetime import datetime
 from typing import List
+try:
+    import ujson as json
+except:
+    import json
 
 from nonebot import NoneBot
 from nonebot import MessageSegment as ms
@@ -102,7 +105,7 @@ async def add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
         await bot.send(ctx, f"成员{ms.at(uid)}添加成功！欢迎{args.N}加入{clan['name']}")
 
 
-@cb_cmd(('查看成员', '成员查看'), ArgParser(USAGE_LIST_MEMBER))
+@cb_cmd(('查看成员', '成员查看', '查询成员', '成员查询'), ArgParser(USAGE_LIST_MEMBER))
 async def list_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
@@ -299,7 +302,7 @@ async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 # TODO 将预约信息转至数据库
 SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
-SUBSCRIBE_MAX = 4
+SUBSCRIBE_MAX = [99, 2, 2, 3, 3, 4]
 SUBSCRIBE_TREE_KEY = '0'
 os.makedirs(SUBSCRIBE_PATH, exist_ok=True)
 
@@ -337,12 +340,12 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     if uid in slist:
         raise AlreadyExistError(f'您已经预约过{bm.int2kanji(boss)}王了')
     msg = ['']
-    if len(slist) < SUBSCRIBE_MAX:
+    if len(slist) < SUBSCRIBE_MAX[boss]:
         slist.append(uid)
         _save_sub(sub, bm.group)
         msg.append(f'已为您预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}')
     else:
-        msg.append(f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX}')
+        msg.append(f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX[boss]}')
     msg.extend(_gen_namelist_text(bm, slist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 

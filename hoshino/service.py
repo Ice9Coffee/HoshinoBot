@@ -5,11 +5,14 @@ import pytz
 import random
 import logging
 import asyncio
-import ujson as json
 from datetime import datetime, timedelta
 from functools import wraps
 from collections import defaultdict
 from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
+try:
+    import ujson as json
+except:
+    import json
 
 import nonebot
 from nonebot.command import _FinishException, _PauseException, SwitchException
