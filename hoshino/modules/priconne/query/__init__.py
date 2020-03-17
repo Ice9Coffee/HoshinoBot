@@ -69,5 +69,8 @@ async def yukari_sheet(bot, ctx):
 
 @sv.on_rex(r'^(一个顶俩|(成语)?接龙)', normalize=True, event='group')
 async def dragon(bot, ctx, match):
-    msg = f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}\n龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame\n镜像 ht🐲tps:/🐲/hoshino.monster/KyaruMiniGame\n网站内有全词条和搜索，或需科学上网"
-    await bot.send(ctx, msg, at_sender=True)
+    msg = [ f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}", 
+           "龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame",
+           "镜像 ht🐲tps:/🐲/hoshino.monster/KyaruMiniGame", 
+           "网站内有全词条和搜索，或需科学上网" ]
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)

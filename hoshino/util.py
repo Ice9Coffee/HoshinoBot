@@ -4,6 +4,7 @@ import zhconv
 import unicodedata
 from io import BytesIO
 from PIL import Image
+from matplotlib import pyplot as plt
 try:
     import ujson as json
 except:
@@ -55,6 +56,13 @@ def pic2b64(pic:Image) -> str:
     buf = BytesIO()
     pic.save(buf, format='PNG')
     base64_str = base64.b64encode(buf.getvalue()).decode()   #, encoding='utf8')
+    return 'base64://' + base64_str
+
+
+def fig2b64(plt:plt) -> str:
+    buf = BytesIO()
+    plt.savefig(buf, format='PNG', dpi=100)
+    base64_str = base64.b64encode(buf.getvalue()).decode()
     return 'base64://' + base64_str
 
 
