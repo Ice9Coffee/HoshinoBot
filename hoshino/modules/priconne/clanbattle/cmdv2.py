@@ -12,6 +12,7 @@ PCR会战管理命令 v2
 import os
 from datetime import datetime
 from typing import List
+from matplotlib import pyplot as plt
 try:
     import ujson as json
 except:
@@ -20,6 +21,7 @@ except:
 from nonebot import NoneBot
 from nonebot import MessageSegment as ms
 from nonebot.typing import Context_T
+from hoshino import util
 from hoshino.service import Privilege as Priv
 
 from . import sv, cb_cmd
@@ -28,6 +30,8 @@ from .argparse.argtype import *
 from .battlemaster import BattleMaster
 from .exception import *
 
+plt.style.use('seaborn-pastel')
+plt.rcParams['font.family'] = ['Microsoft YaHei']
 
 USAGE_ADD_CLAN = '!建会 N<公会名> S<服务器地区>'
 USAGE_ADD_MEMBER = '!入会 N<昵称> (Q<qq号>)'
@@ -439,6 +443,17 @@ async def add_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
+@cb_cmd(('查树', ), ArgParser('!查树'))
+async def list_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    clan = _check_clan(bm)
+    sub = _load_sub(bm.group)
+    slist = sub.get(SUBSCRIBE_TREE_KEY, [])
+    msg = [ f"\n目前{clan['name']}树上共{len(sub[SUBSCRIBE_TREE_KEY])}人" ]
+    msg.extend(_gen_namelist_text(bm, slist))
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)
+    
+
 @cb_cmd(('进度', '进度查询', '查询进度', '进度查看', '查看进度', '状态'), ArgParser(usage='!进度'))
 async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
@@ -455,14 +470,36 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     now = datetime.now()
     clan = _check_clan(bm)
     yyyy, mm, _ = bm.get_yyyymmdd(now)
-    msg = [ f"\n{yyyy}年{mm}月会战{clan['name']}分数统计：" ]
     stat = bm.stat_score(1, now)
     stat.sort(key=lambda x: x[3], reverse=True)
-    for _, _, name, score in stat:
-        score = f'{score:,d}'           # 数字太多会被腾讯ban，用逗号分隔
-        blank = '  ' * (11-len(score))  # QQ字体非等宽，width(空格*2) == width(数字*1)
-        msg.append(f"{blank}{score}分 | {name}")
-    await bot.send(ctx, '\n'.join(msg), at_sender=True)
+    # msg = [ f"\n{yyyy}年{mm}月会战{clan['name']}分数统计：" ]
+    # for _, _, name, score in stat:
+    #     score = f'{score:,d}'           # 数字太多会被腾讯ban，用逗号分隔
+    #     blank = '  ' * (11-len(score))  # QQ字体非等宽，width(空格*2) == width(数字*1)
+    #     msg.append(f"{blank}{score}分 | {name}")
+    fig, ax = plt.subplots()
+    score = list(map(lambda i: i[3], stat))
+    yn = len(stat)
+    name = list(map(lambda i: i[2], stat))
+    y_pos = list(range(yn))
+
+    y_size = 0.3 * yn + 0.7
+    fig.set_size_inches(10, y_size)
+    bars = ax.barh(y_pos, score, align='center')
+    ax.set_title(f"\n{yyyy}年{mm}月会战{clan['name']}分数统计")
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(name)
+    ax.set_ylim((-0.6, yn - 0.4))
+    ax.invert_yaxis()
+    ax.set_xlabel('分数')
+    ax.ticklabel_format(axis='x', style='plain')
+    for rect in bars:
+        w = rect.get_width()
+        ax.text(w, rect.get_y() + rect.get_height() / 2, f'{w/1e8:.2f}e', ha='left', va='center')
+    plt.subplots_adjust(left=0.10, right=0.96, top=1 - 0.4 / y_size, bottom=0.5 / y_size)
+    pic = util.fig2b64(plt)
+    plt.close()
+    await bot.send(ctx, ms.image(pic), at_sender=True)
 
 
 async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:bool):
