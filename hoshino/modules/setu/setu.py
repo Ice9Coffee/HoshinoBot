@@ -14,7 +14,7 @@ from hoshino.util import silence
 from hoshino.service import Service, Privilege
 
 
-sv = Service('setu', manage_priv=Privilege.SUPERUSER, enable_on_default=False, visible=False)
+sv = Service('setu', manage_priv=Privilege.SUPERUSER, enable_on_default=True, visible=False)
 _last_setu_day = -1
 _user_setu_count = defaultdict(int)    # {user: gacha_count}
 _max_setu_per_day = 5
