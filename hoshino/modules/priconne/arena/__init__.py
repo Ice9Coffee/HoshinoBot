@@ -8,7 +8,10 @@ sv = Service('pcr-arena', manage_priv=Priv.SUPERUSER)
 from ..chara import Chara
 from .arena import Arena
 
-@sv.on_command('竞技场查询', aliases=('jjc查询', '怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打', '怎麼拆', '怎麼解', '怎麼打'), only_to_me=False)
+DISABLE_NOTICE = '竞技场查询功能已禁用\n如欲开启，请与维护组联系'
+
+@sv.on_command('竞技场查询', aliases=('jjc查询', '怎么拆', '怎么解', '怎么打', '如何拆', '如何解', '如何打', '怎麼拆', '怎麼解', '怎麼打'),
+               deny_tip=DISABLE_NOTICE, only_to_me=False)
 async def arena_query(session:CommandSession):
 
     # 处理输入数据
