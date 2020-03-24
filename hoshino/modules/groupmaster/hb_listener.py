@@ -14,6 +14,9 @@ BLANK_MESSAGE = Message(MessageSegment.text(''))
 
 @message_preprocessor
 async def black_filter(bot, ctx):
+    first_msg_seg = ctx['message'][0]
+    if first_msg_seg.type == 'hb':
+        return  # pass normal Luck Money Pack to avoid abuse
     if ctx['message_type'] == 'group' and Service.check_block_group(ctx['group_id']) \
        or Service.check_block_user(ctx['user_id']):
         ctx['message'] = BLANK_MESSAGE
