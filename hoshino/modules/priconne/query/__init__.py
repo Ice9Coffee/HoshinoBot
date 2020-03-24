@@ -47,10 +47,28 @@ async def query_sites(bot, ctx, match):
 竞技场(日)：nomae.net/arenadb
 NGA论坛：bbs.nga.cn/thread.php?fid=-10308342
 日官网：priconne-redive.jp
-台官网：www.princessconnect.so-net.tw'''
+台官网：www.princessconnect.so-net.tw
+B服速查请输入"bcr速查"查看'''
     await bot.send(ctx, msg, at_sender=True)
     await silence(ctx, 60)
-
+    
+    
+# @sv.on_rex(r'^bcr(速查|常用)', normalize=True, event='group')
+async def query_sites_bilibili(bot, ctx, match):
+    msg='''
+怎么卡pjjc：不通关主线关卡8-15
+这个角色怎么样  这个初始号怎么样  怎么配队
+图书馆(繁中)：pcredivewiki.tw
+日文wiki：gamewith.jp/pricone-re
+日文wiki：appmedia.jp/priconne-redive
+竞技场(台日)：pcrdfans.com/battle
+竞技场(日)：nomae.net/arenadb
+NGA论坛：bbs.nga.cn/thread.php?fid=-10308342
+日官网：priconne-redive.jp
+台官网：www.princessconnect.so-net.tw
+日台服速查请输入"pcr速查"查看'''
+    await bot.send(ctx, msg, at_sender=True)
+    await silence(ctx, 60)
 
 @sv.on_command('arina-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'pjjc作业网', 'jjc数据库', 'pjjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'), only_to_me=False)
 async def say_arina_database(session: CommandSession):
