@@ -10,7 +10,7 @@ PCR会战管理命令 v2
 """
 
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List
 from matplotlib import pyplot as plt
 try:
@@ -202,7 +202,7 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
         eps = 30000
         if damage > cur_hp + eps:
             damage = cur_hp
-            msg.append('⚠️过度虐杀 伤害数值已自动修正')
+            msg.append(f'⚠️过度虐杀 伤害数值已自动修正为{damage}')
             if flag == BattleMaster.NORM:
                 flag = BattleMaster.LAST
                 msg.append('⚠️已自动标记为尾刀')
@@ -212,7 +212,7 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
             elif damage < cur_hp:
                 if damage % 1000 == 0:
                     damage = cur_hp
-                    msg.append('⚠️尾刀伤害已自动修正')
+                    msg.append(f'⚠️尾刀伤害已自动修正为{damage}')
                 else:
                     msg.append('⚠️Boss仍有少量残留血量')
 
@@ -226,6 +226,8 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     # 判断是否更换boss，呼叫预约
     if aft_round != cur_round or aft_boss != cur_boss:
         await call_subscribe(bot, ctx, aft_round, aft_boss)
+        
+    await auto_unlock_boss(bot, ctx, bm)
 
 
 @cb_cmd(('出刀', '报刀'), ArgParser(usage='!出刀 <伤害值> (@<qq号>)', arg_dict={
@@ -314,6 +316,7 @@ async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
 SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
 SUBSCRIBE_MAX = [99, 2, 2, 3, 3, 4]
 SUBSCRIBE_TREE_KEY = '0'
+LOCK_KEY = 'lock'
 os.makedirs(SUBSCRIBE_PATH, exist_ok=True)
 
 def _load_sub(gid):
@@ -322,7 +325,7 @@ def _load_sub(gid):
         with open(filename, 'r', encoding='utf8') as f:
             return json.load(f)
     else:
-        return {'1':[], '2':[], '3':[], '4':[], '5':[], SUBSCRIBE_TREE_KEY:[]}
+        return {'1':[], '2':[], '3':[], '4':[], '5':[], SUBSCRIBE_TREE_KEY:[], LOCK_KEY:[]}
 
 
 def _save_sub(sub, gid):
@@ -459,6 +462,73 @@ async def list_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
     msg.extend(_gen_namelist_text(bm, slist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
     
+
+@cb_cmd(('锁定', '申请出刀'), ArgParser('!锁定'))
+async def lock_boss(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    _check_clan(bm)
+    _check_member(bm, ctx['user_id'], bm.group)
+    sub = _load_sub(bm.group)
+    slist = sub.get(LOCK_KEY, [])
+    if slist:
+        uid, ts = slist[0]
+        time = datetime.fromtimestamp(ts)
+        mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
+        delta = datetime.now() - time
+        delta = timedelta(seconds=round(delta.total_seconds()))     # ignore miliseconds
+        msg = f"\n锁定失败：{mem['name']}已于{delta}前锁定了Boss"
+        await bot.send(ctx, msg, at_sender=True)
+    else:
+        uid = ctx['user_id']
+        time = datetime.now()
+        sub[LOCK_KEY] = [ (uid, time.timestamp()) ]
+        _save_sub(sub, bm.group)
+        msg = f"已锁定Boss"
+        await bot.send(ctx, msg, at_sender=True)
+
+
+@cb_cmd(('解锁', ), ArgParser('!解锁'))
+async def unlock_boss(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    _check_clan(bm)
+    sub = _load_sub(bm.group)
+    slist = sub.get(LOCK_KEY, [])
+    if slist:
+        uid, ts = slist[0]
+        time = datetime.fromtimestamp(ts)
+        if uid != ctx['user_id']:
+            mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
+            delta = datetime.now() - time
+            delta = timedelta(seconds=round(delta.total_seconds()))     # ignore miliseconds
+            await _check_admin(ctx, f"才能解锁其他人\n解锁失败：{mem['name']}于{delta}前锁定了Boss")
+            sub = _load_sub(bm.group)   # await后重新加载，避免协程间的不安全问题
+        sub[LOCK_KEY] = []
+        _save_sub(sub, bm.group)
+        msg = f"\nBoss已解锁"
+        await bot.send(ctx, msg, at_sender=True)
+    else:
+        msg = "\n无人锁定Boss"
+        await bot.send(ctx, msg, at_sender=True)
+
+
+async def auto_unlock_boss(bot:NoneBot, ctx:Context_T, bm:BattleMaster):
+    sub = _load_sub(bm.group)
+    slist = sub.get(LOCK_KEY, [])
+    if slist:
+        uid, ts = slist[0]
+        time = datetime.fromtimestamp(ts)
+        if uid != ctx['user_id']:
+            mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
+            delta = datetime.now() - time
+            delta = timedelta(seconds=round(delta.total_seconds()))     # ignore miliseconds
+            msg = f"⚠️{mem['name']}于{delta}前锁定了Boss，您出刀前未申请锁定！"
+            await bot.send(ctx, msg, at_sender=True)
+        else:
+            sub[LOCK_KEY] = []
+            _save_sub(sub, bm.group)
+            msg = f"\nBoss已自动解锁"
+            await bot.send(ctx, msg, at_sender=True)
+
 
 @cb_cmd(('进度', '进度查询', '查询进度', '进度查看', '查看进度', '状态'), ArgParser(usage='!进度'))
 async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
