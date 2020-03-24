@@ -58,45 +58,43 @@ from .cmdv2 import *
 @cb_cmd('帮助', ArgParser('!帮助'))
 async def cb_help(bot:NoneBot, ctx, args:ParseResult):
     msg = f'''
-# PCR会战管理v2.0
-> 🐒也会用的会战管理
+==================
+- PCR会战管理v2.0 -
+==================
+快速开始指南
 
-## 快速开始
 【必读事项】
-💡 会战系命令均以感叹号!开头，半全角均可
-💡 命令与参数之间**必须**以*空格*隔开
-💡 "X<参数名>"表示参数以字母"X"引导
-💡 使用时需输入X，无需输入尖括号<>
-💡 ()包括的参数为可选
+※会战系命令均以感叹号!开头，半全角均可
+※命令与参数之间必须以[空格]隔开
+下面以使用场景-使用例给出常用指令的说明
 
-0. 与维护组联系(py)，邀请bot入群
-
-1. 群初次使用，需初始化："!建会 N公会名 S服务器地区"
+【群初次使用】
 !建会 Nリトルリリカル Sjp
 !建会 N小小甜心 Stw
 !建会 N今天版号批了吗 Scn
 
-2. 使用命令 "!入会 N昵称" 进行注册
-!入会 N祐树
+【注册成员】
+!入会 祐树
+!入会 佐树 @123456789
 
-3. 使用命令 "!出刀 伤害值" 上报伤害
+【上报伤害】
 !出刀 514w
 !收尾
 !出补时刀 114w
 
-4. 忙于工作/学习/娱乐时，使用命令 "!预约 Boss号" 预约出刀
+【预约Boss】
 !预约 5
 
-5. 夜深人静时，使用命令 "!催刀" 在群内at未出刀的成员，督促出刀
+【查询余刀&催刀】
+!查刀
 !催刀
 
-※详细说明见命令一览表：github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/priconne/clanbattle
-※使用前请【逐字】阅读必读事项'''
+※详细说明见命令一览表
+'''
     await bot.send(ctx, msg, at_sender=True)
     msg = [
         f"命令一览表：\n{R.img('priconne/quick/Hoshino会战.png').cqcode}",
-        "※图片更新较慢 前往网页查看最新",
-        "※使用前请【逐字】阅读必读事项",
-        "※我相信，这已经是🐒都能学会的了"
+        "※图片更新较慢 前往github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/priconne/clanbattle查看最新",
+        "※使用前请【逐字】阅读必读事项"
     ]
     await bot.send(ctx, '\n'.join(msg), at_sender=True)

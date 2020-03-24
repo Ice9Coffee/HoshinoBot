@@ -156,8 +156,8 @@ async def batch_add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     clan = _check_clan(bm)
     await _check_admin(ctx)
     mlist = await bot.get_group_member_list(self_id=ctx['self_id'], group_id=bm.group)
-    if len(mlist) > 40:
-        raise ClanBattleError('群员过多！一键入会仅限40人以内群使用')
+    if len(mlist) > 50:
+        raise ClanBattleError('群员过多！一键入会仅限50人以内群使用')
     
     self_id = ctx['self_id']
     succ, fail = 0, 0
@@ -522,7 +522,7 @@ async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:
     if len(msg) == 1:
         await bot.send(ctx, f"今日{clan['name']}所有成员均已下班！各位辛苦了！", at_sender=True)
     else:
-        msg.append("⚠️若有负数说明报刀有误 请注意核对")
+        msg.append('若有负数说明报刀有误 请注意核对\n使用“!出刀记录 @qq”可查看详细记录')
         if at_user:
             msg.append("=========\n在？阿sir喊你出刀啦！")
         await bot.send(ctx, '\n'.join(msg), at_sender=True)
