@@ -15,7 +15,7 @@ DISABLE_NOTICE = '本群竞技场查询功能已禁用\n如欲开启，请与维
 async def arena_query(session:CommandSession):
 
     # 处理输入数据
-    argv = session.current_arg.strip()
+    argv = session.current_arg_text.strip()
     argv = re.sub(r'[?？呀啊哇]', ' ', argv)    
     argv = argv.split()
     sv.logger.debug(f'竞技场查询：{argv}')
