@@ -34,12 +34,14 @@ plt.style.use('seaborn-pastel')
 plt.rcParams['font.family'] = ['Microsoft YaHei']
 
 USAGE_ADD_CLAN = '!建会 N<公会名> S<服务器地区>'
-USAGE_ADD_MEMBER = '!入会 N<昵称> (Q<qq号>)'
+USAGE_ADD_MEMBER = '!入会 (<昵称>) (@<qq号>)'
 USAGE_LIST_MEMBER = '!查看成员'
 
-ERROR_CLAN_NOTFOUND = f'公会未初始化：请*群管理*使用【{USAGE_ADD_CLAN}】进行初始化'
-ERROR_ZERO_MEMBER = f'公会内无成员：使用【{USAGE_ADD_MEMBER}】以添加'
-ERROR_MEMBER_NOTFOUND = f'未找到成员：请使用【{USAGE_ADD_MEMBER}】加入公会'
+USAGE_TIP = '\n\n※无需输入尖括号，圆括号内为可选参数'
+
+ERROR_CLAN_NOTFOUND = f'公会未初始化：请*群管理*使用【{USAGE_ADD_CLAN}】进行初始化{USAGE_TIP}'
+ERROR_ZERO_MEMBER = f'公会内无成员：使用【{USAGE_ADD_MEMBER}】以添加{USAGE_TIP}'
+ERROR_MEMBER_NOTFOUND = f'未找到成员：请使用【{USAGE_ADD_MEMBER}】加入公会{USAGE_TIP}'
 ERROR_PERMISSION_DENIED = '权限不足：需*群管理*以上权限'
 
 
@@ -87,26 +89,30 @@ async def list_clan(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 
 @cb_cmd('入会', ArgParser(usage=USAGE_ADD_MEMBER, arg_dict={
-        'N': ArgHolder(tip='昵称'),
-        'Q': ArgHolder(tip='qq号', type=int, default=0)}))
+        '': ArgHolder(tip='昵称', default=''),
+        '@': ArgHolder(tip='qq号', type=int, default=0)}))
 async def add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
-    uid = args.Q or args.at or ctx['user_id']
+    uid = args['@'] or args.at or ctx['user_id']
+    name = args['']
     if uid != ctx['user_id']:
         await _check_admin(ctx, '才能添加其他人')
         try:    # 尝试获取群员信息，用以检查该成员是否在群中
             await bot.get_group_member_info(self_id=ctx['self_id'], group_id=bm.group, user_id=uid)
         except:
-            raise NotFoundError(f'Error: 无法获取群员信息，请检查{uid}是否属于本群')
-    
+            raise NotFoundError(f'Error: 无法获取群员信息，请检查{uid}是否属于本群')    
+    if not name:
+        m = await bot.get_group_member_info(self_id=ctx['self_id'], group_id=bm.group, user_id=uid)
+        name = m['card'] or m['nickname'] or str(m['user_id'])
+
     mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0)     # 兼容cmdv1
     if mem:
-        bm.mod_member(uid, mem['alt'], args.N, 1)
-        await bot.send(ctx, f'成员{ms.at(uid)}昵称已修改为{args.N}')
+        bm.mod_member(uid, mem['alt'], name, 1)
+        await bot.send(ctx, f'成员{ms.at(uid)}昵称已修改为{name}')
     else:
-        bm.add_member(uid, bm.group, args.N, 1)
-        await bot.send(ctx, f"成员{ms.at(uid)}添加成功！欢迎{args.N}加入{clan['name']}")
+        bm.add_member(uid, bm.group, name, 1)
+        await bot.send(ctx, f"成员{ms.at(uid)}添加成功！欢迎{name}加入{clan['name']}")
 
 
 @cb_cmd(('查看成员', '成员查看', '查询成员', '成员查询'), ArgParser(USAGE_LIST_MEMBER))
@@ -123,11 +129,11 @@ async def list_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
         raise NotFoundError(ERROR_ZERO_MEMBER)
 
         
-@cb_cmd('退会', ArgParser(usage='!退会 (Q<qq号>)', arg_dict={
-        'Q': ArgHolder(tip='qq号', type=int, default=0)}))
+@cb_cmd('退会', ArgParser(usage='!退会 (@<qq号>)', arg_dict={
+        '@': ArgHolder(tip='qq号', type=int, default=0)}))
 async def del_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
-    uid = args.Q or args.at or ctx['user_id']
+    uid = args['@'] or args.at or ctx['user_id']
     mem = _check_member(bm, uid, bm.group, '公会内无此成员')
     if uid != ctx['user_id']:
         await _check_admin(ctx, '才能踢人')
@@ -149,7 +155,7 @@ async def batch_add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     await _check_admin(ctx)
-    mlist = await bot.get_group_member_list(group_id=bm.group)
+    mlist = await bot.get_group_member_list(self_id=ctx['self_id'], group_id=bm.group)
     if len(mlist) > 40:
         raise ClanBattleError('群员过多！一键入会仅限40人以内群使用')
     
@@ -222,9 +228,9 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
         await call_subscribe(bot, ctx, aft_round, aft_boss)
 
 
-@cb_cmd(('出刀', '报刀'), ArgParser(usage='!出刀 <伤害值> (Q<qq号>)', arg_dict={
+@cb_cmd(('出刀', '报刀'), ArgParser(usage='!出刀 <伤害值> (@<qq号>)', arg_dict={
     '': ArgHolder(tip='伤害值', type=damage_int),
-    'Q': ArgHolder(tip='qq号', type=int, default=0),
+    '@': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
     'B': ArgHolder(tip='Boss编号', type=boss_code, default=0)}))    
 async def add_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
@@ -232,16 +238,16 @@ async def add_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
         'round': args.R,
         'boss': args.B,
         'damage': args.get(''),
-        'uid': args.Q or args.at or ctx['user_id'],
+        'uid': args['@'] or args.at or ctx['user_id'],
         'alt': ctx['group_id'],
         'flag': BattleMaster.NORM
     })
     await process_challenge(bot, ctx, challenge)
 
 
-@cb_cmd(('出尾刀', '收尾', '尾刀'), ArgParser(usage='!出尾刀 (<伤害值>) (Q<qq号>)', arg_dict={
+@cb_cmd(('出尾刀', '收尾', '尾刀'), ArgParser(usage='!出尾刀 (<伤害值>) (@<qq号>)', arg_dict={
     '': ArgHolder(tip='伤害值', type=damage_int, default=0),
-    'Q': ArgHolder(tip='qq号', type=int, default=0),
+    '@': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
     'B': ArgHolder(tip='Boss编号', type=boss_code, default=0)}))
 async def add_challenge_last(bot:NoneBot, ctx:Context_T, args:ParseResult):
@@ -249,16 +255,16 @@ async def add_challenge_last(bot:NoneBot, ctx:Context_T, args:ParseResult):
         'round': args.R,
         'boss': args.B,
         'damage': args.get(''),
-        'uid': args.Q or args.at or ctx['user_id'],
+        'uid': args['@'] or args.at or ctx['user_id'],
         'alt': ctx['group_id'],
         'flag': BattleMaster.LAST
     })
     await process_challenge(bot, ctx, challenge)
 
 
-@cb_cmd(('出补时刀', '补时刀', '补时'), ArgParser(usage='!出补时刀 <伤害值> (Q<qq号>)', arg_dict={
+@cb_cmd(('出补时刀', '补时刀', '补时'), ArgParser(usage='!出补时刀 <伤害值> (@<qq号>)', arg_dict={
     '': ArgHolder(tip='伤害值', type=damage_int),
-    'Q': ArgHolder(tip='qq号', type=int, default=0),
+    '@': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
     'B': ArgHolder(tip='Boss编号', type=boss_code, default=0)}))    
 async def add_challenge_ext(bot:NoneBot, ctx:Context_T, args:ParseResult):
@@ -266,15 +272,15 @@ async def add_challenge_ext(bot:NoneBot, ctx:Context_T, args:ParseResult):
         'round': args.R,
         'boss': args.B,
         'damage': args.get(''),
-        'uid': args.Q or args.at or ctx['user_id'],
+        'uid': args['@'] or args.at or ctx['user_id'],
         'alt': ctx['group_id'],
         'flag': BattleMaster.EXT
     })
     await process_challenge(bot, ctx, challenge)
 
 
-@cb_cmd('掉刀', ArgParser(usage='!掉刀 (Q<qq号>)', arg_dict={
-    'Q': ArgHolder(tip='qq号', type=int, default=0),
+@cb_cmd('掉刀', ArgParser(usage='!掉刀 (@<qq号>)', arg_dict={
+    '@': ArgHolder(tip='qq号', type=int, default=0),
     'R': ArgHolder(tip='周目数', type=round_code, default=0),
     'B': ArgHolder(tip='Boss编号', type=boss_code, default=0)}))    
 async def add_challenge_timeout(bot:NoneBot, ctx:Context_T, args:ParseResult):
@@ -282,7 +288,7 @@ async def add_challenge_timeout(bot:NoneBot, ctx:Context_T, args:ParseResult):
         'round': args.R,
         'boss': args.B,
         'damage': 0,
-        'uid': args.Q or args.at or ctx['user_id'],
+        'uid': args['@'] or args.at or ctx['user_id'],
         'alt': ctx['group_id'],
         'flag': BattleMaster.TIMEOUT
     })
@@ -528,3 +534,28 @@ async def list_remain(bot:NoneBot, ctx:Context_T, args:ParseResult):
 @cb_cmd('催刀', ArgParser(usage='!催刀'))
 async def urge_remain(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await _do_show_remain(bot, ctx, args, at_user=True)
+
+
+@cb_cmd('出刀记录', ArgParser(usage='!出刀记录 (@qq号)', arg_dict={
+        '@': ArgHolder(tip='qq号', type=int, default=0)}))
+async def list_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    clan = _check_clan(bm)
+    now = datetime.now()
+    zone = bm.get_timezone_num(clan['server'])
+    uid = args['@'] or args.at
+    if uid:
+        mem = _check_member(bm, uid, bm.group, '公会内无此成员')
+        challen = bm.list_challenge_of_user_of_day(mem['uid'], mem['alt'], now, zone)
+    else:
+        challen = bm.list_challenge_of_day(clan['cid'], now, zone)
+
+    msg = [ f'{clan["name"]}出刀记录：\n编号|出刀者|周目|Boss|伤害|标记' ]
+    challenstr = 'E{eid:0>3d}|{name}|r{round}|b{boss}|{dmg: >7,d}{flag_str}'
+    for c in challen:
+        mem = bm.get_member(c['uid'], c['alt'])
+        c['name'] = mem['name'] if mem else c['uid']
+        flag = c['flag']
+        c['flag_str'] = '|补时' if flag & bm.EXT else '|尾刀' if flag & bm.LAST else '|掉线' if flag & bm.TIMEOUT else '|通常'
+        msg.append(challenstr.format_map(c))
+    await bot.send(ctx, '\n'.join(msg))
