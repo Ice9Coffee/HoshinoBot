@@ -219,7 +219,7 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     eid = bm.add_challenge(mem['uid'], mem['alt'], round_, boss, damage, flag, now)
     aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
     max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
-    msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害")
+    msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害\n")
     msg.append(_gen_progress_text(clan['name'], aft_round, aft_boss, aft_hp, max_hp, score_rate))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
