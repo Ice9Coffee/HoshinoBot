@@ -1,6 +1,5 @@
 import os
 import base64
-import ujson as json
 
 from io import BytesIO
 from PIL import Image
@@ -68,11 +67,15 @@ class Chara:
 
     @property
     def icon(self) -> ResImg:
-        star = '6' if 6 <= self.star else '3' # if 3 <= self.star else '1' if 1 <= self.star else '3'
-        id_ = self.id
-        if not 1000 < id_ < 2000:
-            id_ = Chara.UNKNOWN
-        return R.img(f'priconne/unit/icon_unit_{id_}{star}1.png')
+        star = '3' if 1 <= self.star <= 5 else '6'
+        res = R.img(f'priconne/unit/icon_unit_{self.id}{star}1.png')
+        if not res.exist:
+            res = R.img(f'priconne/unit/icon_unit_{self.id}31.png')
+        if not res.exist:
+            res = R.img(f'priconne/unit/icon_unit_{self.id}11.png')
+        if not res.exist:
+            res = R.img(f'priconne/unit/icon_unit_{Chara.UNKNOWN}31.png')
+        return res
 
 
     def gen_icon_img(self, size, star_slot_verbose=True) -> Image:
@@ -99,8 +102,8 @@ class Chara:
                 s = gadget_star_pink
                 s = s.resize((l, l), Image.LANCZOS)
                 pic.paste(s, (a, b, a+l, b+l), s)
-        l = round(l * 1.5)
         if self.equip:
+            l = round(l * 1.5)
             a = margin_x
             b = margin_x
             s = gadget_equip.resize((l, l), Image.LANCZOS)

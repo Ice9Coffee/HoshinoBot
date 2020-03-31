@@ -5,11 +5,14 @@ import pytz
 import random
 import logging
 import asyncio
-import ujson as json
 from datetime import datetime, timedelta
 from functools import wraps
 from collections import defaultdict
 from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
+try:
+    import ujson as json
+except:
+    import json
 
 import nonebot
 from nonebot.command import _FinishException, _PauseException, SwitchException
@@ -86,8 +89,8 @@ def _save_service_config(service):
             "manage_priv": service.manage_priv,
             "enable_on_default": service.enable_on_default,
             "visible": service.visible,
-            "enable_group": service.enable_group,
-            "disable_group": service.disable_group
+            "enable_group": list(service.enable_group),
+            "disable_group": list(service.disable_group)
         }, f, ensure_ascii=False, indent=2)
 
 

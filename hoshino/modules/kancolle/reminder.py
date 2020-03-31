@@ -1,11 +1,9 @@
 import os
 import pytz
 import random
-import ujson as json
 from datetime import datetime
 
 import nonebot
-
 from hoshino.service import Service
 
 sv = Service('kc-reminder', enable_on_default=False)

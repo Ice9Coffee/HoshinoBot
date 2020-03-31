@@ -47,6 +47,10 @@ class ResObj:
         return os.path.join(res_dir, self.__path)
 
 
+    @property
+    def exist(self):
+        return os.path.exists(self.path)
+
 
 class ResImg(ResObj):
     @property

@@ -4,8 +4,8 @@ from hoshino import util
 from ..exception import ParseError
 from ..battlemaster import BattleMaster
 
-_unit_rate = {'': 1, 'k': 1000, 'w': 10000}
-_rex_dint = re.compile(r'^(\d+)([wk]?)$', re.I)
+_unit_rate = {'': 1, 'k': 1000, 'w': 10000, '千': 1000, '万': 10000}
+_rex_dint = re.compile(r'^(\d+)([wk千万]?)$', re.I)
 _rex1_bcode = re.compile(r'^老?([1-5])王?$')
 _rex2_bcode = re.compile(r'^老?([一二三四五])王?$')
 _rex_rcode = re.compile(r'^[1-9]\d{0,2}$')
