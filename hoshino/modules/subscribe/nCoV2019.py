@@ -6,7 +6,10 @@
 """
 
 import re
-import ujson as json
+try:
+    import ujson as json
+except:
+    import json
 import random
 import asyncio
 from urllib.parse import urljoin

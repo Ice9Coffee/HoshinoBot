@@ -13,7 +13,8 @@ from hoshino.service import Service
 sv = Service('pcr-query')
 
 try:
-    p1 = R.img('priconne/quick/r15-3.png').cqcode
+    p1 = R.img('priconne/quick/r15-4-0.png').cqcode
+    p2 = R.img('priconne/quick/r15-4.png').cqcode
     p4 = R.img('priconne/quick/r16-4-1.png').cqcode
     p5 = R.img('priconne/quick/r16-4-2.png').cqcode
     p6 = R.img('priconne/quick/r16-4-3.png').cqcode
@@ -33,10 +34,10 @@ async def rank_sheet(bot, ctx, match):
         if is_jp:
             await bot.send(ctx, f'R16-4 rank表：{p4}{p5}{p6}', at_sender=True)
         if is_tw:
-            await bot.send(ctx, f'R15-3 rank表：{p1}', at_sender=True)
+            await bot.send(ctx, f'R15-4 rank表：{p1}{p2}', at_sender=True)
 
 
-@sv.on_rex(r'^(pcr(速查|常用)|图书馆)', normalize=True, event='group')
+@sv.on_rex(r'^(pcr(速查|常用)|(pcr)?图书馆)', normalize=True, event='group')
 async def query_sites(bot, ctx, match):
     msg='''
 图书馆(繁中)：pcredivewiki.tw
@@ -46,10 +47,28 @@ async def query_sites(bot, ctx, match):
 竞技场(日)：nomae.net/arenadb
 NGA论坛：bbs.nga.cn/thread.php?fid=-10308342
 日官网：priconne-redive.jp
-台官网：www.princessconnect.so-net.tw'''
+台官网：www.princessconnect.so-net.tw
+B服速查请输入"bcr速查"查看'''
     await bot.send(ctx, msg, at_sender=True)
     await silence(ctx, 60)
-
+    
+    
+# @sv.on_rex(r'^bcr(速查|常用)', normalize=True, event='group')
+async def query_sites_bilibili(bot, ctx, match):
+    msg='''
+怎么卡pjjc：不通关主线关卡8-15
+这个角色怎么样  这个初始号怎么样  怎么配队
+图书馆(繁中)：pcredivewiki.tw
+日文wiki：gamewith.jp/pricone-re
+日文wiki：appmedia.jp/priconne-redive
+竞技场(台日)：pcrdfans.com/battle
+竞技场(日)：nomae.net/arenadb
+NGA论坛：bbs.nga.cn/thread.php?fid=-10308342
+日官网：priconne-redive.jp
+台官网：www.princessconnect.so-net.tw
+日台服速查请输入"pcr速查"查看'''
+    await bot.send(ctx, msg, at_sender=True)
+    await silence(ctx, 60)
 
 @sv.on_command('arina-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'pjjc作业网', 'jjc数据库', 'pjjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'), only_to_me=False)
 async def say_arina_database(session: CommandSession):
@@ -68,5 +87,8 @@ async def yukari_sheet(bot, ctx):
 
 @sv.on_rex(r'^(一个顶俩|(成语)?接龙)', normalize=True, event='group')
 async def dragon(bot, ctx, match):
-    msg = f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}\n龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame\n镜像 ht🐲tps:/🐲/hoshino.monster/KyaruMiniGame\n网站内有全词条和搜索，或需科学上网"
-    await bot.send(ctx, msg, at_sender=True)
+    msg = [ f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}", 
+           "龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame",
+           "镜像 ht🐲tps:/🐲/hoshino.monster/KyaruMiniGame", 
+           "网站内有全词条和搜索，或需科学上网" ]
+    await bot.send(ctx, '\n'.join(msg), at_sender=True)

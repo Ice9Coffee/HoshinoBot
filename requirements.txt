@@ -1,10 +1,10 @@
 nonebot[scheduler]~=1.4.1
 aiocqhttp~=1.2.2
 lxml>=4.4.1
-ujson>=1.35
 pytz>=2019.3
 requests>=2.22.0
 sogou_tr_free>=0.0.6
 zhconv>=1.4.0
 Pillow>=6.2.1
 TwitterAPI>=2.5.10
+matplotlib>=3.2.0
