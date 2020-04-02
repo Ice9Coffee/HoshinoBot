@@ -37,36 +37,43 @@ async def rank_sheet(bot, ctx, match):
             await bot.send(ctx, f'R15-4 rank表：{p1}{p2}', at_sender=True)
 
 
-@sv.on_rex(r'^(pcr(速查|常用)|(pcr)?图书馆)', normalize=True, event='group')
+@sv.on_rex(r'^(pcr(速查|常用)|(pcr)?图书馆)$', normalize=True, event='group')
 async def query_sites(bot, ctx, match):
     msg='''
-图书馆(繁中)：pcredivewiki.tw
-日文wiki：gamewith.jp/pricone-re
-日文wiki：appmedia.jp/priconne-redive
-竞技场(台日)：pcrdfans.com/battle
-竞技场(日)：nomae.net/arenadb
-NGA论坛：bbs.nga.cn/thread.php?fid=-10308342
-日官网：priconne-redive.jp
-台官网：www.princessconnect.so-net.tw
-B服速查请输入"bcr速查"查看'''
+【日官网】priconne-redive.jp
+【台官网】www.princessconnect.so-net.tw
+【繁中wiki/兰德索尔图书馆】pcredivewiki.tw
+【日文wiki/GameWith】gamewith.jp/pricone-re
+【日文wiki/AppMedia】appmedia.jp/priconne-redive
+【竞技场作业库(中文)】pcrdfans.com/battle
+【竞技场作业库(日文)】nomae.net/arenadb
+【论坛/NGA社区】bbs.nga.cn/thread.php?fid=-10308342
+【iOS实用工具/初音笔记】bbs.nga.cn/read.php?tid=14878762
+【安卓实用工具/静流笔记】bbs.nga.cn/read.php?tid=20499613
+
+===其他查询请输入以下关键字===
+【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
+※B服速查请输入【bcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
     await silence(ctx, 60)
     
     
-# @sv.on_rex(r'^bcr(速查|常用)', normalize=True, event='group')
+@sv.on_rex(r'^bcr(速查|常用)', normalize=True, event='group')
 async def query_sites_bilibili(bot, ctx, match):
     msg='''
-怎么卡pjjc：不通关主线关卡8-15
-这个角色怎么样  这个初始号怎么样  怎么配队
-图书馆(繁中)：pcredivewiki.tw
-日文wiki：gamewith.jp/pricone-re
-日文wiki：appmedia.jp/priconne-redive
-竞技场(台日)：pcrdfans.com/battle
-竞技场(日)：nomae.net/arenadb
-NGA论坛：bbs.nga.cn/thread.php?fid=-10308342
-日官网：priconne-redive.jp
-台官网：www.princessconnect.so-net.tw
-日台服速查请输入"pcr速查"查看'''
+【妈宝骑士攻略(懒人攻略合集)】bbs.nga.cn/read.php?tid=20980776
+【机制详解】bbs.nga.cn/read.php?tid=19104807
+【初始推荐】bbs.nga.cn/read.php?tid=20789582
+【术语黑话】bbs.nga.cn/read.php?tid=18422680
+【角色点评】bbs.nga.cn/read.php?tid=20804052
+【秘石规划】bbs.nga.cn/read.php?tid=20101864
+【卡池万里眼】bbs.nga.cn/read.php?tid=20816796
+【为何卡R卡星】bbs.nga.cn/read.php?tid=20732035
+【推图阵容推荐】bbs.nga.cn/read.php?tid=21010038
+
+===其他查询请输入以下关键字===
+【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
+※日台服速查请输入【pcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
     await silence(ctx, 60)
 

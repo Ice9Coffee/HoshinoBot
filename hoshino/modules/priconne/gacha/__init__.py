@@ -99,7 +99,7 @@ async def gacha_10(session:CommandSession):
         await session.send('恭喜海豹！おめでとうございます！')
 
 
-@sv.on_command('卡池资讯', deny_tip=GACHA_DISABLE_NOTICE, aliases=('看看卡池', '康康卡池', '卡池資訊'), only_to_me=False)
+@sv.on_command('卡池资讯', deny_tip=GACHA_DISABLE_NOTICE, aliases=('查看卡池', '看看卡池', '康康卡池', '卡池資訊'), only_to_me=False)
 async def gacha_info(session:CommandSession):
     gacha = Gacha()
     up_chara = gacha.up
