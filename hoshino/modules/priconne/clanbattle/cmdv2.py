@@ -18,6 +18,7 @@ try:
 except:
     import json
 
+from aiocqhttp.exceptions import ActionFailed
 from nonebot import NoneBot
 from nonebot import MessageSegment as ms
 from nonebot.typing import Context_T
@@ -155,7 +156,10 @@ async def batch_add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     await _check_admin(ctx)
-    mlist = await bot.get_group_member_list(self_id=ctx['self_id'], group_id=bm.group)
+    try:
+        mlist = await bot.get_group_member_list(self_id=ctx['self_id'], group_id=bm.group)
+    except ActionFailed:
+        raise ClanBattleError('Bot内部缓存未更新，无法使用一键入会！请尝试【!入会】命令逐个添加')
     if len(mlist) > 50:
         raise ClanBattleError('群员过多！一键入会仅限50人以内群使用')
     
