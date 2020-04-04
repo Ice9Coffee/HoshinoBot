@@ -88,7 +88,7 @@ class Gacha(object):
                 result['s1'].append(c)
             else:
                 pass    # should never reach here
-        for _ in range(30):
+        for i in range(30):
             c, y = self.gacha_one(up, s3, s2 + s1, 0)
             if 100 == y:
                 result['up'].append(c)
