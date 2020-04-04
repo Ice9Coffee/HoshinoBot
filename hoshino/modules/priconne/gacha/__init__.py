@@ -159,7 +159,7 @@ async def gacha_300(session:CommandSession):
         msg.append("期望之内，亚洲水平")
     elif up == 3:
         msg.append("抽井母五一气呵成！多出30等专武～")
-    elif up > 4:
+    elif up >= 4:
         msg.append("6★的碎片都有了，您是托吧？")
     
     silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 3
