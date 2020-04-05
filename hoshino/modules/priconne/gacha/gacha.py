@@ -79,7 +79,7 @@ class Gacha(object):
             c, y = self.gacha_one(up, s3, s2, s1)
             if 100 == y:
                 result['up'].append(c)
-                first_up_pos = min(first_up_pos, 10 * (i // 9) + (i % 9))
+                first_up_pos = min(first_up_pos, 10 * ((i+1) // 9) + ((i+1) % 9))
             elif 50 == y:
                 result['s3'].append(c)
             elif 10 == y:
@@ -92,7 +92,7 @@ class Gacha(object):
             c, y = self.gacha_one(up, s3, s2 + s1, 0)
             if 100 == y:
                 result['up'].append(c)
-                first_up_pos = min(first_up_pos, 10 * i)
+                first_up_pos = min(first_up_pos, 10 * (i+1))
             elif 50 == y:
                 result['s3'].append(c)
             elif 10 == y:
