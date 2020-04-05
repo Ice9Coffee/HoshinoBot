@@ -30,7 +30,7 @@ async def rank_sheet(bot, ctx, match):
         await bot.send(ctx, '\n请问您要查询日服还是台服的rank表？\n*日rank表\n*台rank表', at_sender=True)
     else:
         await silence(ctx, 60)
-        await bot.send(ctx, 'rank推荐表图片较大，请稍等片刻\n※不定期搬运，来源见图片\n※广告与本bot无关，仅供参考')
+        await bot.send(ctx, '图片较大，请稍等片刻\n※不定期搬运，来源见图片\n※广告与本bot无关，仅供参考')
         if is_jp:
             await bot.send(ctx, f'R16-4 rank表：{p4}{p5}{p6}', at_sender=True)
         if is_tw:
