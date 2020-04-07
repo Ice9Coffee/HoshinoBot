@@ -12,7 +12,7 @@ equip_folder = R.img('kancolle/equip/').path
 
 def _load_data():
     config = util.load_config(__file__)
-    db = config["data"]
+    db = config.get("data", {})
     rex = re.compile(r"\[CQ:image,file=(.*)\]")
     for k, v in db.items():
         m = rex.search(v)

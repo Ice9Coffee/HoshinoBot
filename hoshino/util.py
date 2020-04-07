@@ -22,10 +22,14 @@ def load_config(inbuilt_file_var):
     you can get the config.json as a dict.
     """
     filename = os.path.join(os.path.dirname(inbuilt_file_var), 'config.json')
-    with open(filename, encoding='utf8') as f:
-        config = json.load(f)
-        return config
-    
+    try:
+        with open(filename, encoding='utf8') as f:
+            config = json.load(f)
+            return config
+    except Exception as e:
+        logger.exception(e)
+        return {}
+
 
 async def delete_msg(ctx):
     try:
