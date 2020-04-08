@@ -83,7 +83,7 @@ async def arena_query(session:CommandSession):
         atk_team_pic if get_bot().config.IS_CQPRO else atk_team_txt,
         '👍&👎：',
         *detail,
-        '【NEW】发送"点赞/踩+作业id"即可进行评价，如"点赞 ABCDE"（不区分大小写，空格隔开）'
+        '【NEW】发送"点赞/踩+作业id"即可进行评价，如"点赞 ABCDE"（不区分大小写，空格隔开）',
         'Support by pcrdfans_com'
     ]
 
