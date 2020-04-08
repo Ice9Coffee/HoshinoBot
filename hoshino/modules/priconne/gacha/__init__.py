@@ -162,7 +162,7 @@ async def gacha_300(session:CommandSession):
     elif up >= 4:
         msg.append("6★的碎片都有了，您是托吧？")
     
-    silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 3
+    silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
     await silence(session.ctx, silence_time)
     await session.send('\n'.join(msg), at_sender=True)
 
