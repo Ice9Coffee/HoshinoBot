@@ -10,8 +10,6 @@ import logging
 
 _error_log_file = os.path.expanduser('~/.hoshino/error.log')
 _critical_log_file = os.path.expanduser('~/.hoshino/critical.log')
-os.makedirs(os.path.dirname(_error_log_file), exist_ok=True)
-os.makedirs(os.path.dirname(_critical_log_file), exist_ok=True)
 
 formatter = logging.Formatter('[%(asctime)s %(name)s] %(levelname)s: %(message)s')
 logger = logging.getLogger('hoshino')

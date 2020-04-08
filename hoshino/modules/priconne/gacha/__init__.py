@@ -14,7 +14,7 @@ from ..chara import Chara
 
 
 __plugin_name__ = 'gacha'
-sv = Service('gacha')
+sv = Service('gacha', manage_priv=Priv.SUPERUSER)
 _last_gacha_day = -1
 _user_jewel_used = defaultdict(int)    # {user: jewel_used}
 _max_jewel_per_day = 7500
@@ -28,7 +28,7 @@ gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来�
                    '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井', '天井轉蛋', '轉蛋天井')
 
-GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n使用【启用 gacha】以启用\n（需群管理）'
+GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如欲开启，请与维护组联系'
 GACHA_EXCEED_NOTICE = '您今天已经抽过{}了，欢迎明天再来！'
 
 
