@@ -51,7 +51,7 @@ NEW!![@bot来一井] 4w5钻！买定离手！
 ==========
 [启用 hourcall] 时报
 [启用 kc-reminder] 演习/月常远征提醒
-[启用 kc-twitter] 官推转发
+[启用 kc-twitter] 艦これ官推转发
 [启用 kc-query] 开启kancolle查询功能(下详)
 - [*晓改二] 舰娘信息查询
 - [*震电] 装备信息查询
