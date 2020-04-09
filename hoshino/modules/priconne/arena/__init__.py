@@ -71,7 +71,11 @@ async def arena_query(session:CommandSession):
     else:
         atk_team_txt = '\n'.join(map(lambda entry: ' '.join(map(lambda x: f"{x.name}{x.star if x.star else ''}{'专' if x.equip else ''}" , entry['atk'])) , res))
 
-    detail = [ "{qkey} 赞{up}+{my_up} 踩{down}+{my_down}".format_map(e) for e in res ]
+    details = [ " ".join([
+        f"赞{e['up']}+{e['my_up']}" if e['my_up'] else f"赞{e['up']}", 
+        f"踩{e['down']}+{e['my_down']}" if e['my_down'] else f"踩{e['down']}", 
+        e['qkey']
+    ]) for e in res ]
     defen = [ Chara.fromid(x).name for x in defen ]
     defen = ' '.join(defen)
     defen = f'防守方【{defen}】'
@@ -82,8 +86,8 @@ async def arena_query(session:CommandSession):
         header,
         atk_team_pic if get_bot().config.IS_CQPRO else atk_team_txt,
         '👍&👎：',
-        *detail,
-        '【NEW】发送"点赞/踩+作业id"即可进行评价，如"点赞 ABCDE"（不区分大小写，空格隔开）',
+        *details,
+        '【NEW】发送"点赞/踩+作业id"可进行评价，如"点赞 ABCDE" 不区分大小写，空格隔开',
         'Support by pcrdfans_com'
     ]
 
