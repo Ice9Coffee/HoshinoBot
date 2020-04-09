@@ -56,8 +56,8 @@ def get_dislike_num(id_):
 
 def add_dislike(id_, uid):
     e = DB.get(id_, {})
-    l = e.get('like', [])
-    k = e.get('dislike', [])
+    l = e.get('like', set())
+    k = e.get('dislike', set())
     l.discard(uid)
     k.add(uid)
     e['like'] = l
