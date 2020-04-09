@@ -6,7 +6,7 @@ import nonebot
 from .log import logger
 
 def init(config) -> nonebot.NoneBot:
-    os.makedirs('~/.hoshino', exist_ok=True)
+    os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
 
     nonebot.init(config)
     bot = nonebot.get_bot()
