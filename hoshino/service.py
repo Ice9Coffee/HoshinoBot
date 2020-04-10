@@ -187,7 +187,8 @@ class Service:
 
     @staticmethod
     def set_block_user(user_id, time):
-        _black_list_user[user_id] = datetime.now() + time
+        if user_id not in nonebot.get_bot().config.SUPERUSERS:
+            _black_list_user[user_id] = datetime.now() + time
 
 
     @staticmethod
