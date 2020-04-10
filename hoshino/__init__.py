@@ -1,16 +1,17 @@
+import os
 from os import path 
 import logging
-
 import nonebot
 
-from .log import logger, error_handler, critical_handler
-
+from .log import logger
 
 def init(config) -> nonebot.NoneBot:
+    os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
 
     nonebot.init(config)
     bot = nonebot.get_bot()
 
+    from .log import error_handler, critical_handler
     logger.setLevel(logging.DEBUG if bot.config.DEBUG else logging.INFO)
     nonebot.logger.setLevel(logging.DEBUG if bot.config.DEBUG else logging.INFO)
     nonebot.logger.addHandler(error_handler)

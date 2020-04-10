@@ -4,7 +4,7 @@
 import re
 from typing import Callable, Dict, Tuple, Iterable
 
-from nonebot import NoneBot
+from nonebot import NoneBot, on_command, CommandSession
 from hoshino import util
 from hoshino.service import Service, Privilege
 from hoshino.res import R
@@ -55,9 +55,9 @@ from .cmdv1 import *
 from .cmdv2 import *
 
 
-@cb_cmd('帮助', ArgParser('!帮助'))
-async def cb_help(bot:NoneBot, ctx, args:ParseResult):
-    msg = f'''
+@on_command('!帮助', aliases=('！帮助', '!幫助', '！幫助', '!help', '！help'), only_to_me=False)
+async def cb_help(session:CommandSession):
+    quick_start = f'''
 ==================
 - PCR会战管理v2.0 -
 ==================
@@ -65,13 +65,13 @@ async def cb_help(bot:NoneBot, ctx, args:ParseResult):
 
 【必读事项】
 ※会战系命令均以感叹号!开头，半全角均可
-※命令与参数之间必须以[空格]隔开
+※命令与参数之间必须以【空格】隔开
 下面以使用场景-使用例给出常用指令的说明
 
 【群初次使用】
 !建会 Nリトルリリカル Sjp
 !建会 N小小甜心 Stw
-!建会 N今天版号批了吗 Scn
+!建会 N今天版号批过了 Scn
 
 【注册成员】
 !入会 祐树
@@ -91,10 +91,10 @@ async def cb_help(bot:NoneBot, ctx, args:ParseResult):
 
 ※详细说明见命令一览表
 '''
-    await bot.send(ctx, msg, at_sender=True)
     msg = [
-        f"命令一览表：\n{R.img('priconne/quick/Hoshino会战.png').cqcode}",
+        f"{R.img('priconne/quick/Hoshino会战.png').cqcode}",
         "※图片更新较慢 前往github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/priconne/clanbattle查看最新",
-        "※使用前请【逐字】阅读必读事项"
+        "※使用前请【逐字】阅读必读事项",
+        quick_start
     ]
-    await bot.send(ctx, '\n'.join(msg), at_sender=True)
+    await session.send('\n'.join(msg), at_sender=True)
