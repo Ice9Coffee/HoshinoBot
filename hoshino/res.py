@@ -58,7 +58,10 @@ class ResImg(ResObj):
         if get_bot().config.RESOURCE_URL:
             return MessageSegment.image(self.url)
         else:
-            return MessageSegment.image(pic2b64(self.open()))
+            try:
+                return MessageSegment.image(pic2b64(self.open()))
+            except:
+                return MessageSegment.text('[图片]')
 
     def open(self) -> Image:
         return Image.open(self.path)
