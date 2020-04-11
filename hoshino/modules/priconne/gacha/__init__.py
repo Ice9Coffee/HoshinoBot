@@ -153,14 +153,19 @@ async def gacha_300(session:CommandSession):
         msg.append("这位酋长，梦幻包考虑一下？")
     elif up == 0:
         msg.append("据说天井的概率只有12.16%")
-    elif up <= 2 and result['first_up_pos'] < 50:
-        msg.append("已经可以了，您已经很欧了")
     elif up <= 2:
-        msg.append("期望之内，亚洲水平")
+        if result['first_up_pos'] < 50:
+            msg.append("已经可以了，您已经很欧了")
+        elif result['first_up_pos'] > 290:
+            msg.append("标 准 结 局")
+        elif result['first_up_pos'] > 250:
+            msg.append("补井还是不补井，这是一个问题...")
+        else:
+            msg.append("期望之内，亚洲水平")
     elif up == 3:
         msg.append("抽井母五一气呵成！多出30等专武～")
     elif up >= 4:
-        msg.append("6★的碎片都有了，您是托吧？")
+        msg.append("记忆碎片一大堆！您是托吧？")
     
     silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
     await silence(session.ctx, silence_time)
