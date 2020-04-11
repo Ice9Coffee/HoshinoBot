@@ -3,10 +3,12 @@
 
 from nonebot.default_config import *
 
-SUPERUSERS = [10000]    # 填写超级用户的QQ号
-COMMAND_START = {''}    # 命令开始符号（空字符串匹配任何消息）
-HOST = '127.0.0.1'      # 填写CQHTTP的ip，docker的默认配置为172.17.0.1，WinServer部署则用127.0.0.1
-PORT = 8080             # 填写CQHTTP的端口
+SUPERUSERS = [10000]    # 填写超级用户的QQ号，可填多个用半角逗号","隔开
+COMMAND_START = {''}    # 命令前缀（空字符串匹配任何消息）
+HOST = '127.0.0.1'      # 填写hoshino监听的ip，Windows本地搭建用此条配置
+# HOST = '172.17.0.1'   # docker用此条配置
+# HOST = '172.18.0.1'   # 阿里云中使用docker用此条配置
+PORT = 8080             # 填写hoshino监听的端口
 
 # 是否使用Pro版酷Q功能
 IS_CQPRO = False
