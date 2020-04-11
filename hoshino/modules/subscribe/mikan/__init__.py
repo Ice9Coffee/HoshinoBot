@@ -23,7 +23,7 @@ class Mikan(object):
     def get_rss():
         res = []
         try:
-            resp = requests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=10)
+            resp = requests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=1)
             rss = etree.XML(resp.content)
         except Exception as e:
             sv.logger.error(f'[get_rss] Error: {e}')
@@ -106,9 +106,3 @@ async def send_bangumi(session):
     msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in Mikan.rss_cache[:min(5, len(Mikan.rss_cache))] ]
     msg = '\n'.join(msg)
     await session.send(f'最近更新的番剧：\n{msg}')
-
-
-if __name__ == "__main__":
-    """for test"""
-    print(Mikan.get_rss())
-

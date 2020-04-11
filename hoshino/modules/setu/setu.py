@@ -81,7 +81,12 @@ async def setu(bot:NoneBot, ctx, match):
     _user_setu_count[uid] += 1
 
     # conditions all ok, send a setu.
+    pic = get_setu()
     try:
-        await bot.send(ctx, get_setu())
+        await bot.send(ctx, pic)
     except CQHttpError:
-        await bot.send(ctx, '涩图太涩，发不出去勒...')
+        sv.logger.error(f"发送图片{pic.data['file']}失败")
+        try:
+            await bot.send(ctx, '涩图太涩，发不出去勒...')
+        except:
+            pass

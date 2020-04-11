@@ -139,6 +139,8 @@ async def one_tweet(session):
         account = 'KanColle_STAFF'
     try:
         count = min(int(args[1]), 15)
+        if count <= 0:
+            count = 3
     except:
         count = 3
     params = {
