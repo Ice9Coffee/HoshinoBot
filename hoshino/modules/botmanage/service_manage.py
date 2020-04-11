@@ -6,7 +6,9 @@ from nonebot import CQHttpError
 
 from hoshino.service import Service
 
-@on_command('lssv', aliases=('查看所有服务', '查看所有功能', '功能', '功能列表', '服务列表', '菜单'), permission=perm.GROUP, only_to_me=False)
+PRIV_NOTE = '群主=22 群管=21 群员=0 bot维护组=999'
+
+@on_command('lssv', aliases=('查看所有服务', '查看所有功能', '功能', '功能列表', '服务列表', '菜单'), permission=perm.GROUP_ADMIN, only_to_me=False)
 async def lssv(session:CommandSession):
     verbose_all = session.current_arg_text == '-a' or session.current_arg_text == '--all'
     gid = session.ctx['group_id']
@@ -36,7 +38,7 @@ async def enable_service(session:CommandSession):
                 await session.send(f'{sv.name}服务已启用！', at_sender=True)
                 return
             else:
-                await session.send(f'权限不足！需要：{sv.manage_priv}，您的：{u_priv}', at_sender=True)
+                await session.send(f'权限不足！需要：{sv.manage_priv}，您的：{u_priv}\n{PRIV_NOTE}', at_sender=True)
                 return
     await session.send(f'未找到服务：{target_name}', at_sender=True)
 
@@ -55,6 +57,6 @@ async def disable_service(session:CommandSession):
                 await session.send(f'{sv.name}服务已禁用！', at_sender=True)
                 return
             else:
-                await session.send(f'权限不足！需要：{sv.manage_priv}，您的：{u_priv}', at_sender=True)
+                await session.send(f'权限不足！需要：{sv.manage_priv}，您的：{u_priv}\n{PRIV_NOTE}', at_sender=True)
                 return
     await session.send(f'未找到服务：{target_name}', at_sender=True)

@@ -18,13 +18,17 @@ async def say_sorry(session):
 @sv.on_command('老婆', aliases=('waifu', 'laopo'))
 async def chat_waifu(session):
     if not await sv.check_permission(session.ctx, Priv.SUPERUSER):
-        await session.send(R.img('喊谁老婆呢.jpg').cqcode)
+        await session.send(R.img('laopo.jpg').cqcode)
     else:
         await session.send('mua~')
 
+@sv.on_command('老公')
+async def chat_laogong(session):
+    await session.send('你给我滚！', at_sender=True)
+
 @sv.on_command('mua')
 async def chat_mua(session):
-    await session.send('笨蛋~')
+    await session.send('笨蛋~', at_sender=True)
 
 
 @sv.on_keyword({'确实', '有一说一', 'u1s1', 'yysy'}, normalize=True)
@@ -58,7 +62,8 @@ async def ban_word(session):
     elif ctx['message_type'] == 'discuss':
         msg_from += f'@[讨论组:{ctx["discuss_id"]}]'
     sv.logger.critical(f'Self: {ctx["self_id"]}, Message {ctx["message_id"]} from {msg_from}: {ctx["message"]}')
-    await session.send(random.choice(BANNED_WORD))
-    Service.set_block_user(user_id, timedelta(hours=24))
-    await session.send("被加入黑名单24小时", at_sender=True)
-    await util.silence(session.ctx, 24*60*60)
+    # await session.send(random.choice(BANNED_WORD))
+    Service.set_block_user(user_id, timedelta(hours=12))
+    pic = R.img(f"chieri{random.randint(1, 4)}.jpg").cqcode
+    await session.send(f"不理你啦！バーカー\n{pic}", at_sender=True)
+    await util.silence(session.ctx, 12*60*60)
