@@ -112,9 +112,13 @@ async def do_query(id_list, user_id):
     }
     payload = {"_sign": "a", "def": id_list, "nonce": "a", "page": 1, "sort": 1, "ts": int(time.time()), "region": 1}
     logger.info(f'Arena query {payload=}')
-    resp = await aiorequests.post('https://api.pcrdfans.com/x/v1/search', headers=header, json=payload)
-    res = await resp.json()
-    logger.debug(f'len(res)={len(res)}')
+    try:
+        resp = await aiorequests.post('https://api.pcrdfans.com/x/v1/search', headers=header, json=payload)
+        res = await resp.json()
+        logger.debug(f'len(res)={len(res)}')
+    except Exception as e:
+        logger.exception(e)
+        return None
 
     if res['code']:
         logger.error(f"Arena query failed. \nResponse={res}")
