@@ -91,7 +91,7 @@ def get_true_id(quick_key:str, user_id:int) -> str:
     if not isinstance(quick_key, str) or len(quick_key) != 5:
         return None
     qkey = (quick_key + '===').encode()
-    qkey = int.from_bytes(base64.b32decode(qkey, casefold=True), 'little')
+    qkey = int.from_bytes(base64.b32decode(qkey, casefold=True, map01=b'I'), 'little')
     qkey ^= mask
     return quick_key_dic.get(qkey, None)
 
