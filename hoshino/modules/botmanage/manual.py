@@ -77,7 +77,7 @@ NEW!![@bot来一井] 4w5钻！买定离手！
 _last_coffee_day = -1
 _user_coffee_count = defaultdict(int)    # {user: gacha_count}
 _max_coffee_per_day = 1
-COFFEE_EXCEED_NOTICE = f'您今天已经喝过{_max_coffee_per_day}杯了，请明天再来！'
+COFFEE_EXCEED_NOTICE = f'您今天已经喝过{_max_coffee_per_day}杯了，请明早5点后再来！'
 
 def check_coffee_num(user_id):
     global _last_coffee_day, _user_coffee_count, _max_coffee_per_day
