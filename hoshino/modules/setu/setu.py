@@ -18,7 +18,7 @@ sv = Service('setu', manage_priv=Privilege.SUPERUSER, enable_on_default=True, vi
 _last_setu_day = -1
 _user_setu_count = defaultdict(int)    # {user: gacha_count}
 _max_setu_per_day = 5
-SETU_EXCEED_NOTICE = f'您今天已经冲过{_max_setu_per_day}次了，请明天再来！'
+SETU_EXCEED_NOTICE = f'您今天已经冲过{_max_setu_per_day}次了，请明早5点后再来！'
 
 setu_folder = R.img('setu/').path
 last_call_time = defaultdict(int)   # user_id: t in seconds

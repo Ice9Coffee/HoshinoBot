@@ -7,6 +7,7 @@ from nonebot import get_bot
 from nonebot import MessageSegment
 
 from hoshino.util import pic2b64
+from hoshino import logger
 
 class R:
 
@@ -60,7 +61,8 @@ class ResImg(ResObj):
         else:
             try:
                 return MessageSegment.image(pic2b64(self.open()))
-            except:
+            except Exception as e:
+                logger.exception(e)
                 return MessageSegment.text('[图片]')
 
     def open(self) -> Image:

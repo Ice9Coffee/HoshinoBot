@@ -84,15 +84,18 @@ async def arena_query(session:CommandSession):
     msg = [
         defen,
         header,
-        atk_team_pic if get_bot().config.IS_CQPRO else atk_team_txt,
+        atk_team_txt, # atk_team_pic if get_bot().config.IS_CQPRO else atk_team_txt,
         '👍&👎：',
         *details,
-        '【NEW】发送"点赞/点踩+作业id"可进行评价，如"点赞 ABCDE" 不区分大小写，空格隔开',
+        '发送"点赞/点踩+作业id"可进行评价，如"点赞 ABCDE" 不分大小写，空格隔开',
+        '手机QQ更新后无法正常显示图片，故分条发送，如有刷屏还请谅解'
         'Support by pcrdfans_com'
     ]
 
     sv.logger.debug('Arena sending result...')
     await session.send('\n'.join(msg))
+    if sv.bot.config.IS_CQPRO:
+        await session.send(atk_team_pic, at_sender=True)
     sv.logger.debug('Arena result sent!')
 
 
