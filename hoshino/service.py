@@ -8,7 +8,7 @@ import asyncio
 from datetime import datetime, timedelta
 from functools import wraps
 from collections import defaultdict
-from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
+from typing import Iterable, Optional, Callable, Union, NamedTuple, Set, Dict
 try:
     import ujson as json
 except:
@@ -52,7 +52,7 @@ class Privilege:
     SUPERUSER = 999
 
 # service management
-_loaded_services = set()
+_loaded_services:Dict[str, "Service"] = {}   # {name: service}
 _re_illegal_char = re.compile(r'[\\/:*?"<>|\.]')
 _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
 os.makedirs(_service_config_dir, exist_ok=True)
@@ -135,22 +135,20 @@ class Service:
         self.logger.addHandler(_error_handler)
         self.logger.addHandler(_critical_handler)
 
-        _loaded_services.add(self)
+        assert self.name not in _loaded_services, f'Service name "{self.name}" already exist!'
+        _loaded_services[self.name] = self
 
 
     @property
     def bot(self):
         return nonebot.get_bot()
 
-
     def get_self_ids(self):
         return self.bot._wsr_api_clients.keys()
 
-
     @staticmethod
-    def get_loaded_services() -> Set["Service"]:
-        return _loaded_services.copy()
-
+    def get_loaded_services() -> Dict[str, "Service"]:
+        return _loaded_services
 
     @staticmethod
     async def get_user_privilege(ctx):

@@ -30,6 +30,21 @@ async def chat_laogong(session):
 async def chat_mua(session):
     await session.send('笨蛋~', at_sender=True)
 
+@sv.on_command('来点星奏', only_to_me=False)
+async def seina(session):
+    await session.send(R.img('星奏.png').cqcode)
+
+@sv.on_command('我有个朋友说他好了', aliases=('我朋友说他好了', ), only_to_me=False)
+async def ddhaole(session):
+    await session.send('那个朋友是不是你弟弟？')
+    await util.silence(session.ctx, 30)
+
+@sv.on_command('我好了', only_to_me=False)
+async def nihaole(session):
+    await session.send('不许好，憋回去！')
+    await util.silence(session.ctx, 30)
+
+# ============================================ #
 
 @sv.on_keyword(('确实', '有一说一', 'u1s1', 'yysy'), normalize=True)
 async def chat_queshi(bot, ctx):
@@ -45,25 +60,3 @@ async def chat_clanba(bot, ctx):
 async def chat_neigui(bot, ctx):
     if random.random() < 0.10:
         await bot.send(ctx, R.img('内鬼.png').cqcode)
-
-
-BANNED_WORD = (
-    'rbq', 'RBQ', '憨批', '废物', '死妈', '崽种', '傻逼', '傻逼玩意', 
-    '没用东西', '傻B', '傻b', 'SB', 'sb', '煞笔', 'cnm', '爬', 'kkp', 
-    'nmsl', 'D区', '口区', '我是你爹', 'nmbiss', '弱智', '给爷爬', '杂种爬'
-)
-@sv.on_command('ban_word', aliases=BANNED_WORD, only_to_me=True)
-async def ban_word(session):
-    ctx = session.ctx
-    user_id = ctx['user_id']
-    msg_from = str(user_id)
-    if ctx['message_type'] == 'group':
-        msg_from += f'@[群:{ctx["group_id"]}]'
-    elif ctx['message_type'] == 'discuss':
-        msg_from += f'@[讨论组:{ctx["discuss_id"]}]'
-    sv.logger.critical(f'Self: {ctx["self_id"]}, Message {ctx["message_id"]} from {msg_from}: {ctx["message"]}')
-    # await session.send(random.choice(BANNED_WORD))
-    Service.set_block_user(user_id, timedelta(hours=12))
-    pic = R.img(f"chieri{random.randint(1, 4)}.jpg").cqcode
-    await session.send(f"不理你啦！バーカー\n{pic}", at_sender=True)
-    await util.silence(session.ctx, 12*60*60)

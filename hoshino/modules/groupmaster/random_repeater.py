@@ -1,17 +1,11 @@
 import random
-
-from nonebot import get_bot
-from nonebot import CQHttpError
-
+from nonebot import get_bot, CQHttpError
 from hoshino import logger
-
-
 
 bot = get_bot()
 
 PROB_A = 1.6
-group_stat = {} # group_id: (last_msg, is_repeated, p)
-
+group_stat = {}     # group_id: (last_msg, is_repeated, p)
 
 '''
 不复读率 随 复读次数 指数级衰减
@@ -46,7 +40,7 @@ async def random_repeater(context):
         group_stat[group_id] = (msg, False, 0)
 
 
-def test_a(a):
+def _test_a(a):
     '''
     该函数打印prob_n用于选取调节a
     注意：由于依指数变化，a的轻微变化会对概率有很大影响
