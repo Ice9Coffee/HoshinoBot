@@ -1,26 +1,14 @@
-import re
-import math
-import random
-
-from nonebot import on_command, CommandSession, MessageSegment
-from nonebot import on_natural_language, NLPSession, IntentCommand
-from nonebot import permission as perm
-
-from hoshino.util import silence, delete_msg
+from hoshino import util
 from hoshino.res import R
 from hoshino.service import Service
 
 sv = Service('pcr-query')
 
-try:
-    p1 = R.img('priconne/quick/r15-5-0.png').cqcode
-    p2 = R.img('priconne/quick/r15-5.png').cqcode
-    p4 = R.img('priconne/quick/r16-4-1.png').cqcode
-    p5 = R.img('priconne/quick/r16-4-2.png').cqcode
-    p6 = R.img('priconne/quick/r16-4-3.png').cqcode
-except Exception as e:
-    sv.logger.exception(e)
-
+p1 = R.img('priconne/quick/r15-5-0.png').cqcode
+p2 = R.img('priconne/quick/r15-5.png').cqcode
+p4 = R.img('priconne/quick/r16-4-1.png').cqcode
+p5 = R.img('priconne/quick/r16-4-2.png').cqcode
+p6 = R.img('priconne/quick/r16-4-3.png').cqcode
 
 @sv.on_rex(r'^(\*?([日台国b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$', normalize=True, event='group')
 async def rank_sheet(bot, ctx, match):
@@ -31,13 +19,13 @@ async def rank_sheet(bot, ctx, match):
         await bot.send(ctx, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*B服rank表\n※B服：开服仅开放至金装，r10前无需考虑卡rank，装备强化消耗较多mana，如非前排建议不强化', at_sender=True)
         return
     if is_jp:
-        await silence(ctx, 60)
+        await util.silence(ctx, 60)
         await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n不要问我为什么不更新 我只是无情的搬运工 催更地址见图片\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR16-4 rank表：', at_sender=True)
         await bot.send(ctx, str(p4))
         await bot.send(ctx, str(p5))
         await bot.send(ctx, str(p6))
     elif is_tw:
-        await silence(ctx, 60)
+        await util.silence(ctx, 60)
         await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n本期争议较大 拿不准建议先卡着备足碎片\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR15-5 rank表：', at_sender=True)
         await bot.send(ctx, str(p1))
         await bot.send(ctx, str(p2))
@@ -63,7 +51,7 @@ async def query_sites(bot, ctx):
 【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
 ※B服速查请输入【bcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
-    await silence(ctx, 60)
+    await util.silence(ctx, 60)
     
     
 @sv.on_keyword(('bcr速查', 'bcr攻略', 'bcr常用'))
@@ -83,10 +71,10 @@ async def query_sites_bilibili(bot, ctx):
 【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
 ※日台服速查请输入【pcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
-    await silence(ctx, 60)
+    await util.silence(ctx, 60)
 
-@sv.on_command('arina-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'pjjc作业网', 'jjc数据库', 'pjjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'), only_to_me=False)
-async def say_arina_database(session: CommandSession):
+@sv.on_command('arena-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'pjjc作业网', 'jjc数据库', 'pjjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'), only_to_me=False)
+async def say_arina_database(session):
     await session.send('公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
 
 

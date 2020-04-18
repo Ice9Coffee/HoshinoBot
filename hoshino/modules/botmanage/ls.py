@@ -25,14 +25,14 @@ async def ls_friend(session: CommandSession):
 
 async def ls_service(session: CommandSession, service_name:str):
     all_services = Service.get_loaded_services()
-    for sv in all_services:
-        if sv.name == service_name:
-            on_g = '\n'.join(map(lambda x: str(x), sv.enable_group))
-            off_g = '\n'.join(map(lambda x: str(x), sv.disable_group))
-            default_ = '开启' if sv.enable_on_default else '关闭'
-            msg = f"服务{service_name}：\n默认：{default_}\n启用群：\n{on_g}\n禁用群：\n{off_g}"
-            await session.finish(msg)
-            return
+    if service_name in all_services:
+        sv = all_services[service_name]
+        on_g = '\n'.join(map(lambda x: str(x), sv.enable_group))
+        off_g = '\n'.join(map(lambda x: str(x), sv.disable_group))
+        default_ = '开启' if sv.enable_on_default else '关闭'
+        msg = f"服务{service_name}：\n默认：{default_}\n启用群：\n{on_g}\n禁用群：\n{off_g}"
+        await session.finish(msg)
+        return
     await session.send(f'未找到服务{service_name}')
 
 

@@ -1,12 +1,9 @@
-import pytz
-from datetime import datetime, timedelta
-from collections import defaultdict
+from nonebot import on_command, CommandSession
+from hoshino.service import Service, Privilege as Priv
 
+sv = Service('_help_', manage_priv=Priv.SUPERUSER, visible=False)
 
-from nonebot import on_command, CommandSession, MessageSegment
-import nonebot.permission as perm
-
-@on_command('help', aliases=('manual', '帮助', '说明', '使用说明', '幫助', '說明', '使用說明'), only_to_me=False)
+@sv.on_command('help', aliases=('manual', '帮助', '说明', '使用说明', '幫助', '說明', '使用說明', '菜单', '菜單'), only_to_me=False)
 async def send_help(session:CommandSession):
     msg='''
 =====================
@@ -73,34 +70,3 @@ NEW!![@bot来一井] 4w5钻！买定离手！
 ※※调教时请注意使用频率，您的滥用可能会导致bot帐号被封禁
 '''.strip()
     await session.send(msg)
-
-_last_coffee_day = -1
-_user_coffee_count = defaultdict(int)    # {user: gacha_count}
-_max_coffee_per_day = 1
-COFFEE_EXCEED_NOTICE = f'您今天已经喝过{_max_coffee_per_day}杯了，请明早5点后再来！'
-
-def check_coffee_num(user_id):
-    global _last_coffee_day, _user_coffee_count, _max_coffee_per_day
-    now = datetime.now(pytz.timezone('Asia/Shanghai'))
-    day = (now - timedelta(hours=5)).day
-    if day != _last_coffee_day:
-        _last_coffee_day = day
-        _user_coffee_count.clear()
-    return bool(_user_coffee_count[user_id] < _max_coffee_per_day)
-
-
-@on_command('来杯咖啡', permission=perm.GROUP)
-async def call_master(session:CommandSession):
-    uid = session.ctx['user_id']
-    if not check_coffee_num(uid):
-        await session.send(COFFEE_EXCEED_NOTICE, at_sender=True)
-        return
-    _user_coffee_count[uid] += 1
-
-    coffee = session.bot.config.SUPERUSERS[0]
-    text = session.current_arg
-    if not text:
-        await session.send(MessageSegment.at(coffee))
-    else:
-        await session.bot.send_private_msg(self_id=session.ctx['self_id'], user_id=coffee, message=f'Q{uid}@群{session.ctx["group_id"]}\n{text}')
-        await session.send(f'您的反馈已发送！\n=======\n{text}', at_sender=True)
