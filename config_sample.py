@@ -3,6 +3,8 @@
 
 from nonebot.default_config import *
 
+DEBUG = False
+
 SUPERUSERS = [10000]    # 填写超级用户的QQ号，可填多个用半角逗号","隔开
 COMMAND_START = {''}    # 命令前缀（空字符串匹配任何消息）
 COMMAND_SEP = set()     # 命令分隔符（hoshino不需要该特性，保持为set()即可）
