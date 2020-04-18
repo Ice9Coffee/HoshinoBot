@@ -28,7 +28,7 @@ async def arena_query(session:CommandSession):
 async def arena_query_b(session:CommandSession):
     await _arena_query(session, region=2)   # region=2 为B服
 
-@sv.on_command('台竞技场查询', aliases=aliases_b, deny_tip=DISABLE_NOTICE, only_to_me=False)
+@sv.on_command('台竞技场查询', aliases=aliases_tw, deny_tip=DISABLE_NOTICE, only_to_me=False)
 async def arena_query_tw(session:CommandSession):
     await _arena_query(session, region=3)   # region=3 为台服
 

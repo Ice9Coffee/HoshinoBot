@@ -101,7 +101,7 @@ async def yukari_sheet(bot, ctx):
 
 
 @sv.on_keyword(('一个顶俩', '拼音接龙'), normalize=True, event='group')
-async def dragon(bot, ctx, match):
+async def dragon(bot, ctx):
     msg = [ f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}", 
            "龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame",
            "镜像 https://hoshino.monster/KyaruMiniGame", 
