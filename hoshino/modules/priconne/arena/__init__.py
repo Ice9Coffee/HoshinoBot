@@ -107,6 +107,9 @@ async def _arena_query(session:CommandSession, region:int):
         'Support by pcrdfans_com'
     ]
 
+    if region == 1:
+        msg.append('【NEW】使用"b怎么拆"和"台怎么拆"可按服过滤')
+
     sv.logger.debug('Arena sending result...')
     await session.send('\n'.join(msg))
     if sv.bot.config.IS_CQPRO:
