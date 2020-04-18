@@ -4,9 +4,9 @@ from nonebot import on_command, CommandSession
 from nonebot import permission as perm 
 from nonebot import CQHttpError
 
-from hoshino.service import Service
+from hoshino.service import Service, Privilege as Priv
 
-PRIV_NOTE = '群主=22 群管=21 群员=0 bot维护组=999'
+PRIV_NOTE = f'群主={Priv.OWNER} 群管={Priv.ADMIN} 群员={Priv.NORMAL} bot维护组={Priv.SUPERUSER}'
 
 @on_command('lssv', aliases=('查看所有服务', '查看所有功能', '功能', '功能列表', '服务列表', '菜单'), permission=perm.GROUP_ADMIN, only_to_me=False)
 async def lssv(session:CommandSession):
