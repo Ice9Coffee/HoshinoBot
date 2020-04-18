@@ -18,7 +18,7 @@ def get_img_cq(yy, mm, ss):
         return ms.image(get_url(yy, mm, ss))
 
 
-@sv.on_rex(r'^人事表\s*(\d{6})', normalize=True, event='group')
+@sv.on_rex(r'^人事表\s*(\d{6})', normalize=False)
 async def rank_result(bot, ctx, match):
     rankid = match.group(1)
     yy, mm, ss = int(rankid[0:2]), int(rankid[2:4]), int(rankid[4:6])
