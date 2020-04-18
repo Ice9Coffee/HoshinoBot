@@ -22,21 +22,27 @@ except Exception as e:
     sv.logger.exception(e)
 
 
-@sv.on_rex(r'^(\*?([日台])服?)?rank', normalize=True, event='group')
+@sv.on_rex(r'^(\*?([日台国b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$', normalize=True, event='group')
 async def rank_sheet(bot, ctx, match):
     is_jp = match.group(2) == '日'
     is_tw = match.group(2) == '台'
-    if not is_jp and not is_tw:
-        await bot.send(ctx, '\n请问您要查询日服还是台服的rank表？\n*日rank表\n*台rank表', at_sender=True)
-    else:
+    is_cn = match.group(2) == '国' or match.group(2) == 'b'
+    if not is_jp and not is_tw and not is_cn:
+        await bot.send(ctx, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*B服rank表\n※B服：开服仅开放至金装，r10前无需考虑卡rank，装备强化消耗较多mana，如非前排建议不强化', at_sender=True)
+        return
+    if is_jp:
         await silence(ctx, 60)
-        await bot.send(ctx, '图片较大，请稍等片刻\n※不定期搬运，来源见图片\n※广告与本bot无关，仅供参考')
-        if is_jp:
-            await bot.send(ctx, f'R16-4 rank表：{p4}{p5}{p6}', at_sender=True)
-        if is_tw:
-            await bot.send(ctx, f'R15-5 rank表：\n本期争议较大 拿不准建议先卡着备足碎片\n手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解', at_sender=True)
-            await bot.send(ctx, str(p1))
-            await bot.send(ctx, str(p2))
+        await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n不要问我为什么不更新 我只是无情的搬运工 催更地址见图片\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR16-4 rank表：', at_sender=True)
+        await bot.send(ctx, str(p4))
+        await bot.send(ctx, str(p5))
+        await bot.send(ctx, str(p6))
+    elif is_tw:
+        await silence(ctx, 60)
+        await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n本期争议较大 拿不准建议先卡着备足碎片\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR15-5 rank表：', at_sender=True)
+        await bot.send(ctx, str(p1))
+        await bot.send(ctx, str(p2))
+    elif is_cn:
+        await bot.send(ctx, '\nB服：开服仅开放至金装，r10前无需考虑卡rank\n装备强化消耗较多mana，如非前排建议不强化\n唯一值得考量的是当前只开放至r9-3，保持r8满装满强或许会更强\n关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
 
 
 @sv.on_rex(r'^(pcr(速查|常用)|(pcr)?图书馆)$', normalize=True, event='group')
@@ -53,7 +59,7 @@ async def query_sites(bot, ctx, match):
 【iOS实用工具/初音笔记】bbs.nga.cn/read.php?tid=14878762
 【安卓实用工具/静流笔记】bbs.nga.cn/read.php?tid=20499613
 
-===其他查询请输入以下关键字===
+===其他查询输入以下关键词===
 【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
 ※B服速查请输入【bcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
@@ -73,7 +79,7 @@ async def query_sites_bilibili(bot, ctx, match):
 【为何卡R卡星】bbs.nga.cn/read.php?tid=20732035
 【推图阵容推荐】bbs.nga.cn/read.php?tid=21010038
 
-===其他查询请输入以下关键字===
+===其他查询输入以下关键词===
 【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
 ※日台服速查请输入【pcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
@@ -84,7 +90,7 @@ async def say_arina_database(session: CommandSession):
     await session.send('公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
 
 
-@sv.on_keyword({'黄骑充电', '酒鬼充电'}, normalize=True, event='group')
+@sv.on_keyword(('黄骑充电', '酒鬼充电', '黄骑充能', '酒鬼充能'), normalize=True, event='group')
 async def yukari_sheet(bot, ctx):
     msg = f'''{R.img('priconne/quick/黄骑充电.jpg').cqcode}
 ※黄骑四号位例外较多
@@ -94,10 +100,10 @@ async def yukari_sheet(bot, ctx):
     await bot.send(ctx, msg, at_sender=True)
 
 
-@sv.on_rex(r'^(一个顶俩|(成语)?接龙)', normalize=True, event='group')
+@sv.on_keyword(('一个顶俩', '拼音接龙'), normalize=True, event='group')
 async def dragon(bot, ctx, match):
     msg = [ f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}", 
            "龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame",
-           "镜像 ht🐲tps:/🐲/hoshino.monster/KyaruMiniGame", 
+           "镜像 https://hoshino.monster/KyaruMiniGame", 
            "网站内有全词条和搜索，或需科学上网" ]
     await bot.send(ctx, '\n'.join(msg), at_sender=True)

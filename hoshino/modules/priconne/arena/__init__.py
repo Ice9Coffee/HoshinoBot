@@ -55,7 +55,7 @@ async def arena_query(session:CommandSession):
 
     # 处理查询结果
     if res is None:
-        await session.finish('查询出错，请联系维护组调教')
+        await session.finish('查询出错，请联系维护组调教\n请先移步pcrdfans.com进行查询')
     if not len(res):
         await session.finish('抱歉没有查询到解法\n※没有作业说明随便拆 发挥你的想象力～★')
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
@@ -68,8 +68,8 @@ async def arena_query(session:CommandSession):
         atk_team_pic = pic2b64(atk_team_pic)
         atk_team_pic = str(MessageSegment.image(atk_team_pic))
         sv.logger.info('Arena picture ready!')
-    else:
-        atk_team_txt = '\n'.join(map(lambda entry: ' '.join(map(lambda x: f"{x.name}{x.star if x.star else ''}{'专' if x.equip else ''}" , entry['atk'])) , res))
+    # else:
+    atk_team_txt = '\n'.join(map(lambda entry: ' '.join(map(lambda x: f"{x.name}{x.star if x.star else ''}{'专' if x.equip else ''}" , entry['atk'])) , res))
 
     details = [ " ".join([
         f"赞{e['up']}+{e['my_up']}" if e['my_up'] else f"赞{e['up']}", 
@@ -88,7 +88,7 @@ async def arena_query(session:CommandSession):
         '👍&👎：',
         *details,
         '发送"点赞/点踩+作业id"可进行评价，如"点赞 ABCDE" 不分大小写，空格隔开',
-        '手机QQ更新后无法正常显示图片，故分条发送，如有刷屏还请谅解'
+        '手机QQ更新后无法正常显示图片，故分条发送，如有刷屏还请谅解',
         'Support by pcrdfans_com'
     ]
 
