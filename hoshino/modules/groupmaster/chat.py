@@ -31,17 +31,17 @@ async def chat_mua(session):
     await session.send('笨蛋~', at_sender=True)
 
 
-@sv.on_keyword({'确实', '有一说一', 'u1s1', 'yysy'}, normalize=True)
+@sv.on_keyword(('确实', '有一说一', 'u1s1', 'yysy'), normalize=True)
 async def chat_queshi(bot, ctx):
     if random.random() < 0.05:
         await bot.send(ctx, R.img('确实.jpg').cqcode)
 
-@sv.on_keyword({'会战', '刀'}, normalize=True)
+@sv.on_keyword(('会战', '刀'), normalize=True)
 async def chat_clanba(bot, ctx):
     if random.random() < 0.03:
         await bot.send(ctx, R.img('我的天啊你看看都几点了.jpg').cqcode)
 
-@sv.on_keyword({'内鬼'}, normalize=True)
+@sv.on_keyword(('内鬼'), normalize=True)
 async def chat_neigui(bot, ctx):
     if random.random() < 0.10:
         await bot.send(ctx, R.img('内鬼.png').cqcode)

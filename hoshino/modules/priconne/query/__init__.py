@@ -45,8 +45,8 @@ async def rank_sheet(bot, ctx, match):
         await bot.send(ctx, '\nB服：开服仅开放至金装，r10前无需考虑卡rank\n装备强化消耗较多mana，如非前排建议不强化\n唯一值得考量的是当前只开放至r9-3，保持r8满装满强或许会更强\n关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
 
 
-@sv.on_rex(r'^(pcr(速查|常用)|(pcr)?图书馆)$', normalize=True, event='group')
-async def query_sites(bot, ctx, match):
+@sv.on_keyword(('pcr速查', 'pcr图书馆', 'pcr常用'))
+async def query_sites(bot, ctx):
     msg='''
 【日官网】priconne-redive.jp
 【台官网】www.princessconnect.so-net.tw
@@ -66,8 +66,8 @@ async def query_sites(bot, ctx, match):
     await silence(ctx, 60)
     
     
-@sv.on_rex(r'^bcr(速查|常用)', normalize=True, event='group')
-async def query_sites_bilibili(bot, ctx, match):
+@sv.on_keyword(('bcr速查', 'bcr攻略', 'bcr常用'))
+async def query_sites_bilibili(bot, ctx):
     msg='''
 【妈宝骑士攻略(懒人攻略合集)】bbs.nga.cn/read.php?tid=20980776
 【机制详解】bbs.nga.cn/read.php?tid=19104807

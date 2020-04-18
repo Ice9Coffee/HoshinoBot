@@ -27,8 +27,8 @@ async def do_dice(bot, ctx, num, min_, max_, opr, offset, TIP="的掷骰结果�
     await bot.send(ctx, msg, at_sender=True)
 
 
-@sv.on_rex(re.compile(r'^\.r\s*((?P<num>\d{0,2})d((?P<min>\d{1,4})~)?(?P<max>\d{0,4})((?P<opr>[+-])(?P<offset>\d{0,5}))?)?\b'),
-           normalize=True, event='group')
+@sv.on_rex(re.compile(r'^\.r\s*((?P<num>\d{0,2})d((?P<min>\d{1,4})~)?(?P<max>\d{0,4})((?P<opr>[+-])(?P<offset>\d{0,5}))?)?\b', re.I),
+           normalize=False)
 async def dice(bot, ctx, match):
     num, min_, max_, opr, offset = 1, 1, 100, 1, 0
     if s := match.group('num'):

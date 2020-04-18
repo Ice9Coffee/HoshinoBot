@@ -174,11 +174,12 @@ async def gacha_300(session:CommandSession):
     await session.send('\n'.join(msg), at_sender=True)
 
 
-@sv.on_rex('氪金', event='group')
-async def kakin(bot, ctx, match):
-    if await sv.check_permission(ctx, Priv.SUPERUSER):
-        for m in ctx['message']:
-            sv.logger.info(type(m))
-            if m.type == 'at':
-                _user_jewel_used[int(m.data['qq'])] = 0
-        await bot.send(ctx, "充值完毕！谢谢惠顾～")
+@sv.on_command('氪金', permission=perm.SUPERUSER, only_to_me=False)
+async def kakin(session:CommandSession):
+    count = 0
+    for m in session.ctx['message']:
+        if m.type == 'at' and m.data['qq'] != 'all':
+            _user_jewel_used[int(m.data['qq'])] = 0
+            count += 1
+    if count:
+        await session.send(f"已为{count}位用户充值完毕！谢谢惠顾～")
