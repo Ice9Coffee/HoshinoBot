@@ -1,15 +1,17 @@
 import random
 from datetime import timedelta
 
+from nonebot import on_command
 from hoshino import util
 from hoshino.res import R
 from hoshino.service import Service, Privilege as Priv
 
-sv = Service('chat', manage_priv=Priv.SUPERUSER, enable_on_default=True, visible=False)
-
-@sv.on_command('sayhello', aliases=('在', '在？', '在吗', '在么？', '在嘛', '在嘛？'))
+# basic function for debug, not included in Service('chat')
+@on_command('sayhello', aliases=('在', '在？', '在吗', '在么？', '在嘛', '在嘛？'))
 async def say_hello(session):
     await session.send('はい！私はいつも貴方の側にいますよ！')
+
+sv = Service('chat', manage_priv=Priv.SUPERUSER, visible=False)
 
 @sv.on_command('沙雕机器人', aliases=('沙雕機器人',), only_to_me=False)
 async def say_sorry(session):

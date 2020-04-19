@@ -13,7 +13,7 @@ from hoshino.service import Service, Privilege as Priv
 
 cfg = util.load_config(__file__)
 api = TwitterAPI(cfg['consumer_key'], cfg['consumer_secret'], cfg['access_token_key'], cfg['access_token_secret'])
-sv = Service('twitter-poller', enable_on_default=True, manage_priv=Priv.SUPERUSER, visible=False)
+sv = Service('twitter-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
 
 URL_TIMELINE = 'statuses/user_timeline'
 

@@ -13,7 +13,7 @@ async def lssv(session:CommandSession):
     verbose_all = session.current_arg_text == '-a' or session.current_arg_text == '--all'
     gid = session.ctx['group_id']
     msg = ["服务一览："]
-    svs = Service.get_loaded_services().items()
+    svs = Service.get_loaded_services().values()
     svs = map(lambda sv: (sv, sv.check_enabled(gid)), svs)
     key = cmp_to_key(lambda x, y: (y[1] - x[1]) or (-1 if x[0].name < y[0].name else 1 if x[0].name > y[0].name else 0))
     svs = sorted(svs, key=key)
