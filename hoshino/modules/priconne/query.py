@@ -36,8 +36,6 @@ async def rank_sheet(bot, ctx, match):
 @sv.on_keyword(('pcr速查', 'pcr图书馆', 'pcr常用'))
 async def query_sites(bot, ctx):
     msg='''
-【日官网】priconne-redive.jp
-【台官网】www.princessconnect.so-net.tw
 【繁中wiki/兰德索尔图书馆】pcredivewiki.tw
 【日文wiki/GameWith】gamewith.jp/pricone-re
 【日文wiki/AppMedia】appmedia.jp/priconne-redive
@@ -46,6 +44,9 @@ async def query_sites(bot, ctx):
 【论坛/NGA社区】bbs.nga.cn/thread.php?fid=-10308342
 【iOS实用工具/初音笔记】bbs.nga.cn/read.php?tid=14878762
 【安卓实用工具/静流笔记】bbs.nga.cn/read.php?tid=20499613
+【台服卡池千里眼】bbs.nga.cn/read.php?tid=16986067
+【日官网】priconne-redive.jp
+【台官网】www.princessconnect.so-net.tw
 
 ===其他查询输入以下关键词===
 【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
@@ -63,12 +64,12 @@ async def query_sites_bilibili(bot, ctx):
 【术语黑话】bbs.nga.cn/read.php?tid=18422680
 【角色点评】bbs.nga.cn/read.php?tid=20804052
 【秘石规划】bbs.nga.cn/read.php?tid=20101864
-【卡池万里眼】bbs.nga.cn/read.php?tid=20816796
+【卡池亿里眼】bbs.nga.cn/read.php?tid=20816796
 【为何卡R卡星】bbs.nga.cn/read.php?tid=20732035
 【推图阵容推荐】bbs.nga.cn/read.php?tid=21010038
 
 ===其他查询输入以下关键词===
-【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
+【日rank】【台rank】【jjc作业网】【黄骑充电表】
 ※日台服速查请输入【pcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
     await util.silence(ctx, 60)
@@ -86,6 +87,7 @@ async def yukari_sheet(bot, ctx):
 ※对面羊驼或中后卫坦时 有可能充歪
 ※我方羊驼算一号位'''
     await bot.send(ctx, msg, at_sender=True)
+    await util.silence(ctx, 60)
 
 
 @sv.on_keyword(('一个顶俩', '拼音接龙'), normalize=True, event='group')
