@@ -28,3 +28,7 @@ def init(config) -> nonebot.NoneBot:
 
 def get_bot() -> nonebot.NoneBot:
     return nonebot.get_bot()
+
+
+from .service import Service
+from .res import R

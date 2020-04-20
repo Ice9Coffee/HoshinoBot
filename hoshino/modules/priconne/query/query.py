@@ -1,8 +1,5 @@
-from hoshino import util
-from hoshino.res import R
-from hoshino.service import Service
-
-sv = Service('pcr-query')
+from hoshino import util, R
+from . import sv
 
 p1 = R.img('priconne/quick/r15-5-0.png').cqcode
 p2 = R.img('priconne/quick/r15-5.png').cqcode
@@ -10,7 +7,7 @@ p4 = R.img('priconne/quick/r16-4-1.png').cqcode
 p5 = R.img('priconne/quick/r16-4-2.png').cqcode
 p6 = R.img('priconne/quick/r16-4-3.png').cqcode
 
-@sv.on_rex(r'^(\*?([日台国b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$', normalize=True, event='group')
+@sv.on_rex(r'^(\*?([日台国b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$', normalize=True)
 async def rank_sheet(bot, ctx, match):
     is_jp = match.group(2) == '日'
     is_tw = match.group(2) == '台'
@@ -79,7 +76,7 @@ async def say_arina_database(session):
     await session.send('公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
 
 
-@sv.on_keyword(('黄骑充电', '酒鬼充电', '黄骑充能', '酒鬼充能'), normalize=True, event='group')
+@sv.on_keyword(('黄骑充电', '酒鬼充电', '黄骑充能', '酒鬼充能'))
 async def yukari_sheet(bot, ctx):
     msg = f'''{R.img('priconne/quick/黄骑充电.jpg').cqcode}
 ※黄骑四号位例外较多
@@ -90,7 +87,7 @@ async def yukari_sheet(bot, ctx):
     await util.silence(ctx, 60)
 
 
-@sv.on_keyword(('一个顶俩', '拼音接龙'), normalize=True, event='group')
+@sv.on_keyword(('一个顶俩', '拼音接龙'))
 async def dragon(bot, ctx):
     msg = [ f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}", 
            "龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame",
