@@ -7,7 +7,7 @@ from hoshino.res import R
 from hoshino.service import Service, Privilege as Priv
 
 # basic function for debug, not included in Service('chat')
-@on_command('sayhello', aliases=('在', '在？', '在吗', '在么？', '在嘛', '在嘛？'))
+@on_command('zai?', aliases=('在?', '在？', '在吗', '在么？', '在嘛', '在嘛？'))
 async def say_hello(session):
     await session.send('はい！私はいつも貴方の側にいますよ！')
 
@@ -48,17 +48,17 @@ async def nihaole(session):
 
 # ============================================ #
 
-@sv.on_keyword(('确实', '有一说一', 'u1s1', 'yysy'), normalize=True)
+@sv.on_keyword(('确实', '有一说一', 'u1s1', 'yysy'))
 async def chat_queshi(bot, ctx):
     if random.random() < 0.05:
         await bot.send(ctx, R.img('确实.jpg').cqcode)
 
-@sv.on_keyword(('会战', '刀'), normalize=True)
+@sv.on_keyword(('会战', '刀'))
 async def chat_clanba(bot, ctx):
     if random.random() < 0.03:
         await bot.send(ctx, R.img('我的天啊你看看都几点了.jpg').cqcode)
 
-@sv.on_keyword(('内鬼'), normalize=True)
+@sv.on_keyword(('内鬼'))
 async def chat_neigui(bot, ctx):
     if random.random() < 0.10:
         await bot.send(ctx, R.img('内鬼.png').cqcode)

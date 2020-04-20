@@ -63,7 +63,7 @@ async def _arena_query(session:CommandSession, region:int):
     defen = [ Chara.name2id(name) for name in argv ]
     for i, id_ in enumerate(defen):
         if Chara.UNKNOWN == id_:
-            await session.finish(f'编队中含未知角色{argv[i]}，请尝试使用官方译名\n您可@bot来杯咖啡+反馈未收录别称\n或前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充')
+            await session.finish(f'编队中含未知角色"{argv[i]}"，请尝试使用官方译名\n您可@bot来杯咖啡+反馈未收录别称\n或前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充')
     if len(defen) != len(set(defen)):
         await session.finish('编队中出现重复角色')
     if 1004 in defen:
