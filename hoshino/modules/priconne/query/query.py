@@ -3,9 +3,10 @@ from . import sv
 
 p1 = R.img('priconne/quick/r15-5-0.png').cqcode
 p2 = R.img('priconne/quick/r15-5.png').cqcode
-p4 = R.img('priconne/quick/r16-4-1.png').cqcode
-p5 = R.img('priconne/quick/r16-4-2.png').cqcode
-p6 = R.img('priconne/quick/r16-4-3.png').cqcode
+p4 = R.img('priconne/quick/r16-5-1.png').cqcode
+p5 = R.img('priconne/quick/r16-5-2.png').cqcode
+p6 = R.img('priconne/quick/r16-5-3.png').cqcode
+p7 = R.img('priconne/quick/r8-3.png').cqcode
 
 @sv.on_rex(r'^(\*?([日台国b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$', normalize=True)
 async def rank_sheet(bot, ctx, match):
@@ -16,18 +17,24 @@ async def rank_sheet(bot, ctx, match):
         await bot.send(ctx, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*B服rank表\n※B服：开服仅开放至金装，r10前无需考虑卡rank，装备强化消耗较多mana，如非前排建议不强化', at_sender=True)
         return
     if is_jp:
+        await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR16-5 rank表：', at_sender=True)
+        pos = match.group(3)
+        if not pos or '前' in pos:
+            await bot.send(ctx, str(p4))
+        if not pos or '中' in pos:
+            await bot.send(ctx, str(p5))
+        if not pos or '后' in pos:
+            await bot.send(ctx, str(p6))
         await util.silence(ctx, 60)
-        await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n不要问我为什么不更新 我只是无情的搬运工 催更地址见图片\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR16-4 rank表：', at_sender=True)
-        await bot.send(ctx, str(p4))
-        await bot.send(ctx, str(p5))
-        await bot.send(ctx, str(p6))
     elif is_tw:
-        await util.silence(ctx, 60)
         await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n本期争议较大 拿不准建议先卡着备足碎片\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR15-5 rank表：', at_sender=True)
         await bot.send(ctx, str(p1))
         await bot.send(ctx, str(p2))
+        await util.silence(ctx, 60)
     elif is_cn:
-        await bot.send(ctx, '\nB服：开服仅开放至金装，r10前无需考虑卡rank\n装备强化消耗较多mana，如非前排建议不强化\n唯一值得考量的是当前只开放至r9-3，保持r8满装满强或许会更强\n关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
+        await bot.send(ctx, '\nB服：开服仅开放至金装，r10前无需考虑卡rank\n※装备强化消耗较多mana，如非前排建议不强化\n※唯一值得考量的是当前只开放至r8-3，保持r7满装满强或许会更强\n※关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
+        await bot.send(ctx, str(p7))
+        await util.silence(ctx, 60)
 
 
 @sv.on_keyword(('pcr速查', 'pcr图书馆', 'pcr常用'))
