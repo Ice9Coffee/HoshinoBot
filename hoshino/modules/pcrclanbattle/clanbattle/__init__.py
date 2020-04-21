@@ -77,8 +77,8 @@ async def cb_help(session:CommandSession):
 【必读事项】
 ※会战系命令均以感叹号!开头，半全角均可
 ※命令与参数之间必须以【空格】隔开
-下面以使用场景-使用例给出常用指令的说明
 
+下面以使用场景-使用例给出常用指令的说明
 【群初次使用】
 !建会 Nリトルリリカル Sjp
 !建会 N小小甜心 Stw
@@ -103,9 +103,9 @@ async def cb_help(session:CommandSession):
 ※详细说明见命令一览表
 '''
     msg = [
-        f"{R.img('priconne/quick/Hoshino会战.png').cqcode}",
-        "※图片更新较慢 前往github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/priconne/clanbattle查看最新",
-        "※使用前请【逐字】阅读必读事项",
-        quick_start
+        # f"{R.img('priconne/quick/Hoshino会战.png').cqcode}",
+        quick_start,
+        "※前往github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/pcrclanbattle/clanbattle/README.md查看最新命令一览表",
+        "※使用前请务必【逐字】阅读必读事项",
     ]
     await session.send('\n'.join(msg), at_sender=True)

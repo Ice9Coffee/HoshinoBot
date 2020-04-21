@@ -6,7 +6,7 @@ p2 = R.img('priconne/quick/r15-5.png').cqcode
 p4 = R.img('priconne/quick/r16-5-1.png').cqcode
 p5 = R.img('priconne/quick/r16-5-2.png').cqcode
 p6 = R.img('priconne/quick/r16-5-3.png').cqcode
-p7 = R.img('priconne/quick/r8-3.png').cqcode
+p7 = R.img('priconne/quick/r8-3.jpg').cqcode
 
 @sv.on_rex(r'^(\*?([日台国b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$', normalize=True)
 async def rank_sheet(bot, ctx, match):
@@ -27,7 +27,7 @@ async def rank_sheet(bot, ctx, match):
             await bot.send(ctx, str(p6))
         await util.silence(ctx, 60)
     elif is_tw:
-        await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n本期争议较大 拿不准建议先卡着备足碎片\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR15-5 rank表：', at_sender=True)
+        await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n【本期争议较大 拿不准建议先卡着备足碎片】\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR15-5 rank表：', at_sender=True)
         await bot.send(ctx, str(p1))
         await bot.send(ctx, str(p2))
         await util.silence(ctx, 60)
@@ -37,9 +37,11 @@ async def rank_sheet(bot, ctx, match):
         await util.silence(ctx, 60)
 
 
+OTHER_KEYWORDS = '【日rank】【台rank】【b服rank】【jjc作业网】【黄骑充电表】【一个顶俩】'
+
 @sv.on_keyword(('pcr速查', 'pcr图书馆', 'pcr常用'))
 async def query_sites(bot, ctx):
-    msg='''
+    msg=f'''
 【繁中wiki/兰德索尔图书馆】pcredivewiki.tw
 【日文wiki/GameWith】gamewith.jp/pricone-re
 【日文wiki/AppMedia】appmedia.jp/priconne-redive
@@ -52,16 +54,16 @@ async def query_sites(bot, ctx):
 【日官网】priconne-redive.jp
 【台官网】www.princessconnect.so-net.tw
 
-===其他查询输入以下关键词===
-【日rank】【台rank】【jjc作业网】【黄骑充电表】【一个顶俩】
+===其他查询关键词===
+{OTHER_KEYWORDS}
 ※B服速查请输入【bcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
     await util.silence(ctx, 60)
-    
-    
+
+
 @sv.on_keyword(('bcr速查', 'bcr攻略', 'bcr常用'))
 async def query_sites_bilibili(bot, ctx):
-    msg='''
+    msg=f'''
 【妈宝骑士攻略(懒人攻略合集)】bbs.nga.cn/read.php?tid=20980776
 【机制详解】bbs.nga.cn/read.php?tid=19104807
 【初始推荐】bbs.nga.cn/read.php?tid=20789582
@@ -72,8 +74,8 @@ async def query_sites_bilibili(bot, ctx):
 【为何卡R卡星】bbs.nga.cn/read.php?tid=20732035
 【推图阵容推荐】bbs.nga.cn/read.php?tid=21010038
 
-===其他查询输入以下关键词===
-【日rank】【台rank】【jjc作业网】【黄骑充电表】
+===其他查询关键词===
+{OTHER_KEYWORDS}
 ※日台服速查请输入【pcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
     await util.silence(ctx, 60)
@@ -96,8 +98,8 @@ async def yukari_sheet(bot, ctx):
 
 @sv.on_keyword(('一个顶俩', '拼音接龙'))
 async def dragon(bot, ctx):
-    msg = [ f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}", 
+    msg = [ f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}",
            "龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame",
-           "镜像 https://hoshino.monster/KyaruMiniGame", 
+           "镜像 https://hoshino.monster/KyaruMiniGame",
            "网站内有全词条和搜索，或需科学上网" ]
     await bot.send(ctx, '\n'.join(msg), at_sender=True)

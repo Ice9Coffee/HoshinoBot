@@ -10,57 +10,56 @@ A qqbot for Princess Connect Re:Dive (and other usage :)
 
 ## 功能介绍
 
-下面是本bot支持的功能
+HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](priconne-redive.jp) 玩家为核心，主要功能有：
 
-输入冒号后的文本即可使用
+- **转蛋模拟**：单抽、十连、抽一井
+- **竞技场解法查询**：支持按服务器过滤，支持反馈点赞点踩
+- **竞技场结算提醒**
+- **公会战管理**：详细说明见[此文档](hoshino/modules/pcrclanbattle/clanbattle/README.md)
+- **Rank推荐表搬运**
+- **常用网址速查**
+- **官方推特转发**
+- **官方四格推送**
+- **角色别称转换**
 
-※@bot表明该功能必须at本bot才会触发
+> 由于bot的功能会快速迭代开发，使用方式这里不进行具体的说明，请向bot发送"help"或移步[此文件](hoshino/modules/botmanage/help.py)查看详细。会战管理功能的详细说明，请[点击这里](hoshino/modules/pcrclanbattle/clanbattle/README.md)
 
-※请将说明中的所有`_`号替换为空格
+除上述与之外，HoshinoBot 还具有以下通用功能：
 
-※开启/关闭功能限群管理操作
+- **[蜜柑计划](mikanani.me)番剧更新订阅**
+- **入群欢迎**&**退群提醒**
+- **复读**
+- **掷骰子**
+- **精致睡眠套餐**
+- **机器翻译**
+- **反馈发送**：反馈内容将由bot私聊发送给维护组
 
-### 公主连接 Re:Dive
+另外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能：
 
-- 转蛋模拟：@bot来发十连 或 @bot来发单抽
-- 查看模拟卡池：看看卡池
-- 竞技场查询：怎么拆_布丁_饭团_兔子_小仓唯
+- **官推转发**：「艦これ」開発/運営 & C2機関
+- **时报**
+- **演习时间提醒**
+- **月度远征提醒**
+- **舰娘信息查询**：`*晓改二`
+- **装备信息查询**：`*震电改`
+- **战果人事表查询**：`人事表191201`
 
-- rank推荐表：日服rank表 或 台服rank表
+> 艦これ相关功能由于个人精力实在有限，无法进行更多功能（如海图攻略）的开发/维护。
+>
+> 如果您有新的想法，欢迎联系我！即便您不会编程，您也可以在内容更新上帮到我们！
 
-- 常用网址：pcr速查
+-------------
 
-- 会战管理（请见github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/priconne/clanbattle）
+### 功能模块控制
 
-- プリコネ官方四格查阅：@bot官漫123
+HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，群管理发送 `lssv` 即可查看功能模块的启用状态，使用以下命令进行控制：
 
-+ プリコネ官方四格推送（默认开启）
+```
+启用 service-name
+禁用 service-name
+```
 
-### 蜜柑番剧
 
-* 启用本模块：开启_bangumi
-
-- 查看最近更新：@bot来点新番
-
-+ 番剧推送（开启本模块后自动启用）
-
-### 艦これ
-
-+ 演习时间提醒：开启_kc-reminder
-
-+ 时报：开启_hourcall
-
-### 通用
-
-- 查看本群启用的功能：服务列表
-
-- 启用功能：启用_service-name
-
-- 禁用功能：禁用_service-name
-
-- 机器翻译（限群管理使用）： 翻译_もう一度、キミとつながる物語
-
-- 联系作者：@bot来杯咖啡_你的反馈内容
 
 
 
@@ -74,10 +73,10 @@ A qqbot for Princess Connect Re:Dive (and other usage :)
 
 部署bot前，请准备好以下基础设施：
 
-- 1台服务器：常见VPS提供商的最低配置已足够，WinServer/Linux均可
+- 1台服务器：常见VPS提供商的最低配置已足够，WinServer/Linux均可，初次尝试时您也可以在本地搭建
 - 1个QQ帐号：建议使用小号
 - 酷Q Air/Pro：「无头 QQ 客户端」，发送图片、禁言等功能需要Pro版
-- CoolQ HTTP API 插件：详见https://cqhttp.cc/docs/
+- CoolQ HTTP API 插件：请参考https://cqhttp.cc/docs/进行配置，注意HoshinoBot仅支持反向ws通信方式
 - Python 3.8：底层框架需>=3.7，本项目可有可无地使用了Python 3.8语言特性
 
 > **若您使用 Linux 服务器：**  
@@ -92,7 +91,7 @@ A qqbot for Princess Connect Re:Dive (and other usage :)
 
 ```bash
 # Ubuntu or Debian
-sudo apt install python38
+sudo apt install python3.8
 ```
 > 若您的包管理工具（如`yum`）尚不支持`python38`，你可以尝试从源码安装。Google will help you greatly : )
 
@@ -100,7 +99,7 @@ sudo apt install python38
 ```bash
 git clone https://github.com/Ice-Cirno/HoshinoBot.git
 cd HoshinoBot
-python38 -m pip install -r requirements.txt
+python3.8 -m pip install -r requirements.txt
 ```
 
 2. 编辑配置文件
@@ -108,12 +107,12 @@ python38 -m pip install -r requirements.txt
 cp config_sample.py config.py
 nano config.py
 ```
-> 配置文件内有相应注释，请根据您的实际配置填写
+> 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
 >
 > 若您从未使用过 `vim` 编辑器，推荐使用 `nano` : )
 3. 运行bot
 ```bash
-python38 run.py
+python3.8 run.py
 ```
 
 当您完成以上步骤后，您可以尝试在群内发送 `@bot 在？` 查看机器人的在线状态（注：`@bot`表示at机器人，请手动at，复制无效，下同），或尝试发送`pcr速查`。如果机器人向您正常回复，恭喜您，您已经搭建成功了！
@@ -190,7 +189,7 @@ https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 
 #### 时报文本
 
-> 本功能属于`subscribe`模块，请在`config.py`的`MODULES_ON`中添加  
+> 请先在`config.py`的`MODULES_ON`中取消`hourcall`的注释  
 > 本功能默认关闭，在群内发送 "启用 hourcall" 即可开启
 
 报时功能使用/魔改了艦これ中各个艦娘的报时语音，您可以在[舰娘百科](https://zh.kcwiki.org/wiki/舰娘百科)或[艦これ 攻略 Wiki](https://wikiwiki.jp/kancolle/)找到相应的文本/翻译，当然您也可以自行编写台词。在此，我们向原台词作者[田中](https://bbs.nga.cn/read.php?tid=9143913)[谦介](http://nga.178.com/read.php?tid=14045507)先生和他杰出的游戏作品表达诚挚的感谢！
@@ -247,5 +246,5 @@ https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 
 **公主连结Re: Dive Fan Club - 硬核的竞技场数据分析站**: https://pcrdfans.com/
 
-**yobot**: https://yobot.xyz/functions-3/
+**yobot**: https://yobot.win/
 
