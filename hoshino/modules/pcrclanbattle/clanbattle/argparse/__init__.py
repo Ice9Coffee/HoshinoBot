@@ -21,7 +21,7 @@ class ParseResult(dict):
 
 class ArgParser:
     def __init__(self, usage, arg_dict=None):
-        self.usage = f"【用法】\n{usage}\n\n※无需输入尖括号，圆括号内为可选参数，用空格隔开命令与参数"
+        self.usage = f"【用法/用例】\n{usage}\n\n※无需输入尖括号，圆括号内为可选参数，用空格隔开命令与参数"
         self.arg_dict:Dict[str, ArgHolder] = arg_dict or {}
 
 

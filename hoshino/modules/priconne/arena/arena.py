@@ -101,7 +101,7 @@ def __get_auth_key():
     return config["AUTH_KEY"]
 
 
-async def do_query(id_list, user_id):
+async def do_query(id_list, user_id, region=1):
     
     id_list = [ x * 100 + 1 for x in id_list ]
     logger.debug(f'id_list={id_list}')
@@ -110,7 +110,7 @@ async def do_query(id_list, user_id):
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36',
         'authorization': __get_auth_key()
     }
-    payload = {"_sign": "a", "def": id_list, "nonce": "a", "page": 1, "sort": 1, "ts": int(time.time()), "region": 1}
+    payload = {"_sign": "a", "def": id_list, "nonce": "a", "page": 1, "sort": 1, "ts": int(time.time()), "region": region}
     logger.info(f'Arena query {payload=}')
     try:
         resp = await aiorequests.post('https://api.pcrdfans.com/x/v1/search', headers=header, json=payload)
@@ -121,7 +121,7 @@ async def do_query(id_list, user_id):
         return None
 
     if res['code']:
-        logger.error(f"Arena query failed. \nResponse={res}")
+        logger.error(f"Arena query failed.\nResponse={res}\nPayload={payload}")
         return None
 
     res = res['data']['result']

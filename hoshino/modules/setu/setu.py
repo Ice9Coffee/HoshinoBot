@@ -18,7 +18,7 @@ sv = Service('setu', manage_priv=Privilege.SUPERUSER, enable_on_default=True, vi
 _last_setu_day = -1
 _user_setu_count = defaultdict(int)    # {user: gacha_count}
 _max_setu_per_day = 5
-SETU_EXCEED_NOTICE = f'您今天已经冲过{_max_setu_per_day}次了，请明天再来！'
+SETU_EXCEED_NOTICE = f'您今天已经冲过{_max_setu_per_day}次了，请明早5点后再来！'
 
 setu_folder = R.img('setu/').path
 last_call_time = defaultdict(int)   # user_id: t in seconds
@@ -63,7 +63,7 @@ def get_setu():
     #     return MessageSegment.text('Error: 挑选涩图时发生异常')
     
 
-@sv.on_rex(re.compile(r'不够[涩瑟色]|[涩瑟色]图|来一?[点份张].*[涩瑟色]|再来[点份张]|看过了|铜'), normalize=True, event='group')
+@sv.on_rex(re.compile(r'不够[涩瑟色]|[涩瑟色]图|来一?[点份张].*[涩瑟色]|再来[点份张]|看过了|铜'), normalize=True)
 async def setu(bot:NoneBot, ctx, match):
     """随机叫一份涩图，对每个用户有冷却时间"""
     

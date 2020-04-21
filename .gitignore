@@ -6,6 +6,9 @@ database.json
 *.db
 *.sqlite
 
+# 非公开的组件
+# hoshino/modules/deepchat/
+
 # 暂时删除的代码
 TRASH/
 kokkoro-OLD/
