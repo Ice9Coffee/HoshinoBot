@@ -8,16 +8,17 @@ import asyncio
 from datetime import datetime, timedelta
 from functools import wraps
 from collections import defaultdict
-from typing import Iterable, Optional, Callable, Union, NamedTuple, Set
+from typing import Iterable, Optional, Callable, Union, NamedTuple, Set, Dict, Any
 try:
     import ujson as json
 except:
     import json
 
 import nonebot
+from nonebot import NoneBot, CommandSession
 from nonebot.command import _FinishException, _PauseException, SwitchException
 
-from hoshino import util
+from hoshino import util, logger
 
 """
 将一组功能包装为服务
@@ -33,13 +34,14 @@ from hoshino import util
     "enable_group": [],
     "disable_group": []
 }
-默认储存位置：~/.hoshino/service_config/{ServiceName}.json
+储存位置：~/.hoshino/service_config/{ServiceName}.json
 """
 
 
 class Privilege:
     BLACK = -999
-    NORMAL = 0
+    DEFAULT = 0
+    NORMAL = 1
     PRIVATE = 10
     PRIVATE_OTHER = 11
     PRIVATE_DISCUSS = 12
@@ -50,14 +52,26 @@ class Privilege:
     WHITE = 51
     SUPERUSER = 999
 
-
-_loaded_services = set()
+# service management
+_loaded_services:Dict[str, "Service"] = {}   # {name: service}
 _re_illegal_char = re.compile(r'[\\/:*?"<>|\.]')
 _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
-_error_log_file = os.path.expanduser('~/.hoshino/error.log')
-_critical_log_file = os.path.expanduser('~/.hoshino/critical.log')
 os.makedirs(_service_config_dir, exist_ok=True)
 
+# logging
+_error_log_file = os.path.expanduser('~/.hoshino/error.log')
+_critical_log_file = os.path.expanduser('~/.hoshino/critical.log')
+_formatter = logging.Formatter('[%(asctime)s %(name)s] %(levelname)s: %(message)s')
+_default_handler = logging.StreamHandler(sys.stdout)
+_default_handler.setFormatter(_formatter)
+_error_handler = logging.FileHandler(_error_log_file, encoding='utf8')
+_error_handler.setLevel(logging.ERROR)
+_error_handler.setFormatter(_formatter)
+_critical_handler = logging.FileHandler(_critical_log_file, encoding='utf8')
+_critical_handler.setLevel(logging.CRITICAL)
+_critical_handler.setFormatter(_formatter)
+
+# block list
 _black_list_group = {}  # Dict[group_id, expr_time]
 _black_list_user = {}   # Dict[user_id, expr_time]
 
@@ -65,19 +79,14 @@ _black_list_user = {}   # Dict[user_id, expr_time]
 def _load_service_config(service_name):
     config_file = os.path.join(_service_config_dir, f'{service_name}.json')
     if not os.path.exists(config_file):
-        # config file not found, return default config.
-        return {
-            "name": service_name,
-            "use_priv": Privilege.NORMAL,
-            "manage_priv": Privilege.ADMIN,
-            "enable_on_default": True,
-            "visible": True,
-            "enable_group": [],
-            "disable_group": []
-        }
-    with open(config_file, encoding='utf8') as f:
-        config = json.load(f)
-        return config
+        return {}   # config file not found, return default config.
+    try:
+        with open(config_file, encoding='utf8') as f:
+            config = json.load(f)
+            return config
+    except Exception as e:
+        logger.exception(e)
+        return {}
 
 
 def _save_service_config(service):
@@ -100,50 +109,47 @@ class Service:
     def __init__(self, name, use_priv=None, manage_priv=None, enable_on_default=None, visible=None):
         """
         定义一个服务
-        配置的优先级别：程序指定 > 配置文件 > 缺省值
+        配置的优先级别：配置文件 > 程序指定 > 缺省值
         """
         assert not _re_illegal_char.search(name), 'Service name cannot contain character in [\\/:*?"<>|.]'
+
         config = _load_service_config(name)
-
         self.name = name
-        self.use_priv = config.get('use_priv', Privilege.NORMAL) if use_priv is None else use_priv
-        self.manage_priv = config.get('manage_priv', Privilege.ADMIN) if manage_priv is None else manage_priv
-        self.enable_on_default = config.get('enable_on_default', True) if enable_on_default is None else enable_on_default
-        self.visible = config.get('visible', True) if visible is None else visible
-        self.enable_group = set(config['enable_group'])
-        self.disable_group = set(config['disable_group'])
+        self.use_priv = config.get('use_priv') or use_priv or Privilege.NORMAL
+        self.manage_priv = config.get('manage_priv') or manage_priv or Privilege.ADMIN
+        self.enable_on_default = config.get('enable_on_default')
+        if self.enable_on_default is None:
+            self.enable_on_default = enable_on_default
+        if self.enable_on_default is None:
+            self.enable_on_default = True
+        self.visible = config.get('visible')
+        if self.visible is None:
+            self.visible = visible
+        if self.visible is None:
+            self.visible = True
+        self.enable_group = set(config.get('enable_group', []))
+        self.disable_group = set(config.get('disable_group', []))
 
-        formatter = logging.Formatter('[%(asctime)s %(name)s] %(levelname)s: %(message)s')
         self.logger = logging.getLogger(name)
         self.logger.setLevel(logging.DEBUG if self.bot.config.DEBUG else logging.INFO)
-        default_handler = logging.StreamHandler(sys.stdout)
-        default_handler.setFormatter(formatter)
-        error_handler = logging.FileHandler(_error_log_file, encoding='utf8')
-        error_handler.setLevel(logging.ERROR)
-        error_handler.setFormatter(formatter)
-        critical_handler = logging.FileHandler(_critical_log_file, encoding='utf8')
-        critical_handler.setLevel(logging.CRITICAL)
-        critical_handler.setFormatter(formatter)        
-        self.logger.addHandler(default_handler)
-        self.logger.addHandler(error_handler)
-        self.logger.addHandler(critical_handler)
+        self.logger.addHandler(_default_handler)
+        self.logger.addHandler(_error_handler)
+        self.logger.addHandler(_critical_handler)
 
-        _loaded_services.add(self)
+        assert self.name not in _loaded_services, f'Service name "{self.name}" already exist!'
+        _loaded_services[self.name] = self
 
 
     @property
     def bot(self):
         return nonebot.get_bot()
 
-
     def get_self_ids(self):
         return self.bot._wsr_api_clients.keys()
 
-
     @staticmethod
-    def get_loaded_services() -> Set["Service"]:
-        return _loaded_services.copy()
-
+    def get_loaded_services() -> Dict[str, "Service"]:
+        return _loaded_services
 
     @staticmethod
     async def get_user_privilege(ctx):
@@ -178,8 +184,8 @@ class Service:
                 except nonebot.CQHttpError:
                     pass
         return Privilege.NORMAL
-    
-    
+
+
     @staticmethod
     def set_block_group(group_id, time):
         _black_list_group[group_id] = datetime.now() + time
@@ -212,7 +218,7 @@ class Service:
 
 
     async def check_permission(self, ctx, required_priv=None):
-        required_priv = self.use_priv if required_priv == None else required_priv
+        required_priv = self.use_priv if required_priv is None else required_priv
         if ctx['message_type'] == 'group':
             group_id = ctx['group_id']
             if self.check_enabled(group_id) and not self.check_block_group(group_id):
@@ -255,14 +261,14 @@ class Service:
         self.logger.info(f'Service {self.name} is disabled at group {group_id}')
 
 
-    def on_message(self, event=None) -> Callable:
-        def deco(func) -> Callable:
+    def on_message(self, event='group') -> Callable:
+        def deco(func:Callable[[NoneBot, Dict], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
                     try:
                         await func(self.bot, ctx)
-                        self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
+                        # self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
                     except Exception as e:
                         self.logger.exception(e)
                         self.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
@@ -271,11 +277,12 @@ class Service:
         return deco
 
 
-    def on_keyword(self, keywords:Iterable, normalize=False, event=None) -> Callable:
+    def on_keyword(self, keywords:Iterable, *, normalize=True, event='group') -> Callable:
         if isinstance(keywords, str):
             keywords = (keywords, )
-        normalized_keywords = tuple(util.normalize_str(kw) for kw in keywords)
-        def deco(func) -> Callable:
+        if normalize:
+            keywords = tuple(util.normalize_str(kw) for kw in keywords)
+        def deco(func:Callable[[NoneBot, Dict], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
@@ -283,8 +290,8 @@ class Service:
                     if normalize:
                         plain_text = util.normalize_str(plain_text)
                     ctx['plain_text'] = plain_text
-                    for kw in normalized_keywords:
-                        if plain_text.find(kw) >= 0:
+                    for kw in keywords:
+                        if kw in plain_text:
                             try:
                                 await func(self.bot, ctx)
                                 self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}, triggered by keyword.')
@@ -296,10 +303,10 @@ class Service:
         return deco
 
 
-    def on_rex(self, rex, normalize=False, event=None) -> Callable:
+    def on_rex(self, rex, normalize=True, event='group') -> Callable:
         if isinstance(rex, str):
-            rex = re.compile(rex)            
-        def deco(func) -> Callable:
+            rex = re.compile(rex)
+        def deco(func:Callable[[NoneBot, Dict, re.Match], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
@@ -307,7 +314,7 @@ class Service:
                     plain_text = plain_text.strip()
                     if normalize:
                         plain_text = util.normalize_str(plain_text)
-                    ctx['plain_text'] = plain_text                
+                    ctx['plain_text'] = plain_text
                     match = rex.search(plain_text)
                     if match:
                         try:
@@ -322,9 +329,9 @@ class Service:
 
 
     def on_command(self, name, *, deny_tip=None, **kwargs) -> Callable:
-        def deco(func) -> Callable:
+        def deco(func:Callable[[CommandSession], Any]) -> Callable:
             @wraps(func)
-            async def wrapper(session:nonebot.CommandSession):
+            async def wrapper(session:CommandSession):
                 if await self.check_permission(session.ctx):
                     try:
                         await func(session)
@@ -362,7 +369,7 @@ class Service:
         kwargs.setdefault('timezone', pytz.timezone('Asia/Shanghai'))
         kwargs.setdefault('misfire_grace_time', 60)
         kwargs.setdefault('coalesce', True)
-        def deco(func) -> Callable:
+        def deco(func:Callable[[], Any]) -> Callable:
             @wraps(func)
             async def wrapper():
                 try:

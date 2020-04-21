@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 from nonebot import get_bot
-from nonebot import CommandSession, MessageSegment
+from nonebot import CommandSession, MessageSegment, NoneBot
 from nonebot import permission as perm
 from hoshino.util import silence, concat_pic, pic2b64
 from hoshino.service import Service, Privilege as Priv
@@ -29,7 +29,7 @@ gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来�
 gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井', '天井轉蛋', '轉蛋天井')
 
 GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如欲开启，请与维护组联系'
-GACHA_EXCEED_NOTICE = '您今天已经抽过{}了，欢迎明天再来！'
+GACHA_EXCEED_NOTICE = '您今天已经抽过{}了，欢迎明早5点后再来！'
 
 
 @sv.on_command('卡池资讯', deny_tip=GACHA_DISABLE_NOTICE, aliases=('查看卡池', '看看卡池', '康康卡池', '卡池資訊'), only_to_me=False)
@@ -155,6 +155,8 @@ async def gacha_300(session:CommandSession):
         msg.append("据说天井的概率只有12.16%")
     elif up <= 2:
         if result['first_up_pos'] < 50:
+            msg.append("你的喜悦我收到了，滚去喂鲨鱼吧！")
+        elif result['first_up_pos'] < 100:
             msg.append("已经可以了，您已经很欧了")
         elif result['first_up_pos'] > 290:
             msg.append("标 准 结 局")
@@ -172,11 +174,14 @@ async def gacha_300(session:CommandSession):
     await session.send('\n'.join(msg), at_sender=True)
 
 
-@sv.on_rex('氪金', event='group')
-async def kakin(bot, ctx, match):
-    if await sv.check_permission(ctx, Priv.SUPERUSER):
-        for m in ctx['message']:
-            sv.logger.info(type(m))
-            if m.type == 'at':
-                _user_jewel_used[int(m.data['qq'])] = 0
-        await bot.send(ctx, "充值完毕！谢谢惠顾～")
+@sv.on_rex(r'^氪金$', normalize=False)
+async def kakin(bot:NoneBot, ctx, match):
+    if ctx['user_id'] not in bot.config.SUPERUSERS:
+        return
+    count = 0
+    for m in ctx['message']:
+        if m.type == 'at' and m.data['qq'] != 'all':
+            _user_jewel_used[int(m.data['qq'])] = 0
+            count += 1
+    if count:
+        await bot.send(ctx, f"已为{count}位用户充值完毕！谢谢惠顾～", at_sender=True)

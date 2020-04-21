@@ -1,5 +1,5 @@
-nonebot[scheduler]~=1.4.1
-aiocqhttp~=1.2.2
+nonebot[scheduler]~=1.5.0
+aiocqhttp~=1.2.5
 lxml>=4.4.1
 pytz>=2019.3
 requests>=2.22.0

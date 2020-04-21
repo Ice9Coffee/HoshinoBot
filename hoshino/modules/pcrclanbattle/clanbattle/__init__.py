@@ -1,7 +1,6 @@
 # 公主连接Re:Dive会战管理插件
 # clan == クラン == 戰隊（直译为氏族）（CLANNAD的CLAN（笑））
 
-import re
 from typing import Callable, Dict, Tuple, Iterable
 
 from nonebot import NoneBot, on_command, CommandSession
@@ -16,15 +15,27 @@ SORRY = 'ごめんなさい！嘤嘤嘤(〒︿〒)'
 
 _registry:Dict[str, Tuple[Callable, ArgParser]] = {}
 
-@sv.on_rex(re.compile(r'^[!！](.+)', re.DOTALL), event='group')
-async def _clanbattle_bus(bot:NoneBot, ctx, match):
-    cmd, *args = match.group(1).split()
-    cmd = util.normalize_str(cmd)
+@sv.on_message('group')
+async def _clanbattle_bus(bot:NoneBot, ctx):
+    # check prefix
+    start = ''
+    for m in ctx['message']:
+        if m.type == 'text':
+            start = m.data.get('text', '').lstrip()
+            break
+    if not start or start[0] not in '!！':
+        return
+
+    # find cmd
+    plain_text = ctx['message'].extract_plain_text()
+    cmd, *args = plain_text.split()
+    cmd = util.normalize_str(cmd[1:])
     if cmd in _registry:
         func, parser = _registry[cmd]
         try:
             args = parser.parse(args, ctx['message'])
             await func(bot, ctx, args)
+            sv.logger.info(f'Message {ctx["message_id"]} is a clanbattle command, handled by {func.__name__}.')
         except DatabaseError as e:
             await bot.send(ctx, f"DatabaseError: {e.message}\n{SORRY}\n※请及时联系维护组")
         except ClanBattleError as e:
@@ -66,8 +77,8 @@ async def cb_help(session:CommandSession):
 【必读事项】
 ※会战系命令均以感叹号!开头，半全角均可
 ※命令与参数之间必须以【空格】隔开
-下面以使用场景-使用例给出常用指令的说明
 
+下面以使用场景-使用例给出常用指令的说明
 【群初次使用】
 !建会 Nリトルリリカル Sjp
 !建会 N小小甜心 Stw
@@ -92,9 +103,9 @@ async def cb_help(session:CommandSession):
 ※详细说明见命令一览表
 '''
     msg = [
-        f"{R.img('priconne/quick/Hoshino会战.png').cqcode}",
-        "※图片更新较慢 前往github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/priconne/clanbattle查看最新",
-        "※使用前请【逐字】阅读必读事项",
-        quick_start
+        # f"{R.img('priconne/quick/Hoshino会战.png').cqcode}",
+        quick_start,
+        "※前往github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/pcrclanbattle/clanbattle/README.md查看最新命令一览表",
+        "※使用前请务必【逐字】阅读必读事项",
     ]
     await session.send('\n'.join(msg), at_sender=True)

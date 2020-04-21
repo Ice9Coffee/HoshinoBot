@@ -1,19 +1,31 @@
 from functools import cmp_to_key
 
-from nonebot import on_command, CommandSession 
-from nonebot import permission as perm 
+from nonebot import on_command, CommandSession
+from nonebot import permission as perm
 from nonebot import CQHttpError
+from nonebot.argparse import ArgumentParser
 
-from hoshino.service import Service
+from hoshino.service import Service, Privilege as Priv
 
-PRIV_NOTE = '群主=22 群管=21 群员=0 bot维护组=999'
+PRIV_NOTE = f'群主={Priv.OWNER} 群管={Priv.ADMIN} 群员={Priv.NORMAL} bot维护组={Priv.SUPERUSER}'
 
-@on_command('lssv', aliases=('查看所有服务', '查看所有功能', '功能', '功能列表', '服务列表', '菜单'), permission=perm.GROUP_ADMIN, only_to_me=False)
+@on_command('lssv', aliases=('服务列表', '功能列表'), permission=perm.GROUP_ADMIN, only_to_me=False, shell_like=True)
 async def lssv(session:CommandSession):
-    verbose_all = session.current_arg_text == '-a' or session.current_arg_text == '--all'
-    gid = session.ctx['group_id']
-    msg = ["服务一览："]
-    svs = Service.get_loaded_services()
+    parser = ArgumentParser(session=session)
+    parser.add_argument('-a', '--all', action='store_true')
+    parser.add_argument('-g', '--group', type=int, default=0)
+    args = parser.parse_args(session.argv)
+    
+    verbose_all = args.all
+    if session.ctx['user_id'] in session.bot.config.SUPERUSERS:
+        gid = args.group or session.ctx.get('group_id')
+        if not gid:
+            session.finish('Usage: -g|--group <group_id> [-a|--all]')
+    else:
+        gid = session.ctx['group_id']
+
+    msg = [f"群{gid}服务一览："]
+    svs = Service.get_loaded_services().values()
     svs = map(lambda sv: (sv, sv.check_enabled(gid)), svs)
     key = cmp_to_key(lambda x, y: (y[1] - x[1]) or (-1 if x[0].name < y[0].name else 1 if x[0].name > y[0].name else 0))
     svs = sorted(svs, key=key)
@@ -26,37 +38,63 @@ async def lssv(session:CommandSession):
 
 @on_command('enable', aliases=('启用', '开启', '打开'), permission=perm.GROUP, only_to_me=False)
 async def enable_service(session:CommandSession):
-    if session.ctx['message_type'] != 'group':
-        return
-    all_service = Service.get_loaded_services()
-    target_name = session.current_arg
-    for sv in all_service:
-        if sv.name == target_name:
-            u_priv = await sv.get_user_privilege(session.ctx)
-            if u_priv >= sv.manage_priv:
-                sv.set_enable(session.ctx['group_id'])
-                await session.send(f'{sv.name}服务已启用！', at_sender=True)
-                return
-            else:
-                await session.send(f'权限不足！需要：{sv.manage_priv}，您的：{u_priv}\n{PRIV_NOTE}', at_sender=True)
-                return
-    await session.send(f'未找到服务：{target_name}', at_sender=True)
-
+    await switch_service(session, turn_on=True)
 
 @on_command('disable', aliases=('禁用', '关闭'), permission=perm.GROUP, only_to_me=False)
 async def disable_service(session:CommandSession):
-    if session.ctx['message_type'] != 'group':
-        return
-    all_service = Service.get_loaded_services()
-    target_name = session.current_arg
-    for sv in all_service:
-        if sv.name == target_name:
-            u_priv = await sv.get_user_privilege(session.ctx)
-            if u_priv >= sv.manage_priv:
-                sv.set_disable(session.ctx['group_id'])
-                await session.send(f'{sv.name}服务已禁用！', at_sender=True)
-                return
+    await switch_service(session, turn_on=False)
+
+async def switch_service(session:CommandSession, turn_on:bool):
+    action_tip = '启用' if turn_on else '禁用'
+    if session.ctx['message_type'] == 'group':
+        names = session.current_arg_text.split()
+        if not names:
+            session.finish(f"空格后接要{action_tip}的服务名", at_sender=True)
+        group_id = session.ctx['group_id']
+        svs = Service.get_loaded_services()
+        succ, notfound = [], []
+        for name in names:
+            if name in svs:
+                sv = svs[name]
+                u_priv = await sv.get_user_privilege(session.ctx)
+                if u_priv >= sv.manage_priv:
+                    sv.set_enable(group_id) if turn_on else sv.set_disable(group_id)
+                    succ.append(name)
+                else:
+                    try:
+                        await session.send(f'权限不足！{action_tip}{name}需要：{sv.manage_priv}，您的：{u_priv}\n{PRIV_NOTE}', at_sender=True)
+                    except:
+                        pass
             else:
-                await session.send(f'权限不足！需要：{sv.manage_priv}，您的：{u_priv}\n{PRIV_NOTE}', at_sender=True)
-                return
-    await session.send(f'未找到服务：{target_name}', at_sender=True)
+                notfound.append(name)
+        msg = []
+        if succ:
+            msg.append(f'已{action_tip}服务：' + ', '.join(succ))
+        if notfound:
+            msg.append('未找到服务：' + ', '.join(notfound))
+        if msg:
+            session.finish('\n'.join(msg), at_sender=True)
+
+    else:
+        if session.ctx['user_id'] not in session.bot.config.SUPERUSERS:
+            return
+        args = session.current_arg_text.split()
+        if len(args) < 2:
+            session.finish('Usage: <service_name> <group_id1> [<group_id2>, ...]')
+        name, *group_ids = args
+        svs = Service.get_loaded_services()
+        if name not in svs:
+            session.finish(f'未找到服务：{name}')
+        sv = svs[name]
+        succ = []
+        for gid in group_ids:
+            try:
+                gid = int(gid)
+                sv.set_enable(gid) if turn_on else sv.set_disable(gid)
+                succ.append(gid)
+            except:
+                try:
+                    await session.send(f'非法群号：{gid}')
+                except:
+                    pass
+        session.finish(f'服务{name}已于{len(succ)}个群内{action_tip}：{succ}')
