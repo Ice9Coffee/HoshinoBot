@@ -8,13 +8,14 @@ import asyncio
 from datetime import datetime, timedelta
 from functools import wraps
 from collections import defaultdict
-from typing import Iterable, Optional, Callable, Union, NamedTuple, Set, Dict
+from typing import Iterable, Optional, Callable, Union, NamedTuple, Set, Dict, Any
 try:
     import ujson as json
 except:
     import json
 
 import nonebot
+from nonebot import NoneBot, CommandSession
 from nonebot.command import _FinishException, _PauseException, SwitchException
 
 from hoshino import util, logger
@@ -261,7 +262,7 @@ class Service:
 
 
     def on_message(self, event='group') -> Callable:
-        def deco(func) -> Callable:
+        def deco(func:Callable[[NoneBot, Dict], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
@@ -281,7 +282,7 @@ class Service:
             keywords = (keywords, )
         if normalize:
             keywords = tuple(util.normalize_str(kw) for kw in keywords)
-        def deco(func) -> Callable:
+        def deco(func:Callable[[NoneBot, Dict], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
@@ -305,7 +306,7 @@ class Service:
     def on_rex(self, rex, normalize=True, event='group') -> Callable:
         if isinstance(rex, str):
             rex = re.compile(rex)
-        def deco(func) -> Callable:
+        def deco(func:Callable[[NoneBot, Dict, re.Match], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
                 if await self.check_permission(ctx):
@@ -328,9 +329,9 @@ class Service:
 
 
     def on_command(self, name, *, deny_tip=None, **kwargs) -> Callable:
-        def deco(func) -> Callable:
+        def deco(func:Callable[[CommandSession], Any]) -> Callable:
             @wraps(func)
-            async def wrapper(session:nonebot.CommandSession):
+            async def wrapper(session:CommandSession):
                 if await self.check_permission(session.ctx):
                     try:
                         await func(session)
@@ -368,7 +369,7 @@ class Service:
         kwargs.setdefault('timezone', pytz.timezone('Asia/Shanghai'))
         kwargs.setdefault('misfire_grace_time', 60)
         kwargs.setdefault('coalesce', True)
-        def deco(func) -> Callable:
+        def deco(func:Callable[[], Any]) -> Callable:
             @wraps(func)
             async def wrapper():
                 try:
