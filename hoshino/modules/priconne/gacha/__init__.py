@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from collections import defaultdict
 
 from nonebot import get_bot
-from nonebot import CommandSession, MessageSegment
+from nonebot import CommandSession, MessageSegment, NoneBot
 from nonebot import permission as perm
 from hoshino.util import silence, concat_pic, pic2b64
 from hoshino.service import Service, Privilege as Priv
@@ -174,12 +174,14 @@ async def gacha_300(session:CommandSession):
     await session.send('\n'.join(msg), at_sender=True)
 
 
-@sv.on_command('氪金', permission=perm.SUPERUSER, only_to_me=False)
-async def kakin(session:CommandSession):
+@sv.on_rex(r'^氪金$', normalize=False)
+async def kakin(bot:NoneBot, ctx, match):
+    if ctx['user_id'] not in bot.config.SUPERUSERS:
+        return
     count = 0
-    for m in session.ctx['message']:
+    for m in ctx['message']:
         if m.type == 'at' and m.data['qq'] != 'all':
             _user_jewel_used[int(m.data['qq'])] = 0
             count += 1
     if count:
-        await session.send(f"已为{count}位用户充值完毕！谢谢惠顾～")
+        await bot.send(ctx, f"已为{count}位用户充值完毕！谢谢惠顾～", at_sender=True)
