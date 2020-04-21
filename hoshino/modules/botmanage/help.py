@@ -1,11 +1,8 @@
-from nonebot import on_command, CommandSession
-from hoshino.service import Service, Privilege as Priv
+from hoshino import Service, Privilege as Priv
 
 sv = Service('_help_', manage_priv=Priv.SUPERUSER, visible=False)
 
-@sv.on_command('help', aliases=('manual', '帮助', '说明', '使用说明', '幫助', '說明', '使用說明', '菜单', '菜單'), only_to_me=False)
-async def send_help(session:CommandSession):
-    msg='''
+MANUAL = '''
 =====================
 - HoshinoBot使用说明 -
 =====================
@@ -19,9 +16,9 @@ async def send_help(session:CommandSession):
 ==================
 - 公主连接Re:Dive -
 ==================
-[@bot来发十连] 十连转蛋模拟(手动at 复制无效)
-[@bot来发单抽] 单抽转蛋模拟(手动at 复制无效)
-NEW!![@bot来一井] 4w5钻！买定离手！
+[@bot来发十连] 十连转蛋模拟
+[@bot来发单抽] 单抽转蛋模拟
+[@bot来一井] 4w5钻！买定离手！
 [查看卡池] 查看bot现在的卡池及出率
 [怎么拆 妹弓] 后以空格隔开接角色名，查询竞技场解法
 [pcr速查] 常用网址/速查表
@@ -69,4 +66,7 @@ NEW!![@bot来一井] 4w5钻！买定离手！
 ※※初次使用请仔细阅读帮助开头的注意事项
 ※※调教时请注意使用频率，您的滥用可能会导致bot帐号被封禁
 '''.strip()
-    await session.send(msg)
+
+@sv.on_command('help', aliases=('manual', '帮助', '说明', '使用说明', '幫助', '說明', '使用說明', '菜单', '菜單'), only_to_me=False)
+async def send_help(session):
+    await session.send(MANUAL)
