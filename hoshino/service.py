@@ -172,17 +172,13 @@ class Service:
             return Privilege.PRIVATE
         if ctx['message_type'] == 'group':
             if not ctx['anonymous']:
-                try:
-                    member_info = await bot.get_group_member_info(self_id=ctx['self_id'], group_id=ctx['group_id'], user_id=uid)
-                    if member_info:
-                        if member_info['role'] == 'owner':
-                            return Privilege.OWNER
-                        elif member_info['role'] == 'admin':
-                            return Privilege.ADMIN
-                        else:
-                            return Privilege.NORMAL
-                except nonebot.CQHttpError:
-                    pass
+                role = ctx['sender'].get('role')
+                if role == 'member':
+                    return Privilege.NORMAL
+                elif role == 'admin':
+                    return Privilege.ADMIN
+                elif role == 'owner':
+                    return Privilege.OWNER
         return Privilege.NORMAL
 
 
