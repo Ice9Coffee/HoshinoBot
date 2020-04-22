@@ -2,13 +2,13 @@ from hoshino.util import FreqLimiter
 from ..chara import Chara
 from . import sv
 
-lmt = FreqLimiter(60)
+lmt = FreqLimiter(30)
 
 @sv.on_rex(r'^[谁誰]是(.{1,20})$', normalize=False)
 async def _whois(bot, ctx, match):
     uid = ctx['user_id']
-    if not lmt.check(uid):
-        await bot.send(ctx, '您查询得太快了，请稍等1分钟', at_sender=True)
+    if not lmt.check(uid) and uid not in sv.bot.config.SUPERUSERS:
+        await bot.send(ctx, '您查询得太快了，请稍等半分钟', at_sender=True)
         return
     lmt.start_cd(uid)
 
