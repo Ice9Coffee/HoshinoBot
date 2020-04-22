@@ -156,3 +156,6 @@ class DailyNumberLimiter:
 
     def increase(self, key, num=1):
         self.count[key] += num
+
+    def reset(self, key):
+        self.count[key] = 0

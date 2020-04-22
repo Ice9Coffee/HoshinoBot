@@ -30,7 +30,7 @@ def get_bot() -> nonebot.NoneBot:
     return nonebot.get_bot()
 
 
-from nonebot import CommandSession
+from nonebot import NoneBot, CommandSession, MessageSegment
 
 from .service import Service, Privilege
 from .res import R
