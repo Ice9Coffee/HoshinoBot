@@ -126,7 +126,7 @@ async def twitter_poller():
         twts = []
         for account in subr_list:
             twts.extend(buf.get(account, []))
-        await ssv.broad_cast(twts, ssv.name, 0.5)
+        await ssv.broadcast(twts, ssv.name, 0.5)
 
 @sv.on_command('看推', only_to_me=True)     # for test
 async def one_tweet(session):

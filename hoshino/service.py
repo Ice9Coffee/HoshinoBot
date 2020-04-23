@@ -377,7 +377,7 @@ class Service:
         return deco
 
 
-    async def broad_cast(self, msgs, TAG='', interval_time=0.5, randomiser=None):
+    async def broadcast(self, msgs, TAG='', interval_time=0.5, randomiser=None):
         bot = self.bot
         if isinstance(msgs, str):
             msgs = (msgs, )

@@ -6,8 +6,8 @@ msg = '骑士君、准备好背刺了吗？'
 
 @svtw.scheduled_job('cron', hour='14', minute='45')
 async def pcr_reminder_tw():
-    await svtw.broad_cast(msg, 'pcr-reminder-tw', 0.2)
+    await svtw.broadcast(msg, 'pcr-reminder-tw', 0.2)
 
 @svjp.scheduled_job('cron', hour='13', minute='45')
 async def pcr_reminder_jp():
-    await svjp.broad_cast(msg, 'pcr-reminder-jp', 0.2)
+    await svjp.broadcast(msg, 'pcr-reminder-jp', 0.2)
