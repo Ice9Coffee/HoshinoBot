@@ -14,10 +14,10 @@ async def enshu_reminder():
         '演习即将刷新！\n莫让下午的自己埋怨上午的自己：\n「演習」で練度向上！0/3',
         '[CQ:at,qq=all] 演习即将刷新！',
     ]
-    await sv.broad_cast(msgs, 'enshu_reminder', 0)
+    await sv.broadcast(msgs, 'enshu_reminder', 0.2)
 
 
-@sv.scheduled_job('cron', day='12-14', hour='22')
+@sv.scheduled_job('cron', day='10-14', hour='22')
 async def ensei_reminder():
     now = datetime.now(pytz.timezone('Asia/Shanghai'))
     remain_days = 15 - now.day
@@ -25,4 +25,4 @@ async def ensei_reminder():
         f'【远征提醒小助手】提醒您月常远征还有{remain_days}天刷新！',
         f'[CQ:at,qq=all] 月常远征还有{remain_days}天刷新！',
     ]
-    await sv.broad_cast(msgs, 'ensei_reminder', 0.5)
+    await sv.broadcast(msgs, 'ensei_reminder', 0.5)

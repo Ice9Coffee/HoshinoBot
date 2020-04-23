@@ -124,4 +124,4 @@ async def update_seeker():
     # 推送至各个订阅群
     pic = R.img('priconne/comic', get_pic_name(episode)).cqcode
     msg = f'プリンセスコネクト！Re:Dive公式4コマ更新！\n第{episode}話 {title}\n{pic}'
-    await sv.broad_cast(msg, 'PCR官方四格', 0.5)
+    await sv.broadcast(msg, 'PCR官方四格', 0.5)

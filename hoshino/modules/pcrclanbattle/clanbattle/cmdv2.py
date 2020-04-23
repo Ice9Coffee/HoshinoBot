@@ -59,7 +59,7 @@ def _check_member(bm:BattleMaster, uid:int, alt:int, tip=None):
     return mem
 
 def _check_admin(ctx:Context_T, tip:str=''):
-    if not sv.check_permission(ctx, Priv.ADMIN):
+    if not sv.check_priv(ctx, Priv.ADMIN):
         raise PermissionDeniedError(ERROR_PERMISSION_DENIED + tip)
 
 
