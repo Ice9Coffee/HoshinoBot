@@ -33,6 +33,7 @@ async def _clanbattle_bus(bot:NoneBot, ctx):
     if cmd in _registry:
         func, parser = _registry[cmd]
         try:
+            sv.logger.info(f'Message {ctx["message_id"]} is a clanbattle command, start to process by {func.__name__}.')
             args = parser.parse(args, ctx['message'])
             await func(bot, ctx, args)
             sv.logger.info(f'Message {ctx["message_id"]} is a clanbattle command, handled by {func.__name__}.')

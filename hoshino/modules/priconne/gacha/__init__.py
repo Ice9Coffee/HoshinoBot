@@ -6,7 +6,7 @@ from hoshino.util import silence, concat_pic, pic2b64, DailyNumberLimiter
 from .gacha import Gacha
 from ..chara import Chara
 
-sv = Service('gacha', manage_priv=Priv.SUPERUSER)
+sv = Service('gacha')
 _jewel_limit = DailyNumberLimiter(7500)
 
 gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',

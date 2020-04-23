@@ -5,6 +5,7 @@ db.json
 database.json
 *.db
 *.sqlite
+local_coolq_config/
 
 # 非公开的组件
 # hoshino/modules/deepchat/

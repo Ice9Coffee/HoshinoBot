@@ -144,15 +144,54 @@ class Service:
     def bot(self):
         return nonebot.get_bot()
 
-    def get_self_ids(self):
-        return self.bot._wsr_api_clients.keys()
+    @staticmethod
+    def get_self_ids():
+        return nonebot.get_bot()._wsr_api_clients.keys()
 
     @staticmethod
     def get_loaded_services() -> Dict[str, "Service"]:
         return _loaded_services
 
     @staticmethod
-    async def get_user_privilege(ctx):
+    def set_block_group(group_id, time):
+        _black_list_group[group_id] = datetime.now() + time
+
+    @staticmethod
+    def set_block_user(user_id, time):
+        if user_id not in nonebot.get_bot().config.SUPERUSERS:
+            _black_list_user[user_id] = datetime.now() + time
+
+    @staticmethod
+    def check_block_group(group_id):
+        if group_id in _black_list_group and datetime.now() > _black_list_group[group_id]:
+            del _black_list_group[group_id]     # 拉黑时间过期
+            return False
+        return bool(group_id in _black_list_group)
+
+    @staticmethod
+    def check_block_user(user_id):
+        if user_id in _black_list_user and datetime.now() > _black_list_user[user_id]:
+            del _black_list_user[user_id]       # 拉黑时间过期
+            return False
+        return bool(user_id in _black_list_user)
+
+    def set_enable(self, group_id):
+        self.enable_group.add(group_id)
+        self.disable_group.discard(group_id)
+        _save_service_config(self)
+        self.logger.info(f'Service {self.name} is enabled at group {group_id}')
+
+    def set_disable(self, group_id):
+        self.enable_group.discard(group_id)
+        self.disable_group.add(group_id)
+        _save_service_config(self)
+        self.logger.info(f'Service {self.name} is disabled at group {group_id}')
+
+    def check_enabled(self, group_id):
+        return bool((group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group))
+
+    @staticmethod
+    def get_user_priv(ctx):
         bot = nonebot.get_bot()
         uid = ctx['user_id']
         if uid in bot.config.SUPERUSERS:
@@ -160,6 +199,16 @@ class Service:
         if Service.check_block_user(uid):
             return Privilege.BLACK
         # TODO: White list
+        if ctx['message_type'] == 'group':
+            if not ctx['anonymous']:
+                role = ctx['sender'].get('role')
+                if role == 'member':
+                    return Privilege.NORMAL
+                elif role == 'admin':
+                    return Privilege.ADMIN
+                elif role == 'owner':
+                    return Privilege.OWNER
+            return Privilege.NORMAL
         if ctx['message_type'] == 'private':
             if ctx['sub_type'] == 'friend':
                 return Privilege.PRIVATE_FRIEND
@@ -170,61 +219,19 @@ class Service:
             if ctx['sub_type'] == 'other':
                 return Privilege.PRIVATE_OTHER
             return Privilege.PRIVATE
-        if ctx['message_type'] == 'group':
-            if not ctx['anonymous']:
-                role = ctx['sender'].get('role')
-                if role == 'member':
-                    return Privilege.NORMAL
-                elif role == 'admin':
-                    return Privilege.ADMIN
-                elif role == 'owner':
-                    return Privilege.OWNER
         return Privilege.NORMAL
 
-
-    @staticmethod
-    def set_block_group(group_id, time):
-        _black_list_group[group_id] = datetime.now() + time
-
-
-    @staticmethod
-    def set_block_user(user_id, time):
-        if user_id not in nonebot.get_bot().config.SUPERUSERS:
-            _black_list_user[user_id] = datetime.now() + time
-
-
-    @staticmethod
-    def check_block_group(group_id):
-        if group_id in _black_list_group and datetime.now() > _black_list_group[group_id]:
-            del _black_list_group[group_id]     # 拉黑时间过期
-        return bool(group_id in _black_list_group)
-
-
-    @staticmethod
-    def check_block_user(user_id):
-        if user_id in nonebot.get_bot().config.SUPERUSERS:
-            return False
-        if user_id in _black_list_user and datetime.now() > _black_list_user[user_id]:
-            del _black_list_user[user_id]       # 拉黑时间过期
-        return bool(user_id in _black_list_user)
-
-
-    def check_enabled(self, group_id):
-        return bool((group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group))
-
-
-    async def check_permission(self, ctx, required_priv=None):
+    def check_priv(self, ctx, required_priv=None):
         required_priv = self.use_priv if required_priv is None else required_priv
         if ctx['message_type'] == 'group':
-            group_id = ctx['group_id']
-            if self.check_enabled(group_id) and not self.check_block_group(group_id):
-                user_priv = await self.get_user_privilege(ctx)
-                return bool(user_priv >= required_priv)
-            else:
-                return False
-        # TODO: 处理私聊权限。暂时不允许任何私聊
-        return False
+            return bool(self.get_user_priv(ctx) >= required_priv)
+        else:
+            # TODO: 处理私聊权限。暂时不允许任何私聊
+            return False
 
+    def _check_all(self, ctx):
+        gid = ctx.get('group_id', 0)
+        return self.check_enabled(gid) and not self.check_block_group(gid) and self.check_priv(ctx)
 
     async def get_enable_groups(self) -> dict:
         """
@@ -243,25 +250,11 @@ class Service:
         return gl
 
 
-    def set_enable(self, group_id):
-        self.enable_group.add(group_id)
-        self.disable_group.discard(group_id)
-        _save_service_config(self)
-        self.logger.info(f'Service {self.name} is enabled at group {group_id}')
-
-
-    def set_disable(self, group_id):
-        self.enable_group.discard(group_id)
-        self.disable_group.add(group_id)
-        _save_service_config(self)
-        self.logger.info(f'Service {self.name} is disabled at group {group_id}')
-
-
     def on_message(self, event='group') -> Callable:
         def deco(func:Callable[[NoneBot, Dict], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
-                if await self.check_permission(ctx):
+                if self._check_all(ctx):
                     try:
                         await func(self.bot, ctx)
                         # self.logger.info(f'Message {ctx["message_id"]} is handled by {func.__name__}.')
@@ -281,7 +274,7 @@ class Service:
         def deco(func:Callable[[NoneBot, Dict], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
-                if await self.check_permission(ctx):
+                if self._check_all(ctx):
                     plain_text = ctx['message'].extract_plain_text()
                     if normalize:
                         plain_text = util.normalize_str(plain_text)
@@ -305,7 +298,7 @@ class Service:
         def deco(func:Callable[[NoneBot, Dict, re.Match], Any]) -> Callable:
             @wraps(func)
             async def wrapper(ctx):
-                if await self.check_permission(ctx):
+                if self._check_all(ctx):
                     plain_text = ctx['message'].extract_plain_text()
                     plain_text = plain_text.strip()
                     if normalize:
@@ -324,11 +317,19 @@ class Service:
         return deco
 
 
-    def on_command(self, name, *, deny_tip=None, **kwargs) -> Callable:
+    def on_command(self, name, *, only_to_me=True, deny_tip=None, **kwargs) -> Callable:
+        kwargs['only_to_me'] = only_to_me
         def deco(func:Callable[[CommandSession], Any]) -> Callable:
             @wraps(func)
             async def wrapper(session:CommandSession):
-                if await self.check_permission(session.ctx):
+                if session.ctx['message_type'] != 'group':
+                    return
+                if not self.check_enabled(session.ctx['group_id']):
+                    self.logger.debug(f'Message {session.ctx["message_id"]} is command of a disabled service, ignored.')
+                    if deny_tip:
+                        session.finish(deny_tip, at_sender=True)
+                    return
+                if self._check_all(session.ctx):
                     try:
                         await func(session)
                         self.logger.info(f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.')
@@ -338,9 +339,6 @@ class Service:
                         self.logger.exception(e)
                         self.logger.error(f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                     return
-                elif deny_tip:
-                    await session.send(deny_tip, at_sender=True)
-                self.logger.info(f'Message {session.ctx["message_id"]} is a command of {func.__name__}. Permission denied.')
             return nonebot.on_command(name, **kwargs)(wrapper)
         return deco
 
@@ -349,7 +347,7 @@ class Service:
         def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(session:nonebot.NLPSession):
-                if await self.check_permission(session.ctx):
+                if self._check_all(session.ctx):
                     try:
                         await func(session)
                         self.logger.info(f'Message {session.ctx["message_id"]} is handled as natural language by {func.__name__}.')

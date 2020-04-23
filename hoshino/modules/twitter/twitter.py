@@ -103,8 +103,6 @@ async def poll_new_tweets(account:str):
         return tweets
 
 
-
-
 # Requests/15-min window: 900  == 1 req/s
 _subr_num = len(latest_info)
 _freq = 8 * _subr_num
@@ -130,7 +128,7 @@ async def twitter_poller():
             twts.extend(buf.get(account, []))
         await ssv.broad_cast(twts, ssv.name, 0.5)
 
-@sv.on_command('看推')      # for test
+@sv.on_command('看推', only_to_me=True)     # for test
 async def one_tweet(session):
     args = session.current_arg_text.split()
     try:
