@@ -67,46 +67,40 @@ from .cmdv1 import *
 from .cmdv2 import *
 
 
-@on_command('!帮助', aliases=('！帮助', '!幫助', '！幫助', '!help', '！help'), only_to_me=False)
-async def cb_help(session:CommandSession):
-    quick_start = f'''
-==================
-- PCR会战管理v2.0 -
-==================
+QUICK_START = f'''
+======================
+- Hoshino会战管理v2.0 -
+======================
 快速开始指南
-
 【必读事项】
 ※会战系命令均以感叹号!开头，半全角均可
 ※命令与参数之间必须以【空格】隔开
-
-下面以使用场景-使用例给出常用指令的说明
+※下面以使用场景-使用例给出常用指令的说明
 【群初次使用】
-!建会 Nリトルリリカル Sjp
-!建会 N小小甜心 Stw
-!建会 N今天版号批过了 Scn
-
+!建会 N自警団（カォン） Sjp
+!建会 N哞哞自衛隊 Stw
+!建会 N自卫团 Scn
 【注册成员】
 !入会 祐树
 !入会 佐树 @123456789
-
 【上报伤害】
 !出刀 514w
 !收尾
-!出补时刀 114w
-
+!补时刀 114w
 【预约Boss】
-!预约 5
-
+!预约 5 M留言
+!取消预约 5
+【锁定Boss】
+!锁定
+!解锁
 【查询余刀&催刀】
 !查刀
 !催刀
 
-※详细说明见命令一览表
-'''
-    msg = [
-        # f"{R.img('priconne/quick/Hoshino会战.png').cqcode}",
-        quick_start,
-        "※前往github.com/Ice-Cirno/HoshinoBot/tree/master/hoshino/modules/pcrclanbattle/clanbattle/README.md查看最新命令一览表",
-        "※使用前请务必【逐字】阅读必读事项",
-    ]
-    await session.send('\n'.join(msg), at_sender=True)
+※前往 t.cn/A6wBzowv 查看完整命令一览表
+※使用前请务必【逐字】阅读开头的必读事项
+'''.rstrip()
+
+@on_command('!帮助', aliases=('！帮助', '!幫助', '！幫助', '!help', '！help'), only_to_me=False)
+async def cb_help(session:CommandSession):
+    await session.send(QUICK_START, at_sender=True)
