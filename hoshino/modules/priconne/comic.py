@@ -16,35 +16,29 @@ from hoshino.service import Service
 
 sv = Service('pcr-comic')
 
-
 def load_index():
     with open(R.get('img/priconne/comic/index.json').path, encoding='utf8') as f:
         return json.load(f)
-
 
 def get_pic_name(id_):
     pre = 'episode_'
     end = '.png'
     return f'{pre}{id_}{end}'
 
-
-@sv.on_natural_language(keywords={'官漫'}, only_to_me=True)
-async def comic(session:NLPSession):
-    rex = re.compile(r'[1-9]\d{0,2}')
-    arg = session.msg_text.strip()
-    match = rex.search(arg)
-    if not match:
-        await session.send('请输入漫画集数 如：官漫132')
+@sv.on_rex(r'^官漫\s*(\d{0,4})', normalize=False)
+async def comic(bot, ctx, match):
+    episode = match.group(1)
+    if not episode:
+        await bot.send(ctx, '请输入漫画集数 如：官漫132', at_sender=True)
         return
-    episode = match.group()
     index = load_index()
     if episode not in index:
-        await session.send(f'未查找到第{episode}话，敬请期待官方更新')
+        await bot.send(ctx, f'未查找到第{episode}话，敬请期待官方更新', at_sender=True)
         return
     title = index[episode]['title']
     pic = R.img('priconne/comic/', get_pic_name(episode)).cqcode
     msg = f'プリンセスコネクト！Re:Dive公式4コマ\n第{episode}話 {title}\n{pic}'
-    await session.send(msg)
+    await bot.send(ctx, msg, at_sender=True)
 
 
 async def download_img(save_path, link):
