@@ -2,15 +2,17 @@
 
 A qqbot for Princess Connect Re:Dive (and other usage :)
 
+[toc]
+
 ## 简介
 
-**HoshinoBot:** 基于[nonebot](http://nonebot.cqp.moe)框架，开源、无公害、非转基因的QQ机器人。
+**HoshinoBot:** 基于 [nonebot](http://nonebot.cqp.moe) 框架，开源、无公害、非转基因的QQ机器人。
 
 
 
 ## 功能介绍
 
-HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](priconne-redive.jp) 玩家为核心，主要功能有：
+HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-redive.jp) 玩家为核心，主要功能有：
 
 - **转蛋模拟**：单抽、十连、抽一井
 - **竞技场解法查询**：支持按服务器过滤，支持反馈点赞点踩
@@ -26,7 +28,7 @@ HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](priconne-redive.jp)
 
 除上述与之外，HoshinoBot 还具有以下通用功能：
 
-- **[蜜柑计划](mikanani.me)番剧更新订阅**
+- **[蜜柑计划](http://mikanani.me)番剧更新订阅**
 - **入群欢迎**&**退群提醒**
 - **复读**
 - **掷骰子**
@@ -63,11 +65,13 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 
 
+
+
 ## 部署指南
 
 > 本bot的部分功能需要静态图片资源和带有认证的api key，恕不能公开。  
 > 若您自行搭建，可能需要另寻途径获取。  
-> 受影响的功能及获取key的方法，见本节[更进一步]()部分
+> 受影响的功能及获取key的方法，见本节**更进一步**部分
 
 ### 前提条件
 
@@ -76,7 +80,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 - 1台服务器：常见VPS提供商的最低配置已足够，WinServer/Linux均可，初次尝试时您也可以在本地搭建
 - 1个QQ帐号：建议使用小号
 - 酷Q Air/Pro：「无头 QQ 客户端」，发送图片、禁言等功能需要Pro版
-- CoolQ HTTP API 插件：请参考https://cqhttp.cc/docs/进行配置，注意HoshinoBot仅支持反向ws通信方式
+- CoolQ HTTP API 插件：请参考https://cqhttp.cc/docs/进行配置，注意HoshinoBot仅支持**反向ws**通信方式
 - Python 3.8：底层框架需>=3.7，本项目可有可无地使用了Python 3.8语言特性
 
 > **若您使用 Linux 服务器：**  
@@ -93,7 +97,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 # Ubuntu or Debian
 sudo apt install python3.8
 ```
-> 若您的包管理工具（如`yum`）尚不支持`python38`，你可以尝试从源码安装。Google will help you greatly : )
+> 若您的包管理工具（如`yum`）尚不支持`python3.8`，你可以尝试从源码安装。Google will help you greatly : )
 
 1. 克隆本仓库并安装依赖包
 ```bash
@@ -116,6 +120,8 @@ python3.8 run.py
 ```
 
 当您完成以上步骤后，您可以尝试在群内发送 `@bot 在？` 查看机器人的在线状态（注：`@bot`表示at机器人，请手动at，复制无效，下同），或尝试发送`pcr速查`。如果机器人向您正常回复，恭喜您，您已经搭建成功了！
+
+
 
 
 
@@ -160,6 +166,8 @@ python3.8 run.py
 
 
 
+
+
 #### 蜜柑番剧 RSS Token
 
 > 本功能属于`subscribe`模块，请在`config.py`的`MODULES_ON`中添加  
@@ -181,9 +189,13 @@ https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 
 
 
+
+
 #### 晴乃词库
 
 舰娘及装备查询功能使用了精简版的晴乃词库，如有需要请加QQ群[Hoshino的后花园](https://jq.qq.com/?wv=1027&k=55fGEgi)或联系晴乃维护组。
+
+
 
 
 
@@ -216,6 +228,8 @@ https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 ```
 
 您可以编入多组报时文本，机器人会按`HOUR_CALLS`中定义的顺序循环日替。
+
+
 
 
 
