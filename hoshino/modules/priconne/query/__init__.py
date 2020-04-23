@@ -10,7 +10,7 @@ from hoshino.util import silence, delete_msg
 from hoshino.res import R
 from hoshino.service import Service
 
-sv = Service('pcr-query')
+sv = Service('pcr-query', enable_on_default=False, visible=False)
 
 try:
     p1 = R.img('priconne/quick/r15-4-0.png').cqcode
@@ -39,7 +39,7 @@ async def rank_sheet(bot, ctx, match):
 
 @sv.on_rex(r'^(pcr(速查|常用)|(pcr)?图书馆)$', normalize=True, event='group')
 async def query_sites(bot, ctx, match):
-    msg='''
+    msg = '''
 【日官网】priconne-redive.jp
 【台官网】www.princessconnect.so-net.tw
 【繁中wiki/兰德索尔图书馆】pcredivewiki.tw
@@ -56,11 +56,11 @@ async def query_sites(bot, ctx, match):
 ※B服速查请输入【bcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
     await silence(ctx, 60)
-    
-    
+
+
 @sv.on_rex(r'^bcr(速查|常用)', normalize=True, event='group')
 async def query_sites_bilibili(bot, ctx, match):
-    msg='''
+    msg = '''
 【妈宝骑士攻略(懒人攻略合集)】bbs.nga.cn/read.php?tid=20980776
 【机制详解】bbs.nga.cn/read.php?tid=19104807
 【初始推荐】bbs.nga.cn/read.php?tid=20789582
@@ -76,6 +76,7 @@ async def query_sites_bilibili(bot, ctx, match):
 ※日台服速查请输入【pcr速查】'''
     await bot.send(ctx, msg, at_sender=True)
     await silence(ctx, 60)
+
 
 @sv.on_command('arina-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'pjjc作业网', 'jjc数据库', 'pjjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'), only_to_me=False)
 async def say_arina_database(session: CommandSession):
@@ -94,8 +95,8 @@ async def yukari_sheet(bot, ctx):
 
 @sv.on_rex(r'^(一个顶俩|(成语)?接龙)', normalize=True, event='group')
 async def dragon(bot, ctx, match):
-    msg = [ f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}", 
+    msg = [f"\n拼音对照表：{R.img('priconne/KyaruMiniGame/注音文字.jpg').cqcode}{R.img('priconne/KyaruMiniGame/接龙.jpg').cqcode}",
            "龍的探索者們 小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame",
-           "镜像 ht🐲tps:/🐲/hoshino.monster/KyaruMiniGame", 
-           "网站内有全词条和搜索，或需科学上网" ]
+           "镜像 ht🐲tps:/🐲/hoshino.monster/KyaruMiniGame",
+           "网站内有全词条和搜索，或需科学上网"]
     await bot.send(ctx, '\n'.join(msg), at_sender=True)

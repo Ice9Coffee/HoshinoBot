@@ -1,19 +1,19 @@
 import asyncio
 
-from nonebot import on_command, CommandSession 
-from nonebot import permission as perm 
+from nonebot import on_command, CommandSession
+from nonebot import permission as perm
 from nonebot import CQHttpError
 
 from hoshino.log import logger
 
 
 @on_command('broadcast', aliases=('bc', '广播'), permission=perm.SUPERUSER)
-async def broadcast(session:CommandSession):
+async def broadcast(session: CommandSession):
     msg = session.current_arg
     self_ids = session.bot._wsr_api_clients.keys()
     for sid in self_ids:
         gl = await session.bot.get_group_list(self_id=sid)
-        gl = [ g['group_id'] for g in gl ]
+        gl = [g['group_id'] for g in gl]
         for g in gl:
             await asyncio.sleep(0.5)
             try:
