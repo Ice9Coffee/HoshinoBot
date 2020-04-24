@@ -124,15 +124,15 @@ def time_name(hh:int, mm:int) -> str:
 
 
 class FreqLimiter:
-    def __init__(self, cd_second):
-        self.last_time = defaultdict(float)
-        self.cd_time = cd_second
+    def __init__(self, default_cd_seconds):
+        self.next_time = defaultdict(float)
+        self.default_cd = default_cd_seconds
 
     def check(self, key) -> bool:
-        return bool(time.time() >= self.last_time[key] + self.cd_time)
+        return bool(time.time() >= self.next_time[key])
 
-    def start_cd(self, key):
-        self.last_time[key] = time.time()
+    def start_cd(self, key, cd_time=0):
+        self.next_time[key] = time.time() + cd_time if cd_time > 0 else self.default_cd
 
 
 class DailyNumberLimiter:
@@ -156,3 +156,6 @@ class DailyNumberLimiter:
 
     def increase(self, key, num=1):
         self.count[key] += num
+
+    def reset(self, key):
+        self.count[key] = 0

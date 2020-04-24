@@ -17,18 +17,18 @@ sv = Service('chat', manage_priv=Priv.SUPERUSER, visible=False)
 async def say_sorry(session):
     await session.send('ごめんなさい！嘤嘤嘤(〒︿〒)')
 
-@sv.on_command('老婆', aliases=('waifu', 'laopo'))
+@sv.on_command('老婆', aliases=('waifu', 'laopo'), only_to_me=True)
 async def chat_waifu(session):
-    if not await sv.check_permission(session.ctx, Priv.SUPERUSER):
+    if not sv.check_priv(session.ctx, Priv.SUPERUSER):
         await session.send(R.img('laopo.jpg').cqcode)
     else:
         await session.send('mua~')
 
-@sv.on_command('老公')
+@sv.on_command('老公', only_to_me=True)
 async def chat_laogong(session):
     await session.send('你给我滚！', at_sender=True)
 
-@sv.on_command('mua')
+@sv.on_command('mua', only_to_me=True)
 async def chat_mua(session):
     await session.send('笨蛋~', at_sender=True)
 

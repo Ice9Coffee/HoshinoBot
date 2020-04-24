@@ -1,24 +1,13 @@
-import pytz
 import random
-from datetime import datetime, timedelta
-from collections import defaultdict
 
-from nonebot import get_bot
-from nonebot import CommandSession, MessageSegment, NoneBot
-from nonebot import permission as perm
-from hoshino.util import silence, concat_pic, pic2b64
-from hoshino.service import Service, Privilege as Priv
+from hoshino import NoneBot, CommandSession, MessageSegment, Service, Privilege as Priv
+from hoshino.util import silence, concat_pic, pic2b64, DailyNumberLimiter
 
 from .gacha import Gacha
 from ..chara import Chara
 
-
-__plugin_name__ = 'gacha'
-sv = Service('gacha', manage_priv=Priv.SUPERUSER)
-_last_gacha_day = -1
-_user_jewel_used = defaultdict(int)    # {user: jewel_used}
-_max_jewel_per_day = 7500
-
+sv = Service('gacha')
+_jewel_limit = DailyNumberLimiter(7500)
 
 gacha_10_aliases = ('十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
                     '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋', '扭蛋10连',
@@ -28,7 +17,7 @@ gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来�
                    '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
 gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井', '天井轉蛋', '轉蛋天井')
 
-GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如欲开启，请与维护组联系'
+GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用或您的权限不足\n如欲开启，请与维护组联系'
 GACHA_EXCEED_NOTICE = '您今天已经抽过{}了，欢迎明早5点后再来！'
 
 
@@ -36,39 +25,32 @@ GACHA_EXCEED_NOTICE = '您今天已经抽过{}了，欢迎明早5点后再来！
 async def gacha_info(session:CommandSession):
     gacha = Gacha()
     up_chara = gacha.up
-    if get_bot().config.IS_CQPRO: 
+    if sv.bot.config.IS_CQPRO:
         up_chara = map(lambda x: str(Chara.fromname(x).icon.cqcode) + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await session.send(f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3星出率={(gacha.s3_prob)/10:.1f}%")
 
 
 async def check_gacha_num(session):
-    global _last_gacha_day, _user_jewel_used
-    user_id = session.ctx['user_id']
-    now = datetime.now(pytz.timezone('Asia/Shanghai'))
-    day = (now - timedelta(hours=5)).day
-    if day != _last_gacha_day:
-        _last_gacha_day = day
-        _user_jewel_used.clear()
-    jewel_used = _user_jewel_used[user_id]
-    if jewel_used < _max_jewel_per_day:
-        return
-    await session.finish(GACHA_EXCEED_NOTICE.format('一井' if jewel_used >= 45000 else f'{jewel_used}钻'), at_sender=True)
+    uid = session.ctx['user_id']
+    if not _jewel_limit.check(uid):
+        jewel_used = _jewel_limit.get_num(uid)
+        await session.finish(GACHA_EXCEED_NOTICE.format('一井' if jewel_used >= 45000 else f'{jewel_used}钻'), at_sender=True)
 
 
 @sv.on_command('gacha_1', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_1_aliases, only_to_me=True)
 async def gacha_1(session:CommandSession):
-    
+
     await check_gacha_num(session)
     uid = session.ctx['user_id']
-    _user_jewel_used[uid] += 150
-    
+    _jewel_limit.increase(uid, 150)
+
     gacha = Gacha()
     chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
     res = f'{chara.name} {"★"*chara.star}'
-    if get_bot().config.IS_CQPRO:
+    if sv.bot.config.IS_CQPRO:
         res = f'{chara.icon.cqcode} {res}'
 
     await silence(session.ctx, silence_time)
@@ -77,17 +59,17 @@ async def gacha_1(session:CommandSession):
 
 @sv.on_command('gacha_10', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_10_aliases, only_to_me=True)
 async def gacha_10(session:CommandSession):
-    
+
     SUPER_LUCKY_LINE = 170
     await check_gacha_num(session)
     uid = session.ctx['user_id']
-    _user_jewel_used[uid] += 1500
-    
+    _jewel_limit.increase(uid, 1500)
+
     gacha = Gacha()
     result, hiishi = gacha.gacha_ten()
     silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
-    if get_bot().config.IS_CQPRO: 
+    if sv.bot.config.IS_CQPRO:
         res1 = Chara.gen_team_pic(result[ :5], star_slot_verbose=False)
         res2 = Chara.gen_team_pic(result[5: ], star_slot_verbose=False)
         res = concat_pic([res1, res2])
@@ -111,18 +93,18 @@ async def gacha_10(session:CommandSession):
 
 @sv.on_command('gacha_300', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_300_aliases, only_to_me=True)
 async def gacha_300(session:CommandSession):
-    
+
     await check_gacha_num(session)
     uid = session.ctx['user_id']
-    _user_jewel_used[uid] += 45000
-    
+    _jewel_limit.increase(uid, 45000)
+
     gacha = Gacha()
     result = gacha.gacha_tenjou()
     up = len(result['up'])
     s3 = len(result['s3'])
     s2 = len(result['s2'])
     s1 = len(result['s1'])
-    
+
     res = [*(result['up']), *(result['s3'])]
     random.shuffle(res)
     lenth = len(res)
@@ -144,7 +126,7 @@ async def gacha_300(session:CommandSession):
         f"共计{up+s3}个3★，{s2}个2★，{s1}个1★",
         f"获得{100*up}个记忆碎片与{50*(up+s3) + 10*s2 + s1}个女神秘石！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得{50*(up+s3) + 10*s2 + s1}个女神秘石！"
     ]
-    
+
     if up == 0 and s3 == 0:
         msg.append("太惨了，咱们还是退款删游吧...")
     elif up == 0 and s3 > 7:
@@ -168,7 +150,7 @@ async def gacha_300(session:CommandSession):
         msg.append("抽井母五一气呵成！多出30等专武～")
     elif up >= 4:
         msg.append("记忆碎片一大堆！您是托吧？")
-    
+
     silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
     await silence(session.ctx, silence_time)
     await session.send('\n'.join(msg), at_sender=True)
@@ -181,7 +163,8 @@ async def kakin(bot:NoneBot, ctx, match):
     count = 0
     for m in ctx['message']:
         if m.type == 'at' and m.data['qq'] != 'all':
-            _user_jewel_used[int(m.data['qq'])] = 0
+            uid = int(m.data['qq'])
+            _jewel_limit.reset(uid)
             count += 1
     if count:
         await bot.send(ctx, f"已为{count}位用户充值完毕！谢谢惠顾～", at_sender=True)

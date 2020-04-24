@@ -19,4 +19,4 @@ async def hour_call():
     if 2 <= now.hour <= 4:
         return  # 宵禁 免打扰
     msg = get_hour_call()[now.hour]
-    await sv.broad_cast(msg, 'hourcall', 0)
+    await sv.broadcast(msg, 'hourcall', 0)
