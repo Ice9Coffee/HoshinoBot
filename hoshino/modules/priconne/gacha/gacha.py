@@ -6,14 +6,14 @@ from ..chara import Chara
 
 class Gacha(object):
 
-    def __init__(self):
+    def __init__(self, pool_name:str="MIX"):
         super().__init__()
-        self.load_pool()
+        self.load_pool(pool_name)
 
 
-    def load_pool(self):
+    def load_pool(self, pool_name:str):
         config = util.load_config(__file__)
-        pool = config["GACHA_POOL"]
+        pool = config[pool_name]
         self.up_prob = pool["up_prob"]
         self.s3_prob = pool["s3_prob"]
         self.s2_prob = pool["s2_prob"]

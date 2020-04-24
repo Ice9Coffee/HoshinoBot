@@ -1,7 +1,7 @@
 import asyncio
 
-from nonebot import on_command, CommandSession 
-from nonebot import permission as perm 
+from nonebot import on_command, CommandSession
+from nonebot import permission as perm
 from nonebot import CQHttpError
 
 from hoshino.log import logger
