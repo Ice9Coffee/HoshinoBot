@@ -93,12 +93,12 @@ async def mikan_poller():
         sv.logger.info(f'检索到{len(new_bangumi)}条番剧更新！')
         msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲下载 {i[0]}' for i in new_bangumi ]
         randomiser = lambda m: f'{random.choice(DEVICES)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}'
-        await sv.broad_cast(msg, '蜜柑番剧', 0.5, randomiser)
+        await sv.broadcast(msg, '蜜柑番剧', 0.5, randomiser)
 
 
 DISABLE_NOTICE = '本群蜜柑番剧功能已禁用\n使用【启用 bangumi】以启用（需群管理）\n开启本功能后将自动推送字幕组更新'
 
-@sv.on_command('来点新番', aliases=('來點新番', ), deny_tip=DISABLE_NOTICE)
+@sv.on_command('来点新番', aliases=('來點新番', ), deny_tip=DISABLE_NOTICE, only_to_me=False)
 async def send_bangumi(session):
     if not Mikan.rss_cache:
         Mikan.update_cache()
