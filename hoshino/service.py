@@ -317,7 +317,7 @@ class Service:
         return deco
 
 
-    def on_command(self, name, *, only_to_me=True, deny_tip=None, **kwargs) -> Callable:
+    def on_command(self, name, *, only_to_me=False, deny_tip=None, **kwargs) -> Callable:
         kwargs['only_to_me'] = only_to_me
         def deco(func:Callable[[CommandSession], Any]) -> Callable:
             @wraps(func)
