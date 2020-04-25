@@ -319,7 +319,7 @@ async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 # TODO 将预约信息转至数据库
 SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
-SUBSCRIBE_MAX = [99, 6, 6, 6, 6, 6]
+SUBSCRIBE_MAX = [99, 10, 10, 10, 10, 10]
 SUBSCRIBE_TREE_KEY = '0'
 LOCK_KEY = 'lock'
 os.makedirs(SUBSCRIBE_PATH, exist_ok=True)

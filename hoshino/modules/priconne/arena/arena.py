@@ -7,15 +7,17 @@ try:
 except:
     import json
 
-from hoshino import aiorequests
-from hoshino import util
+from hoshino import aiorequests, util
 from . import sv
 from ..chara import Chara
 
 logger = sv.logger
-DB_PATH = os.path.expanduser('~/.hoshino/arena_db.json')
 
-# define DB
+'''
+Database for arena likes & dislikes
+DB is a dict like: { 'md5_id': {'like': set(qq), 'dislike': set(qq)} }
+'''
+DB_PATH = os.path.expanduser('~/.hoshino/arena_db.json')
 DB = {}
 try:
     with open(DB_PATH, encoding='utf8') as f:
@@ -29,6 +31,10 @@ except Exception as e:
     logger.warning(e)
 
 def dump_db():
+    '''
+    Dump the arena databese.
+    json do not accept set object, this function will help to convert.
+    '''
     j = {}
     for k in DB:
         j[k] = {
@@ -102,10 +108,10 @@ def __get_auth_key():
 
 
 async def do_query(id_list, user_id, region=1):
-    
+
     id_list = [ x * 100 + 1 for x in id_list ]
     logger.debug(f'id_list={id_list}')
-    
+
     header = {
         'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.87 Safari/537.36',
         'authorization': __get_auth_key()
@@ -139,7 +145,7 @@ async def do_query(id_list, user_id, region=1):
 
 
 async def do_like(qkey, user_id, action):
-    func = add_like if action > 0 else add_dislike  
+    func = add_like if action > 0 else add_dislike
     true_id = get_true_id(qkey, user_id)
     if true_id is None:
         raise KeyError
