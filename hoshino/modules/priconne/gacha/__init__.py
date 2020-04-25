@@ -14,7 +14,7 @@ tenjo_limit = DailyNumberLimiter(1)
 
 GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如欲开启，请与维护组联系'
 JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，欢迎明早5点后再来！'
-TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit}张天井券了，欢迎明早5点后再来！'
+TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，欢迎明早5点后再来！'
 SWITCH_POOL_TIP = '【NEW!!】发送"选择卡池"可切换卡池（需群管理操作）'
 
 POOL = ('MIX', 'JP', 'TW', 'BL')
@@ -209,6 +209,7 @@ async def kakin(bot:NoneBot, ctx, match):
         if m.type == 'at' and m.data['qq'] != 'all':
             uid = int(m.data['qq'])
             jewel_limit.reset(uid)
+            tenjo_limit.reset(uid)
             count += 1
     if count:
         await bot.send(ctx, f"已为{count}位用户充值完毕！谢谢惠顾～", at_sender=True)
