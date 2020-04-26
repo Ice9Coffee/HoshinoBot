@@ -38,7 +38,7 @@ async def _clanbattle_bus(bot:NoneBot, ctx):
             await func(bot, ctx, args)
             sv.logger.info(f'Message {ctx["message_id"]} is a clanbattle command, handled by {func.__name__}.')
         except DatabaseError as e:
-            await bot.send(ctx, f"DatabaseError: {e.message}\n{SORRY}\n※请及时联系维护组")
+            await bot.send(ctx, f'DatabaseError: {e.message}\n{SORRY}\n※请及时联系维护组', at_sender=True)
         except ClanBattleError as e:
             await bot.send(ctx, e.message, at_sender=True)
         except Exception as e:
