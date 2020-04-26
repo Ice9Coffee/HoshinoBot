@@ -353,6 +353,8 @@ def _gen_namelist_text(bm:BattleMaster, uidlist:List[int], memolist:List[str]=No
     return mems
 
 
+SUBSCRIBE_TIP = 'β>预约现在可附留言(不可包含空格)\n例："!预约 5 m留言"'
+
 @cb_cmd('预约', ArgParser(usage='!预约 <Boss号> M留言', arg_dict={
     '': ArgHolder(tip='Boss编号', type=boss_code),
     'M': ArgHolder(tip='留言', default='')}))
@@ -376,7 +378,7 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
         slist.append(uid)
         mlist.append(memo)
         _save_sub(sub, bm.group)
-        msg.append(f'已为您预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}')
+        msg.append(f'已为您预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}\n{SUBSCRIBE_TIP}')
     else:
         msg.append(f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX[boss]}')
     msg.extend(_gen_namelist_text(bm, slist, mlist))
