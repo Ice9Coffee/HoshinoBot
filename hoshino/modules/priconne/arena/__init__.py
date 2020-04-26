@@ -100,14 +100,13 @@ async def _arena_query(session:CommandSession, region:int):
     msg1 = [
         defen,
         f'已为骑士{at}查询到以下进攻方案：',
-        atk_team,
-        'Support by pcrdfans_com'
+        f'{atk_team}Support by pcrdfans_com'
     ]
     msg2 = [
         f'为骑士{at}查询到作业评价👍&👎：', 
         *details,
-        '发送"点赞/点踩+作业id"可进行反馈 如"点赞 ABCDE"，不分大小写 空格隔开',
-        '手机QQ更新后无法正常显示图片故分条发送 如有刷屏还请谅解',
+        '※发送"点赞/点踩+作业id"可进行反馈\n如"点赞 ABCDE" 不分大小写 空格隔开',
+        '※手机QQ更新后无法正常显示图片故分条发送 如有刷屏还请谅解',
     ]
     if region == 1:
         msg2.append('【NEW】使用"b怎么拆"和"台怎么拆"可按服过滤')
