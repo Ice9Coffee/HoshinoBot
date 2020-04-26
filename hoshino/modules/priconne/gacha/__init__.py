@@ -15,7 +15,7 @@ tenjo_limit = DailyNumberLimiter(1)
 GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如欲开启，请与维护组联系'
 JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，欢迎明早5点后再来！'
 TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，欢迎明早5点后再来！'
-SWITCH_POOL_TIP = '【NEW】发送"选择卡池"可切换卡池'
+SWITCH_POOL_TIP = 'β>发送"选择卡池"可切换'
 
 POOL = ('MIX', 'JP', 'TW', 'BL')
 DEFAULT_POOL = POOL[0]
@@ -163,13 +163,11 @@ async def gacha_300(session:CommandSession):
         res = MessageSegment.image(res)
 
     msg1 = [
-        "素敵な仲間が増えますよ！",
-        # f"您今天还剩下{surplus}颗钻！",
-        str(res)
+        f"\n素敵な仲間が増えますよ！ {res}"
     ]
     msg = [
-        f"共计{up+s3}个3★，{s2}个2★，{s1}个1★",
-        f"获得{100*up}个记忆碎片与{50*(up+s3) + 10*s2 + s1}个女神秘石！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得{50*(up+s3) + 10*s2 + s1}个女神秘石！"
+        f"\n★★★×{up+s3} ★★×{s2} ★×{s1}",
+        f"获得记忆碎片×{100*up}与女神秘石×{50*(up+s3) + 10*s2 + s1}！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得女神秘石{50*(up+s3) + 10*s2 + s1}个！"
     ]
 
     if up == 0 and s3 == 0:
