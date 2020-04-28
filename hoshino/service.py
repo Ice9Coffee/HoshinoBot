@@ -20,25 +20,14 @@ from nonebot.command import _FinishException, _PauseException, SwitchException
 
 from hoshino import util, logger
 
-"""
-将一组功能包装为服务
-支持的触发条件: on_message, on_keyword, on_rex, on_command, on_natural_language, scheduled_job
 
-服务的配置文件格式为：
-{
-    "name": "ServiceName",
-    "use_priv": Privilege.NORMAL,
-    "manage_priv": Privilege.ADMIN,
-    "enable_on_default": true/false,
-    "visible": true/false,
-    "enable_group": [],
-    "disable_group": []
-}
-储存位置：~/.hoshino/service_config/{ServiceName}.json
-"""
 
 
 class Privilege:
+    """The privilege of user discribed in an `int` number.
+
+    `0` is for Default or NotSet. The other numbers may change in future versions.
+    """
     BLACK = -999
     DEFAULT = 0
     NORMAL = 1
@@ -105,6 +94,28 @@ def _save_service_config(service):
 
 
 class Service:
+    """将一组功能包装为服务, 提供增强的触发条件与分群权限管理.
+
+    支持的触发条件:
+    `on_message`, `on_keyword`, `on_rex`, `on_command`, `on_natural_language`
+
+    提供接口：
+    `scheduled_job`, `broadcast`
+
+    服务的配置文件格式为：
+    {
+        "name": "ServiceName",
+        "use_priv": Privilege.NORMAL,
+        "manage_priv": Privilege.ADMIN,
+        "enable_on_default": true/false,
+        "visible": true/false,
+        "enable_group": [],
+        "disable_group": []
+    }
+
+    储存位置：
+    `~/.hoshino/service_config/{ServiceName}.json`
+    """
 
     def __init__(self, name, use_priv=None, manage_priv=None, enable_on_default=None, visible=None):
         """
@@ -393,3 +404,6 @@ class Service:
             except Exception as e:
                 self.logger.exception(e)
                 self.logger.error(f"群{gid} 投递{TAG}失败 {type(e)}")
+
+
+__all__ = ('Service', 'Privilege')
