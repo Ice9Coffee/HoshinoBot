@@ -22,12 +22,15 @@ class BattleMaster(object):
     SERVER_JP_NAME = ('jp', 'JP', 'Jp', '日', '日服', str(SERVER_JP))
     SERVER_TW_NAME = ('tw', 'TW', 'Tw', '台', '台服', str(SERVER_TW))
     SERVER_CN_NAME = ('cn', 'CN', 'Cn', '国', '国服', 'B', 'B服', str(SERVER_CN))
+    
+    config = get_config()
 
     def __init__(self, group):
         super().__init__()
         self.group = group
         self.clandao = ClanDao()
         self.memberdao = MemberDao()
+        BattleMaster.config = get_config()
 
 
     @staticmethod
@@ -74,7 +77,7 @@ class BattleMaster(object):
     def get_boss_info(round_, boss, server):
         """@return: boss_max_hp, score_rate"""
         stage = BattleMaster.get_stage(round_)
-        config = get_config()
+        config = BattleMaster.config
         boss_hp = config[ config["BOSS_HP"][server] ][ stage-1 ][ boss-1 ]
         score_rate = config[ config["SCORE_RATE"][server] ][ stage-1 ][ boss-1 ]
         return boss_hp, score_rate
@@ -83,14 +86,14 @@ class BattleMaster(object):
     @staticmethod
     def get_boss_hp(round_, boss, server):
         stage = BattleMaster.get_stage(round_)
-        config = get_config()
+        config = BattleMaster.config
         return config[ config["BOSS_HP"][server] ][ stage-1 ][ boss-1 ]
 
 
     @staticmethod
     def get_score_rate(round_, boss, server):
         stage = BattleMaster.get_stage(round_)
-        config = get_config()
+        config = BattleMaster.config
         return config[ config["SCORE_RATE"][server] ][ stage-1 ][ boss-1 ]
 
 
@@ -239,19 +242,17 @@ class BattleMaster(object):
     def stat_score(self, cid, time):
         '''
         统计cid会各成员的本月总分数
-        return [(uid,alt,name,score)]
+        :return: [(uid,alt,name,score)]
         '''
         clan = self.get_clan(cid)
         if not clan:
             raise NotFoundError(f'未找到公会{cid}')
         server = clan['server']
-        ret = []
         stat = self.stat_challenge(cid, time, only_one_day=False, zone_num=self.get_timezone_num(server))
-        for mem, challens in stat:
-            score = 0
-            for ch in challens:
-                score = score + round( self.get_score_rate(ch['round'], ch['boss'], server) * ch['dmg'] )
-            ret.append( (mem['uid'], mem['alt'], mem['name'], score) )
+        ret = [
+            (mem['uid'], mem['alt'], mem['name'], sum(map(lambda ch: round(self.get_score_rate(ch['round'], ch['boss'], server) * ch['dmg']), challens)))
+            for mem, challens in stat
+        ]
         return ret
 
 
