@@ -12,7 +12,7 @@ api = util.load_config(__file__)['deepchat_api']
 @sv.on_message('group')
 async def deepchat(bot:NoneBot, ctx):
     msg = ctx['message'].extract_plain_text()
-    if not msg or random.random() > 0.040:
+    if not msg or random.random() > 0.025:
         return
     payload = {
         "msg": msg,

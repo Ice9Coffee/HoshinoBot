@@ -422,7 +422,7 @@ async def auto_unsubscribe(bot:NoneBot, ctx:Context_T, gid, uid, boss):
     slist.pop(i)
     mlist.pop(i)
     _save_sub(sub, gid)
-    await bot.send(ctx, f'已为您自动取消{BattleMaster.int2kanji(boss)}王的订阅', at_sender=True)
+    await bot.send(ctx, f'已为{ms.at(uid)}自动取消{BattleMaster.int2kanji(boss)}王的订阅')
 
 
 async def call_subscribe(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
@@ -607,7 +607,7 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     name = list(map(lambda i: i[2], stat))
     y_pos = list(range(yn))
 
-    y_size = 0.3 * yn + 0.7
+    y_size = 0.3 * yn + 1.0
     fig.set_size_inches(10, y_size)
     bars = ax.barh(y_pos, score, align='center')
     ax.set_title(f"\n{yyyy}年{mm}月会战{clan['name']}分数统计")
@@ -620,7 +620,7 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     for rect in bars:
         w = rect.get_width()
         ax.text(w, rect.get_y() + rect.get_height() / 2, f'{w/1e8:.2f}e', ha='left', va='center')
-    plt.subplots_adjust(left=0.10, right=0.96, top=1 - 0.4 / y_size, bottom=0.5 / y_size)
+    plt.subplots_adjust(left=0.12, right=0.96, top=1 - 0.35 / y_size, bottom=0.55 / y_size)
     pic = util.fig2b64(plt)
     plt.close()
 
