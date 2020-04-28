@@ -213,4 +213,4 @@ async def kakin(bot:NoneBot, ctx, match):
             tenjo_limit.reset(uid)
             count += 1
     if count:
-        await bot.send(ctx, f"已为{count}位用户充值完毕！谢谢惠顾～", at_sender=True)
+        await bot.send(ctx, f"已为{count}位用户充值完毕！谢谢惠顾～")

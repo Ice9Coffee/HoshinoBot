@@ -105,12 +105,11 @@ async def _arena_query(session:CommandSession, region:int):
     msg2 = [
         f'为骑士{at}查询到作业评价👍&👎：', 
         *details,
-        '※发送"点赞/点踩+作业id"可进行反馈\n如"点赞 ABCDE" 不分大小写 空格隔开',
-        '※手机QQ更新后无法正常显示图片故分条发送 如有刷屏还请谅解',
+        '※发送"点赞/点踩"可进行评价',
+        '※手机QQ无法正常显示图片故分条发送 如有刷屏还请谅解',
     ]
     if region == 1:
-        msg2.append('【NEW】使用"b怎么拆"和"台怎么拆"可按服过滤')
-    msg2.append('Support by pcrdfans_com')
+        msg2.append('※使用"b怎么拆"或"台怎么拆"可按服过滤')
 
     sv.logger.debug('Arena sending result...')
     await session.send('\n'.join(msg1))
@@ -130,10 +129,12 @@ rex_qkey = re.compile(r'^[0-9a-zA-Z]{5}$')
 async def _arena_feedback(session:CommandSession, action:int):
     action_tip = '赞' if action > 0 else '踩'
     qkey = session.current_arg_text.strip()
-    uid = session.ctx['user_id']
+    if not qkey:
+        session.finish(f'请发送"点{action_tip}+作业id"，如"点{action_tip} ABCDE"，空格隔开不分大小写', at_sender=True)
     if not rex_qkey.match(qkey):
         session.finish(f'您要点{action_tip}的作业id不合法', at_sender=True)
     try:
+        uid = session.ctx['user_id']
         await arena.do_like(qkey, uid, action)
     except KeyError:
         session.finish('无法找到作业id！您只能评价您最近查询过的作业', at_sender=True)

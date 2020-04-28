@@ -63,7 +63,7 @@ def cb_cmd(name, parser:ArgParser) -> Callable:
     return deco
 
 
-from .cmdv1 import *
+# from .cmdv1 import *
 from .cmdv2 import *
 
 
