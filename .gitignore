@@ -1,11 +1,18 @@
-# Config Files and Database
+# Config Files
 config.py
 config.json
+local_coolq_config/
+
+# Database
 db.json
 database.json
 *.db
 *.sqlite
-local_coolq_config/
+res/
+img/
+imgs/
+image/
+images/
 
 # 非公开的组件
 # hoshino/modules/deepchat/
@@ -13,12 +20,6 @@ local_coolq_config/
 # 暂时删除的代码
 TRASH/
 kokkoro-OLD/
-
-# 数据
-img/
-imgs/
-image/
-images/
 
 # VSCode Folder
 .vscode/
