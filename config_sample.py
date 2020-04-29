@@ -20,7 +20,7 @@ HOST = '127.0.0.1'      # Windows本地部署使用此条配置
 IS_CQPRO = False        # 是否使用Pro版酷Q功能
 
 # 资源库文件夹  Nonebot访问本机资源
-RESOURCE_DIR = '~/.hoshino/res/'
+RESOURCE_DIR = './res/'
 
 # 资源库 URL  用于docker中的酷Q读取宿主机资源，注意以'/'结尾
 # 若留空则图片均采用base64编码发送，开销较大但部署方便
@@ -28,7 +28,8 @@ RESOURCE_URL = ''
 
 # 启用的模块
 # 初次尝试部署时请先保持默认
-# 如欲启用新模块，请认真阅读部署说明，逐个配置逐个启用
+# 如欲启用新模块，请认真阅读部署说明，逐个启用逐个配置
+# 切忌一次性开启多个
 MODULES_ON = {
     'botmanage',
     # 'deepchat',
