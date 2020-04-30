@@ -148,7 +148,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     -e CQHTTP_SERVE_DATA_FILES=no \
     -e CQHTTP_USE_HTTP=no \
     -e CQHTTP_USE_WS_REVERSE=yes \
-    -e CQHTTP_WS_REVERSE_API_URL=ws://172.17.0.1:8080/ws/ \
+    -e CQHTTP_WS_REVERSE_URL=ws://172.17.0.1:8080/ws/ \
     -e CQHTTP_WS_REVERSE_USE_UNIVERSAL_CLIENT=yes \
     richardchien/cqhttp:latest
     ```
