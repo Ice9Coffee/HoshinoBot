@@ -237,7 +237,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 > 请先在`config.py`的`MODULES_ON`中取消`mikan`的注释  
 > 本功能默认关闭，在群内发送 "启用 bangumi" 即可开启
 
-番剧订阅数据来自[蜜柑计划 - Mikan Project](https://mikanani.me/)，您可以注册一个帐号，添加订阅的番剧，之后点击Mikan首页的RSS订阅，复制类似于下面的url地址：
+番剧订阅数据来自[蜜柑计划 - Mikan Project](https://mikanani.me/)，您可以注册一个账号，添加订阅的番剧，之后点击Mikan首页的RSS订阅，复制类似于下面的url地址：
 
 ```
 https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
@@ -287,9 +287,9 @@ https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 
 #### 推特转发
 
-推特转发功能需要推特开发者帐号，具体申请方法请自行[Google](http://google.com)。注：现在推特官方大概率拒绝来自中国大陆的新申请，自备海外手机号及大学邮箱可能会帮到您。
+推特转发功能需要推特开发者账号，具体申请方法请自行[Google](http://google.com)。注：现在推特官方大概率拒绝来自中国大陆的新申请，自备海外手机号及大学邮箱可能会帮到您。
 
-若您已有推特开发者帐号，创建文件`hoshino/modules/twitter/config.json`编写以下内容：
+若您已有推特开发者账号，创建文件`hoshino/modules/twitter/config.json`编写以下内容：
 
 ```json
 {

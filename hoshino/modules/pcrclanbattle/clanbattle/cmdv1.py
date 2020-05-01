@@ -115,7 +115,7 @@ async def add_member(session: CommandSession):
 
 
     if battlemaster.add_member(uid, alt, name, cid):
-        await session.send(f'成员添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)\n请检查帐号{uid}（的小号{alt}）是否已存在于其他公会')
+        await session.send(f'成员添加失败...ごめんなさい！嘤嘤嘤(〒︿〒)\n请检查账号{uid}（的小号{alt}）是否已存在于其他公会')
     else:
         msg_alt = f'的{alt}号小号' if alt else ''
         clan_name = clan['name']
