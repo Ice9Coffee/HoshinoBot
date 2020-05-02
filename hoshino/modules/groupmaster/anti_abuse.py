@@ -3,18 +3,20 @@ from datetime import timedelta
 
 import nonebot
 from nonebot import on_command, message_preprocessor, Message, MessageSegment
-from nonebot.command import parse_command
 from nonebot.message import _check_calling_me_nickname
+try:        # TODO: drop support for nonebot v1.5
+    from nonebot.command import parse_command
+except:     # TODO: bump dependence to nonebot v1.6
+    from nonebot.command import CommandManager
+    parse_command = CommandManager().parse_command
 
-from hoshino import logger, util
-from hoshino.service import Service
-from hoshino.res import R
+from hoshino import logger, util, Service, R
 
 bot = nonebot.get_bot()
 BLANK_MESSAGE = Message(MessageSegment.text(''))
 
 @message_preprocessor
-async def black_filter(bot, ctx):
+async def black_filter(bot, ctx, plugin_manager=None):  # plugin_manager is new feature of nonebot v1.6
     first_msg_seg = ctx['message'][0]
     if first_msg_seg.type == 'hb':
         return  # pass normal Luck Money Pack to avoid abuse
