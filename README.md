@@ -99,6 +99,8 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     }
     ```
 
+    关于CQHTTP插件的配置说明，详见 [CQHTTP 文档 -> 配置](https://cqhttp.cc/docs/#/Configuration)
+
 4. 打开一个合适的文件夹，点击资源管理器左上角的 `文件 -> 打开Windows Powershell`
 
 5. 输入以下命令安装依赖
@@ -132,11 +134,11 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 #### Linux 部署
 
-由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/#/Docker)找到详细的说明。下面将带领您进行部署：
+由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/)找到详细的说明。下面将带领您进行部署：
 
 1. 安装 docker：参考https://docs.docker.com/engine/install/debian/
 
-2. 部署 docker：下面一条命令仅供参考，请根据实际情况修改参数
+2. 部署 docker：下面一条命令仅供参考，请根据实际情况修改参数；详细说明可见 [CQHTTP 文档 -> Docker](https://cqhttp.cc/docs/#/Docker)
 
     ```bash
     sudo docker run -d --name=hoshino \
@@ -154,6 +156,8 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     ```
 
     > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q，即可开始使用
+    >
+    > 注：如果你希望先使用酷Q Air进行尝试，请将COOLQ_URL设置为`https://dlsec.cqp.me/cqa-xiaoi`；之后可以用CQP.exe替换CQA.exe以升级，或删除容器重新创建。
 
 3. 回到我们熟悉的命令行，安装 Python 3.8
 
