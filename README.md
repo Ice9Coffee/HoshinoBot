@@ -218,10 +218,17 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 5. 部署 Hoshino 容器
     ```bash
     docker run -d --name=hoshino \
-    -v ~/.hoshino:/root/.hoshino \
+    -v ~/.hoshino/res:/root/.hoshino/res \
     -p 8080:8080 \
     hoshino
     ```
+    > 这里 `-v` 的第一个参数 `~/.hoshino/res` 为宿主机的静态资源路径
+    > 第二个参数 `/root/.hoshino/res` 为 docker 镜像内静态资源路径，需要与 `config.py` 中的 `RESOURCE_DIR` 保持一致
+    >
+    > 示例：
+    > 假设宿主机的静态资源位于 `/whatever/path/res`；`RESOURCE_DIR` 设置为 `~/.hoshino/res`
+    > 容器内默认使用 `root` 用户， `~/.hoshino/res` 即 `/root/.hoshino/res`
+    > 那么挂载参数为 `-v /whatever/path/res:/root/hoshino/res`
 
     可使用 docker logs <container_id> 查看 Hoshino 日志
 
