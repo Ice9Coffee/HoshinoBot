@@ -33,6 +33,7 @@ class Mikan(object):
             link = i.find('./link').text
             description = i.find('./description').text
             pubDate = i.find('.//xmlns:pubDate', namespaces={'xmlns': 'https://mikanani.me/0.1/'}).text
+            pubDate = pubDate[:19]
             pubDate = datetime.strptime(pubDate, r'%Y-%m-%dT%H:%M:%S')
             res.append( (link, description, pubDate) )
         return res
