@@ -34,8 +34,8 @@ async def rank_sheet(bot, ctx, match):
         await util.silence(ctx, 60)
     elif is_cn:
         await bot.send(ctx, '\nB服：开服仅开放至金装，r10前无需考虑卡rank\n※装备强化消耗较多mana，如非前排建议不强化\n※唯一值得考量的是当前只开放至r8-3，保持r7满装满强或许会更强\n※关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
-        await bot.send(ctx, str(p7))
-        await util.silence(ctx, 60)
+        # await bot.send(ctx, str(p7))
+        # await util.silence(ctx, 60)
 
 
 @sv.on_command('arena-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'), only_to_me=False)
@@ -85,9 +85,13 @@ async def bcr_sites(session:CommandSession):
     await session.send(BCR_SITES, at_sender=True)
     await util.silence(session.ctx, 60)
 
-@sv.on_command('arena_diamond', aliases=('jjc钻石', '竞技场钻石', 'jjc钻石查询', '竞技场钻石查询'))
-async def arena_diamond(session:CommandSession):
-    rank = int(session.current_arg_text.strip())
+
+@sv.on_command('arena_miner', aliases=('挖矿', 'jjc钻石', '竞技场钻石', 'jjc钻石查询', '竞技场钻石查询'))
+async def arena_miner(session:CommandSession):
+    try:
+        rank = int(session.current_arg_text)
+    except:
+        session.finish(f'请输入"挖矿 纯数字最高排名"', at_sender=True)
     if (rank > 15000):
         amount = 42029
     elif (rank > 12000):
@@ -114,9 +118,9 @@ async def arena_diamond(session:CommandSession):
         amount = (rank - 1) * 550
     else:
         amount = 0
-    messages = "剩余钻石：" + str(amount)
+    messages = f"矿里还剩{amount}钻石"
     await session.send(messages, at_sender=True)
-    await util.silence(session.ctx, 60)
+
 
 YUKARI_SHEET_ALIAS = map(lambda x: ''.join(x), itertools.product(('黄骑', '酒鬼', '黃騎'), ('充电', '充电表', '充能', '充能表')))
 YUKARI_SHEET = f'''
