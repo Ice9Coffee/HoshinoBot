@@ -131,6 +131,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 
 #### Linux 部署
+##### docker 部署酷Q，直接部署 Hoshino
 
 由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/#/Docker)找到详细的说明。下面将带领您进行部署：
 
@@ -139,7 +140,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 2. 部署 docker：下面一条命令仅供参考，请根据实际情况修改参数
 
     ```bash
-    sudo docker run -d --name=hoshino \
+    sudo docker run -d --name=cqhttp \
     -v $(pwd)/coolq:/home/user/coolq \
     -p 9000:9000 \
     -e VNC_PASSWD=MAXchar8 \
@@ -186,10 +187,43 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     ```
     
     私聊机器人发送`在？`，若机器人有回复，恭喜您！您已经成功搭建起HoshinoBot了。之后您可以尝试在群内发送`!帮助`以查看会战管理的相关说明，发送`help`查看其他一般功能的相关说明，发送`pcr速查`查看常用网址等。
+
+    使用 `python3.8 run.py -d` 以守护进程运行。
     
     注意，此时您的机器人功能还不完全，部分功能可能无法正常工作。若希望您的机器人可以发送图片，或使用其他进阶功能，请参考本章**更进一步**的对应小节。
 
+##### 完全 docker 部署（推荐）
+使用 docker 部署 Hoshino 有更好的隔离性。宿主机也不需要使用虚拟环境管理 python。
 
+1. 酷Q部署同上
+2. 克隆本仓库
+    ```bash
+    git clone https://github.com/Ice-Cirno/HoshinoBot.git
+    cd HoshinoBot
+    ```
+
+3. 编辑配置文件
+    ```bash
+    cp config_sample.py config.py
+    nano config.py
+    ```
+    > 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
+    > 使用 docker 部署时，将 HOST 设置为 0.0.0.0
+    > 
+    > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
+4. 生成 Hoshino 镜像
+    ```bash
+    docker build . -t hoshino
+    ```
+5. 部署 Hoshino 容器
+    ```bash
+    docker run -d --name=hoshino \
+    -v ~/.hoshino:/root/.hoshino \
+    -p 8080:8080 \
+    hoshino
+    ```
+
+    可使用 docker logs <container_id> 查看 Hoshino 日志
 
 ### 更进一步
 
