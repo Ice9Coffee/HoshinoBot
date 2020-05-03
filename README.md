@@ -193,9 +193,21 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     注意，此时您的机器人功能还不完全，部分功能可能无法正常工作。若希望您的机器人可以发送图片，或使用其他进阶功能，请参考本章**更进一步**的对应小节。
 
 ##### 完全 docker 部署（推荐）
-使用 docker 部署 Hoshino 有更好的隔离性。宿主机也不需要使用虚拟环境管理 python。
+使用 docker 部署 Hoshino 有更好的隔离性。宿主机也不需要使用虚拟环境管理 python。使用 docker 网络，避免 Hoshino 端口暴露在外。对外仅暴露 coolq 的 VNC 端口。
 
-1. 酷Q部署同上
+1. 安装 docker：参考https://docs.docker.com/engine/install/debian/
+2. 安装 docker-compose: 参考https://docs.docker.com/compose/install/
+3. 创建 docker 网络 `coolq-bridge`
+    ```bash
+    docker network create coolq-bridge
+    ```
+4. 部署 cqhttp 容器：`coolq-compose.yml` 仅供参考，请根据实际情况修改参数
+
+    ```bash
+    sudo docker-compose -f coolq-compose.yml up -d
+    ```
+
+    > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q，即可开始使用
 2. 克隆本仓库
     ```bash
     git clone https://github.com/Ice-Cirno/HoshinoBot.git
@@ -208,29 +220,34 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     nano config.py
     ```
     > 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
-    > 使用 docker 部署时，将 HOST 设置为 0.0.0.0
+    > 由于使用 docker 网络桥接了 cqhttp 与 Hoshino，因此将 HOST 设置为 127.0.0.1 即可。如有问题，建议直接改为 0.0.0.0
     > 
     > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
-4. 生成 Hoshino 镜像
+4. 生成可运行 Hoshino 的镜像
     ```bash
-    docker build . -t hoshino
+    docker build . -t hoshino-env
     ```
-5. 部署 Hoshino 容器
+5. 部署 Hoshino 容器：`hoshino-compose.yml` 仅供参考，请根据实际情况修改参数
     ```bash
-    docker run -d --name=hoshino \
-    -v ~/.hoshino/res:/root/.hoshino/res \
-    -p 8080:8080 \
-    hoshino
+    docker-compose -f hoshino-compose.yml up -d
     ```
-    > 这里 `-v` 的第一个参数 `~/.hoshino/res` 为宿主机的静态资源路径
-    > 第二个参数 `/root/.hoshino/res` 为 docker 镜像内静态资源路径，需要与 `config.py` 中的 `RESOURCE_DIR` 保持一致
+    > 注意 `volume` 的第二个参数 `~/.hoshino/res:/root/.hoshino/res` 
+    > `~/.hoshino/res` 为宿主机的静态资源路径
+    > `/root/.hoshino/res` 为 docker 镜像内静态资源路径，需要与 `config.py` 中的 `RESOURCE_DIR` 保持一致
     >
     > 示例：
     > 假设宿主机的静态资源位于 `/whatever/path/res`；`RESOURCE_DIR` 设置为 `~/.hoshino/res`
-    > 容器内默认使用 `root` 用户， `~/.hoshino/res` 即 `/root/.hoshino/res`
-    > 那么挂载参数为 `-v /whatever/path/res:/root/hoshino/res`
+    > 容器内默认使用 `root` 用户， 因此容器内的路径 `~/.hoshino/res` 就相当于 `/root/.hoshino/res`
+    > 那么 `volume` 的第二个参数就应该是 `/whatever/path/res:/root/hoshino/res`
 
-    可使用 docker logs <container_id> 查看 Hoshino 日志
+    可使用 `docker logs <container_id>` 查看 Hoshino 日志
+
+6. 代码更新
+    如果后续对 Hoshino 有任何改动，利用 docker-compose 可以快速重启
+    ```bash
+    docker-compose -f hoshino-compose.yml down
+    docker-compose -f hoshino-compose.yml up -d
+    ```
 
 ### 更进一步
 

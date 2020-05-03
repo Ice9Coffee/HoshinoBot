@@ -1,0 +1,22 @@
+version: "3"
+services:
+  cqhttp:
+    image: richardchien/cqhttp:latest
+    volumes:
+      - ./coolq:/home/user/coolq
+    environment:
+      - VNC_PASSWD=MAXchar8
+      - COOLQ_ACCOUNT=12345678
+      - COOLQ_URL=https://dlsec.cqp.me/cqp-full
+      - CQHTTP_SERVE_DATA_FILES=no
+      - CQHTTP_USE_HTTP=no
+      - CQHTTP_USE_WS_REVERSE=yes
+      - CQHTTP_WS_REVERSE_URL=ws://hoshino-env:8080/ws/
+      - CQHTTP_WS_REVERSE_USE_UNIVERSAL_CLIENT=yes
+    ports: 
+      - 9000:9000
+    networks:
+      - coolq-bridge
+networks:
+  coolq-bridge:
+    external: true

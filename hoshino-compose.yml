@@ -1,0 +1,15 @@
+version: "3"
+services:
+  hoshino-env:
+    image: hoshino-env:latest
+    expose:
+      - 8080
+    volumes:
+      - ./:/bot/
+      - ~/.hoshino/res/:/root/.hoshino/res/
+    command: python3.8 /bot/run.py
+    networks:
+      - coolq-bridge
+networks:
+  coolq-bridge:
+    external: true
