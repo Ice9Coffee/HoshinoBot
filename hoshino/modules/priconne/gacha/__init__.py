@@ -7,7 +7,6 @@ from hoshino.util import silence, concat_pic, pic2b64, DailyNumberLimiter
 
 from .gacha import Gacha
 from ..chara import Chara
-from hoshino.log import logger
 
 import os
 import json
@@ -20,7 +19,7 @@ GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如欲开启，请与维护
 JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，欢迎明早5点后再来！'
 TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，欢迎明早5点后再来！'
 SWITCH_POOL_TIP = 'β>发送"选择卡池"可切换'
-filename = os.path.join(os.path.dirname(__file__), 'group_pool_config.json')
+filename = os.path.expanduser('~/.hoshino/group_pool_config.json')
 POOL = ('MIX', 'JP', 'TW', 'BL')
 DEFAULT_POOL = POOL[0]
 try:
@@ -28,7 +27,7 @@ try:
         group_pool = json.load(f)
 except Exception as e:
     group_pool = {}
-    logger.exception(e)
+    sv.logger.exception(e)
 _group_pool = defaultdict(lambda: DEFAULT_POOL, group_pool)
 
 gacha_10_aliases = ('抽十连', '十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
@@ -79,7 +78,7 @@ async def set_pool(session: CommandSession):
         with open(filename, 'w', encoding='utf8') as f:
             json.dump(_group_pool, f, indent=4)
     except Exception as e:
-        logger.exception(e)
+        sv.logger.exception(e)
     await session.send(f'卡池已切换为{name}池', at_sender=True)
 
 
