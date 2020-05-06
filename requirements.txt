@@ -8,3 +8,4 @@ zhconv>=1.4.0
 Pillow>=6.2.1
 TwitterAPI>=2.5.10
 matplotlib>=3.2.0
+numpy>=1.18.0
