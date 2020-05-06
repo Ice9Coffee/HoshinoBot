@@ -1,5 +1,10 @@
+import os
 import random
 from collections import defaultdict
+try:
+    import ujson as json
+except:
+    import json
 
 from hoshino import util
 from hoshino import NoneBot, CommandSession, MessageSegment, Service, Privilege as Priv
@@ -7,9 +12,6 @@ from hoshino.util import silence, concat_pic, pic2b64, DailyNumberLimiter
 
 from .gacha import Gacha
 from ..chara import Chara
-
-import os
-import json
 
 sv = Service('gacha')
 jewel_limit = DailyNumberLimiter(6000)
@@ -19,16 +21,22 @@ GACHA_DISABLE_NOTICE = '本群转蛋功能已禁用\n如欲开启，请与维护
 JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，欢迎明早5点后再来！'
 TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，欢迎明早5点后再来！'
 SWITCH_POOL_TIP = 'β>发送"选择卡池"可切换'
-filename = os.path.expanduser('~/.hoshino/group_pool_config.json')
 POOL = ('MIX', 'JP', 'TW', 'BL')
 DEFAULT_POOL = POOL[0]
+
+_pool_config_file = os.path.expanduser('~/.hoshino/group_pool_config.json')
 try:
-    with open(filename, encoding='utf8') as f:
-        group_pool = json.load(f)
+    with open(_pool_config_file, encoding='utf8') as f:
+        _group_pool = json.load(f)
 except Exception as e:
-    group_pool = {}
+    _group_pool = {}
     sv.logger.exception(e)
-_group_pool = defaultdict(lambda: DEFAULT_POOL, group_pool)
+_group_pool = defaultdict(lambda: DEFAULT_POOL, _group_pool)
+
+def dump_pool_config():
+    with open(_pool_config_file, 'w', encoding='utf8') as f:
+        json.dump(_group_pool, f, ensure_ascii=False)
+
 
 gacha_10_aliases = ('抽十连', '十连', '十连！', '十连抽', '来个十连', '来发十连', '来次十连', '抽个十连', '抽发十连', '抽次十连', '十连扭蛋', '扭蛋十连',
                     '10连', '10连！', '10连抽', '来个10连', '来发10连', '来次10连', '抽个10连', '抽发10连', '抽次10连', '10连扭蛋', '扭蛋10连',
@@ -36,12 +44,10 @@ gacha_10_aliases = ('抽十连', '十连', '十连！', '十连抽', '来个十�
                     '10連', '10連！', '10連抽', '來個10連', '來發10連', '來次10連', '抽個10連', '抽發10連', '抽次10連', '10連轉蛋', '轉蛋10連')
 gacha_1_aliases = ('单抽', '单抽！', '来发单抽', '来个单抽', '来次单抽', '扭蛋单抽', '单抽扭蛋',
                    '單抽', '單抽！', '來發單抽', '來個單抽', '來次單抽', '轉蛋單抽', '單抽轉蛋')
-gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井',
-                     '天井扭蛋', '扭蛋天井', '天井轉蛋', '轉蛋天井')
-
+gacha_300_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天井扭蛋', '扭蛋天井', '天井轉蛋', '轉蛋天井')
 
 @sv.on_command('卡池资讯', deny_tip=GACHA_DISABLE_NOTICE, aliases=('查看卡池', '看看卡池', '康康卡池', '卡池資訊', '看看up', '看看UP'), only_to_me=False)
-async def gacha_info(session: CommandSession):
+async def gacha_info(session:CommandSession):
     gid = str(session.ctx['group_id'])
     gacha = Gacha(_group_pool[gid])
     up_chara = gacha.up
@@ -54,7 +60,7 @@ async def gacha_info(session: CommandSession):
 
 POOL_NAME_TIP = '请选择以下卡池\n> 选择卡池 jp\n> 选择卡池 tw\n> 选择卡池 bilibili\n> 选择卡池 mix'
 @sv.on_command('切换卡池', aliases=('选择卡池', '切換卡池', '選擇卡池'), only_to_me=False)
-async def set_pool(session: CommandSession):
+async def set_pool(session:CommandSession):
     if not sv.check_priv(session.ctx, required_priv=Priv.ADMIN):
         session.finish('只有群管理才能切换卡池', at_sender=True)
     name = util.normalize_str(session.current_arg_text)
@@ -74,12 +80,8 @@ async def set_pool(session: CommandSession):
         session.finish(f'未知服务器地区 {POOL_NAME_TIP}', at_sender=True)
     gid = str(session.ctx['group_id'])
     _group_pool[gid] = name
-    try:
-        with open(filename, 'w', encoding='utf8') as f:
-            json.dump(_group_pool, f, indent=4)
-    except Exception as e:
-        sv.logger.exception(e)
     await session.send(f'卡池已切换为{name}池', at_sender=True)
+    dump_pool_config()
 
 
 async def check_jewel_num(session):
@@ -94,8 +96,8 @@ async def check_tenjo_num(session):
         await session.finish(TENJO_EXCEED_NOTICE, at_sender=True)
 
 
-@sv.on_command('gacha_1', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_1_aliases, only_to_me=False)
-async def gacha_1(session: CommandSession):
+@sv.on_command('gacha_1', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_1_aliases, only_to_me=True)
+async def gacha_1(session:CommandSession):
 
     await check_jewel_num(session)
     uid = session.ctx['user_id']
@@ -103,8 +105,7 @@ async def gacha_1(session: CommandSession):
 
     gid = str(session.ctx['group_id'])
     gacha = Gacha(_group_pool[gid])
-    chara, hiishi = gacha.gacha_one(
-        gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
+    chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
     res = f'{chara.name} {"★"*chara.star}'
@@ -115,8 +116,8 @@ async def gacha_1(session: CommandSession):
     await session.send(f'素敵な仲間が増えますよ！\n{res}\n{SWITCH_POOL_TIP}', at_sender=True)
 
 
-@sv.on_command('gacha_10', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_10_aliases, only_to_me=False)
-async def gacha_10(session: CommandSession):
+@sv.on_command('gacha_10', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_10_aliases, only_to_me=True)
+async def gacha_10(session:CommandSession):
     SUPER_LUCKY_LINE = 170
 
     await check_jewel_num(session)
@@ -150,8 +151,8 @@ async def gacha_10(session: CommandSession):
     await silence(session.ctx, silence_time)
 
 
-@sv.on_command('gacha_300', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_300_aliases, only_to_me=False)
-async def gacha_300(session: CommandSession):
+@sv.on_command('gacha_300', deny_tip=GACHA_DISABLE_NOTICE, aliases=gacha_300_aliases, only_to_me=True)
+async def gacha_300(session:CommandSession):
 
     await check_tenjo_num(session)
     uid = session.ctx['user_id']
@@ -180,11 +181,9 @@ async def gacha_300(session: CommandSession):
         res = pic2b64(res)
         res = MessageSegment.image(res)
 
-    msg1 = [
-        f"\n素敵な仲間が増えますよ！ {res}"
-    ]
     msg = [
-        f"\n★★★×{up+s3} ★★×{s2} ★×{s1}",
+        f"\n素敵な仲間が増えますよ！ {res}",
+        f"★★★×{up+s3} ★★×{s2} ★×{s1}",
         f"获得记忆碎片×{100*up}与女神秘石×{50*(up+s3) + 10*s2 + s1}！\n第{result['first_up_pos']}抽首次获得up角色" if up else f"获得女神秘石{50*(up+s3) + 10*s2 + s1}个！"
     ]
 
@@ -213,7 +212,6 @@ async def gacha_300(session: CommandSession):
         msg.append("记忆碎片一大堆！您是托吧？")
     msg.append(SWITCH_POOL_TIP)
 
-    await session.send('\n'.join(msg1), at_sender=True)
     await session.send('\n'.join(msg), at_sender=True)
     silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
     await silence(session.ctx, silence_time)
