@@ -80,8 +80,9 @@ async def set_pool(session:CommandSession):
         session.finish(f'未知服务器地区 {POOL_NAME_TIP}', at_sender=True)
     gid = str(session.ctx['group_id'])
     _group_pool[gid] = name
-    await session.send(f'卡池已切换为{name}池', at_sender=True)
     dump_pool_config()
+    await session.send(f'卡池已切换为{name}池', at_sender=True)
+    await gacha_info(session)
 
 
 async def check_jewel_num(session):
