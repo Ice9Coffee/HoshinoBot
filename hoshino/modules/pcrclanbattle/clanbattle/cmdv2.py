@@ -619,7 +619,7 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     ax.ticklabel_format(axis='x', style='plain')
     for rect in bars:
         w = rect.get_width()
-        ax.text(w, rect.get_y() + rect.get_height() / 2, f'{w/1e8:.2f}e', ha='left', va='center')
+        ax.text(w, rect.get_y() + rect.get_height() / 2, f'{w/1e4:.1f}w', ha='left', va='center')
     plt.subplots_adjust(left=0.12, right=0.96, top=1 - 0.35 / y_size, bottom=0.55 / y_size)
     pic = util.fig2b64(plt)
     plt.close()
