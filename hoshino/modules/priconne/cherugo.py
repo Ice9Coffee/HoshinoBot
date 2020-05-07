@@ -25,14 +25,14 @@ def grouper(iterable, n, fillvalue=None):
     args = [iter(iterable)] * n
     return zip_longest(*args, fillvalue=fillvalue)
 
-def word2cheru(w:str):
+def word2cheru(w:str) -> str:
     c = ['切']
     for b in w.encode(ENCODING):
         c.append(CHERU_SET[b & 0xf])
         c.append(CHERU_SET[(b >> 4) & 0xf])
     return ''.join(c)
 
-def cheru2word(c:str):
+def cheru2word(c:str) -> str:
     if not c[0] == '切' or len(c) < 2:
         return c
     b = []
@@ -42,7 +42,7 @@ def cheru2word(c:str):
         b.append(x)
     return bytes(b).decode(ENCODING, 'replace')
 
-def str2cheru(s:str):
+def str2cheru(s:str) -> str:
     c = []
     for w in rex_split.split(s):
         if rex_word.search(w):
@@ -50,7 +50,7 @@ def str2cheru(s:str):
         c.append(w)
     return ''.join(c)
 
-def cheru2str(c:str):
+def cheru2str(c:str) -> str:
     s = []
     for w in rex_split.split(c):
         if rex_word.search(w):
