@@ -249,13 +249,13 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 ```
 
-保留其中的`token`参数，创建文件`hoshino\modules\subscribe\mikan\config.json`编写以下内容：
+保留其中的`token`参数，创建文件`hoshino\modules\mikan\config.json`编写以下内容：
 
 ```json
 {"MIKAN_TOKEN" : "abcdfegABCFEFG+123=="}
 ```
 
-注意：`token`中可能含有url转义，您需要将`%2b`替换为`+`，将`%3d`替换为`=`。
+注意：`token`中可能含有url转义，您需要将`%2b`替换为`+`，将`%2f`替换为`/`，将`%3d`替换为`=`。
 
 
 
