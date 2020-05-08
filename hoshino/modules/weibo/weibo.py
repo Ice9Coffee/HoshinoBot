@@ -9,13 +9,23 @@ from collections import OrderedDict
 from datetime import date, datetime, timedelta
 from time import sleep
 
-import requests
+import httpx as requests
 from lxml import etree
 from hoshino.service import Service, Privilege as Priv
 from hoshino import util, logger
 from hoshino.res import R
 
 sv = Service('weibo-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
+user_configs = util.load_config(__file__)
+'''
+sample config.json
+
+[{
+    "user_id": "6603867494",
+    "service_name": "pcr-weibo",
+    "filter": true
+}]
+'''
 
 class Weibo(object):
     def __init__(self, config):
@@ -83,20 +93,18 @@ class Weibo(object):
 
     def validate_config(self, config):
         """验证配置是否正确"""
+        exist_argument_list = ['user_id', 'service_name']
+        true_false_argument_list = ['filter']
 
-        # 验证filter、original_pic_download、retweet_pic_download、original_video_download、retweet_video_download
-        argument_list = [
-            'filter'
-        ]
-        for argument in argument_list:
-            if config[argument] != 0 and config[argument] != 1:
-                logger.error(u'%s值应为0或1,请重新输入' % config[argument])
+        for argument in true_false_argument_list:
+            if argument not in config:
+                logger.error(f'请填写 {argument}')
+            if config[argument] != True and config[argument] != False:
+                logger.error(f'{argument} 值应为 True 或 False,请重新输入')
 
-        # 验证user_id_list
-        if "user_id" not in config:
-            logger.error(u'请填写用户 id')
-        if "service_name" not in config:
-            logger.error(u'请填写所属服务名')
+        for argument in exist_argument_list: 
+            if argument not in config:
+                logger.error(f'请填写 {argument}')
 
     def get_pics(self, weibo_info):
         """获取微博原始图片url"""
@@ -409,11 +417,10 @@ class Weibo(object):
             return []
 
 
-user_configs = util.load_config(__file__)
 subr_dic = {}
 
 for config in user_configs:
-    print(config)
+    sv.logger.debug(config)
     wb = Weibo(config)
     service_name = config["service_name"]
 
@@ -437,7 +444,7 @@ def wb_to_message(wb):
         msg = f'{msg}\n视频链接：{res_videos}'
     return msg
 
-@sv.scheduled_job('interval', seconds=20*60)
+@sv.scheduled_job('interval', seconds=10)
 async def weibo_poller():
     for sv_name, serviceObj in subr_dic.items():
         weibos = []

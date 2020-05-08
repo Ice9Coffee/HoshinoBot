@@ -1,6 +1,7 @@
 import os
+import asyncio
 from PIL import Image
-import requests
+import httpx as requests
 from io import BytesIO
 from urllib.request import pathname2url
 from urllib.parse import urljoin
