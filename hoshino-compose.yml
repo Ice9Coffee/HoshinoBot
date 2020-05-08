@@ -6,7 +6,7 @@ services:
       - 8080
     volumes:
       - ./:/bot/
-      - ~/.hoshino/res/:/root/.hoshino/res/
+      - ~/.hoshino:/root/.hoshino # 如果你的静态资源不在 .hoshino 目录下，请在下面加一行挂在参数
     command: python3.8 /bot/run.py
     networks:
       - coolq-bridge
