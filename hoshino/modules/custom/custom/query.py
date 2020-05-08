@@ -1,5 +1,5 @@
 from . import sv
-from hoshino import R, CommandSession,util
+from hoshino import R, CommandSession, util
 
 
 p1 = R.img('priconne/quick/qian.png').cqcode
@@ -57,7 +57,7 @@ async def arena_miner(session: CommandSession):
         amount = (rank - 1) * 550
     else:
         amount = 0
-    amount=int(amount)
+    amount = int(amount)
     messages = f"矿里还剩{amount}钻石"
     await session.send(messages, at_sender=True)
 
@@ -78,13 +78,11 @@ YUKARI_SHEET = f'''
 ※我方羊驼算一号位'''
 @sv.on_command('yukari_charge', aliases=('黄骑充电', '黄骑充电表', '酒鬼充电', '酒鬼充电表'))
 async def yukari(session: CommandSession):
+    await session.send('图片较大，请稍等片刻',)
     await session.send(YUKARI_SHEET, at_sender=True)
     await util.silence(session.ctx, 60)
 
-bequip=R.img('priconne/quick/孤儿装.png').cqcode
-equip_sheet=f'\n{bequip}\nby 狐贯一 from 17173'
-@sv.on_command('bguer',aliases=('B孤儿装','国服孤儿装','B服孤儿装','b孤儿装'))
-async def equip(session: CommandSession):
-    await session.send('图片较大，请稍等片刻',)
-    await session.send(equip_sheet, at_sender=True)
+@sv.on_command('star',aliases=('星级表','升星表'))
+async def star(session: CommandSession):
+    await session.send(R.img('priconne/quick/star.jpg').cqcode, at_sender=True)
     await util.silence(session.ctx, 60)
