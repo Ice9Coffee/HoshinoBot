@@ -31,7 +31,7 @@ async def arena_miner(session):
         rank = np.clip(rank, 1, 15001)
     except:
         session.finish(f'请输入"挖矿 纯数字最高排名"', at_sender=True)
-    s1 = all_season[1:rank].sum()
-    s2 = this_season[1:rank].sum()
-    msg = f"\n最高排名奖励还剩 {s1} 钻\n历届最高排名还剩 {s2} 钻"
+    s_all = int(all_season[1:rank].sum())
+    s_this = int(this_season[1:rank].sum())
+    msg = f"\n最高排名奖励还剩 {s_this} 钻\n历届最高排名还剩 {s_all} 钻"
     await session.send(msg, at_sender=True)
