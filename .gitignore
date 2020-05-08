@@ -24,6 +24,9 @@ kokkoro-OLD/
 # VSCode Folder
 .vscode/
 
+#coolq
+coolq/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
