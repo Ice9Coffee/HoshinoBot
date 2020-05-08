@@ -43,4 +43,5 @@ MODULES_ON = {
     # 'setu',
     'translate',
     # 'twitter',
+    # 'weibo'
 }
