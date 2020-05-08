@@ -1,51 +1,42 @@
 # -*- coding: UTF-8 -*-
 
 import json
-import os
 import random
 import sys
-import traceback
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 from time import sleep
 
-import httpx as requests
+import httpx
 from lxml import etree
-from hoshino.service import Service, Privilege as Priv
-from hoshino import util, logger
-from hoshino.res import R
+from hoshino import logger
+from .exception import *
 
-sv = Service('weibo-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
-user_configs = util.load_config(__file__)
-'''
-sample config.json
-
-[{
-    "user_id": "6603867494",
-    "service_name": "pcr-weibo",
-    "filter": true
-}]
-'''
-
-class Weibo(object):
+class WeiboSpider(object):
     def __init__(self, config):
         """Weibo类初始化"""
         self.validate_config(config)
-        self.filter = config['filter']  
-        self.user = self.get_user_info(config["user_id"])
-
+        self.filter = config['filter'] 
+        self.user_id = config['user_id']
+        self.user = self.get_user_info(self.user_id)
         self.__recent = False
 
-    def get_json(self, params):
+    async def get_json(self, params):
         """获取网页中json数据"""
         url = 'https://m.weibo.cn/api/container/getIndex?'
-        r = requests.get(url, params=params)
+        async with httpx.AsyncClient() as client:
+            r = await client.get(url, params=params)
+            return r.json()
+
+    def sync_get_json(self, params):
+        url = 'https://m.weibo.cn/api/container/getIndex?'
+        r = httpx.get(url, params=params)
         return r.json()
 
     def get_user_info(self, user_id):
         """获取用户信息"""
         params = {'containerid': '100505' + str(user_id)}
-        js = self.get_json(params)
+        js = self.sync_get_json(params)
         if js['ok']:
             info = js['data']['userInfo']
             user_info = OrderedDict()
@@ -66,7 +57,7 @@ class Weibo(object):
             ]
             for i in en_list:
                 user_info[i] = ''
-            js = self.get_json(params)
+            js = self.sync_get_json(params)
             if js['ok']:
                 cards = js['data']['cards']
                 if isinstance(cards, list) and len(cards) > 1:
@@ -98,13 +89,13 @@ class Weibo(object):
 
         for argument in true_false_argument_list:
             if argument not in config:
-                logger.error(f'请填写 {argument}')
+                raise NotFoundError(f'未找到参数{argument}')
             if config[argument] != True and config[argument] != False:
-                logger.error(f'{argument} 值应为 True 或 False,请重新输入')
+                raise ParseError(f'{argument} 值应为 True 或 False')
 
         for argument in exist_argument_list: 
             if argument not in config:
-                logger.error(f'请填写 {argument}')
+                raise NotFoundError(f'未找到参数{argument}')
 
     def get_pics(self, weibo_info):
         """获取微博原始图片url"""
@@ -305,32 +296,34 @@ class Weibo(object):
         return self.user["screen_name"]
     
     def get_user_id(self):
-        return self.user["id"]
+        return self.user_id
 
-    def get_weibo_json(self, page):
+    async def get_weibo_json(self, page):
         """获取网页中微博json数据"""
         params = {
             'containerid': '107603' + self.get_user_id(),
             'page': page
         }
-        js = self.get_json(params)
+        js = await self.get_json(params)
         return js
 
-    def get_long_weibo(self, id):
+    async def get_long_weibo(self, id):
         """获取长微博"""
         for i in range(5):
             url = 'https://m.weibo.cn/detail/%s' % id
-            html = requests.get(url).text
-            html = html[html.find('"status":'):]
-            html = html[:html.rfind('"hotScheme"')]
-            html = html[:html.rfind(',')]
-            html = '{' + html + '}'
-            js = json.loads(html, strict=False)
-            weibo_info = js.get('status')
-            if weibo_info:
-                weibo = self.parse_weibo(weibo_info)
-                return weibo
-            sleep(random.randint(6, 10))
+            async with httpx.AsyncClient() as client:
+                html = await client.get(url)
+                html = html.text
+                html = html[html.find('"status":'):]
+                html = html[:html.rfind('"hotScheme"')]
+                html = html[:html.rfind(',')]
+                html = '{' + html + '}'
+                js = json.loads(html, strict=False)
+                weibo_info = js.get('status')
+                if weibo_info:
+                    weibo = self.parse_weibo(weibo_info)
+                    return weibo
+                sleep(random.randint(6, 10))
 
     def print_user_info(self):
         """打印用户信息"""
@@ -355,7 +348,7 @@ class Weibo(object):
         logger.info(self.user['description'])
         logger.info('+' * 100)
 
-    def get_one_weibo(self, info):
+    async def get_one_weibo(self, info):
         """获取一条微博的全部信息"""
         try:
             weibo_info = info['mblog']
@@ -366,13 +359,13 @@ class Weibo(object):
                 retweet_id = retweeted_status.get('id')
                 is_long_retweet = retweeted_status.get('isLongText')
                 if is_long:
-                    weibo = self.get_long_weibo(weibo_id)
+                    weibo = await self.get_long_weibo(weibo_id)
                     if not weibo:
                         weibo = self.parse_weibo(weibo_info)
                 else:
                     weibo = self.parse_weibo(weibo_info)
                 if is_long_retweet:
-                    retweet = self.get_long_weibo(retweet_id)
+                    retweet = await self.get_long_weibo(retweet_id)
                     if not retweet:
                         retweet = self.parse_weibo(retweeted_status)
                 else:
@@ -382,7 +375,7 @@ class Weibo(object):
                 weibo['retweet'] = retweet
             else:  # 原创
                 if is_long:
-                    weibo = self.get_long_weibo(weibo_id)
+                    weibo = await self.get_long_weibo(weibo_id)
                     if not weibo:
                         weibo = self.parse_weibo(weibo_info)
                 else:
@@ -394,15 +387,15 @@ class Weibo(object):
             logger.exception(e)
             self.__recent = False
 
-    def get_latest_weibos(self):
+    async def get_latest_weibos(self):
         try:
             latest_weibos = []
-            js = self.get_weibo_json(1)
+            js = await self.get_weibo_json(1)
             if js['ok']:
                 weibos = js['data']['cards']
                 for w in weibos:
                     if w['card_type'] == 9:
-                        wb = self.get_one_weibo(w)
+                        wb = await self.get_one_weibo(w)
                         if wb:
                             if not self.__recent:
                                 continue
@@ -415,49 +408,3 @@ class Weibo(object):
         except Exception as e:
             logger.exception(e)
             return []
-
-
-subr_dic = {}
-
-for config in user_configs:
-    sv.logger.debug(config)
-    wb = Weibo(config)
-    service_name = config["service_name"]
-
-    if service_name not in subr_dic:
-        subService = Service(service_name, enable_on_default=True)
-        subr_dic[service_name] = {"service": subService, "spiders": [wb]}
-    else:
-        subr_dic[service_name]["spiders"].append(wb)
-
-def wb_to_message(wb):
-    msg = f'@{wb["screen_name"]}:\n{wb["text"]}'
-    if sv.bot.config.IS_CQPRO and len(wb["pics"]) > 0:
-        images_url = wb["pics"]
-        msg = f'{msg}\n'
-        res_imgs = [R.remote_img(url).cqcode for url in images_url]
-        for img in res_imgs:
-            msg = f'{msg}{img}'
-    if len(wb["video_url"]) > 0:
-        videos = wb["video_url"]
-        res_videos = ';'.join(videos)
-        msg = f'{msg}\n视频链接：{res_videos}'
-    return msg
-
-@sv.scheduled_job('interval', seconds=10)
-async def weibo_poller():
-    for sv_name, serviceObj in subr_dic.items():
-        weibos = []
-        ssv = serviceObj["service"]
-        spiders = serviceObj["spiders"]
-        for spider in spiders:
-            latest_weibos = spider.get_latest_weibos()
-            formatted_weibos = [wb_to_message(wb) for wb in latest_weibos]
-
-            if l := len(formatted_weibos):
-                sv.logger.info(f"成功获取@{spider.get_username()}的新微博{l}条")
-            else:
-                sv.logger.info(f"未检测到@{spider.get_username()}的新微博")
-
-            weibos.extend(formatted_weibos)
-        await ssv.broadcast(weibos, ssv.name, 0.5)
