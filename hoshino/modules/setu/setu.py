@@ -48,6 +48,8 @@ async def setu(bot:NoneBot, ctx, match):
     pic = get_setu()
     try:
         await bot.send(ctx, pic)
+        await bot.send(ctx,'臭死宅，快去冲！五分钟之内憋给我出现！')
+        await util.silence(ctx, 300)
     except CQHttpError:
         sv.logger.error(f"发送图片{pic.data['file']}失败")
         try:
