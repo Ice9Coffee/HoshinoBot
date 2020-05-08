@@ -1,5 +1,7 @@
 import os
 from PIL import Image
+import requests
+from io import BytesIO
 from urllib.request import pathname2url
 from urllib.parse import urljoin
 
@@ -19,7 +21,27 @@ class R:
     def img(path, *paths):
         return ResImg(os.path.join('img', path, *paths))
 
+    @staticmethod
+    def remote_img(url):
+        return RemoteResImg(url)
 
+class RemoteResObj:
+    def __init__(self, url):
+        self.__path = url
+    
+    @property
+    def url(self):
+        return self.__path
+
+class RemoteResImg(RemoteResObj):
+    @property
+    def cqcode(self) -> MessageSegment:
+        return MessageSegment.image(self.url)
+    
+    def open(self) -> Image:
+        response = requests.get(self.url)
+        return Image.open(BytesIO(response))
+    
 
 class ResObj:
 

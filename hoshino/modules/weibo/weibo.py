@@ -13,6 +13,7 @@ import requests
 from lxml import etree
 from hoshino.service import Service, Privilege as Priv
 from hoshino import util, logger
+from hoshino.res import R
 
 sv = Service('weibo-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
 
@@ -22,9 +23,8 @@ class Weibo(object):
         self.validate_config(config)
         self.filter = config['filter']  
         self.user = self.get_user_info(config["user_id"])
-        self.got_count = 0  # 存储爬取到的微博数
-        self.weibo = []  # 存储爬取到的所有微博信息
-        self.weibo_id_list = []  # 存储爬取到的所有微博id
+
+        self.__recent = False
 
     def get_json(self, params):
         """获取网页中json数据"""
@@ -103,10 +103,9 @@ class Weibo(object):
         if weibo_info.get('pics'):
             pic_info = weibo_info['pics']
             pic_list = [pic['large']['url'] for pic in pic_info]
-            pics = ','.join(pic_list)
         else:
-            pics = ''
-        return pics
+            pic_list = []
+        return pic_list
 
     def get_live_photo(self, weibo_info):
         """获取live photo中的视频url"""
@@ -142,7 +141,7 @@ class Weibo(object):
         live_photo_list = self.get_live_photo(weibo_info)
         if live_photo_list:
             video_url_list += live_photo_list
-        return ';'.join(video_url_list)
+        return video_url_list
 
     def get_location(self, selector):
         """获取微博发布位置"""
@@ -205,20 +204,25 @@ class Weibo(object):
         """标准化微博发布时间"""
         if u"刚刚" in created_at:
             created_at = datetime.now().strftime("%Y-%m-%d")
+            self.__recent = True
         elif u"分钟" in created_at:
             minute = created_at[:created_at.find(u"分钟")]
             minute = timedelta(minutes=int(minute))
             created_at = (datetime.now() - minute).strftime("%Y-%m-%d")
+            self.__recent = True
         elif u"小时" in created_at:
             hour = created_at[:created_at.find(u"小时")]
             hour = timedelta(hours=int(hour))
             created_at = (datetime.now() - hour).strftime("%Y-%m-%d")
+            self.__recent = False
         elif u"昨天" in created_at:
             day = timedelta(days=1)
             created_at = (datetime.now() - day).strftime("%Y-%m-%d")
+            self.__recent = False
         elif created_at.count('-') == 1:
             year = datetime.now().strftime("%Y")
             created_at = year + "-" + created_at
+            self.__recent = False
         return created_at
 
     def standardize_info(self, weibo):
@@ -380,6 +384,7 @@ class Weibo(object):
             return weibo
         except Exception as e:
             logger.exception(e)
+            self.__recent = False
 
     def get_latest_weibos(self):
         try:
@@ -391,16 +396,11 @@ class Weibo(object):
                     if w['card_type'] == 9:
                         wb = self.get_one_weibo(w)
                         if wb:
-                            if wb['created_at'] != str(date.today()):
-                                continue
-                            if wb['id'] in self.weibo_id_list:
+                            if not self.__recent:
                                 continue
                             if (not self.filter) or (
                                     'retweet' not in wb.keys()):
-                                self.weibo.append(wb)
                                 latest_weibos.append(wb)
-                                self.weibo_id_list.append(wb['id'])
-                                self.got_count += 1
                                 self.print_weibo(wb)
                             
             return latest_weibos
@@ -416,14 +416,28 @@ for config in user_configs:
     print(config)
     wb = Weibo(config)
     service_name = config["service_name"]
-    subService = Service(service_name, enable_on_default=True)
 
     if service_name not in subr_dic:
+        subService = Service(service_name, enable_on_default=True)
         subr_dic[service_name] = {"service": subService, "spiders": [wb]}
     else:
         subr_dic[service_name]["spiders"].append(wb)
 
-@sv.scheduled_job('interval', seconds=60 * 20)
+def wb_to_message(wb):
+    msg = f'@{wb["screen_name"]}:\n{wb["text"]}'
+    if sv.bot.config.IS_CQPRO and len(wb["pics"]) > 0:
+        images_url = wb["pics"]
+        msg = f'{msg}\n'
+        res_imgs = [R.remote_img(url).cqcode for url in images_url]
+        for img in res_imgs:
+            msg = f'{msg}{img}'
+    if len(wb["video_url"]) > 0:
+        videos = wb["video_url"]
+        res_videos = ';'.join(videos)
+        msg = f'{msg}\n视频链接：{res_videos}'
+    return msg
+
+@sv.scheduled_job('interval', seconds=20*60)
 async def weibo_poller():
     for sv_name, serviceObj in subr_dic.items():
         weibos = []
@@ -431,7 +445,7 @@ async def weibo_poller():
         spiders = serviceObj["spiders"]
         for spider in spiders:
             latest_weibos = spider.get_latest_weibos()
-            formatted_weibos = [wb["text"] for wb in latest_weibos]
+            formatted_weibos = [wb_to_message(wb) for wb in latest_weibos]
 
             if l := len(formatted_weibos):
                 sv.logger.info(f"成功获取@{spider.get_username()}的新微博{l}条")
