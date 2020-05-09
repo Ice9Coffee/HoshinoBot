@@ -19,7 +19,11 @@ class WeiboSpider(object):
         self.filter = config['filter'] 
         self.user_id = config['user_id']
         self.user = self.get_user_info(self.user_id)
+        self.received_weibo_ids = []
         self.__recent = False
+    
+    def clear_buffer(self):
+        self.received_weibo_ids.clear()
 
     async def get_json(self, params):
         """获取网页中json数据"""
@@ -84,7 +88,7 @@ class WeiboSpider(object):
 
     def validate_config(self, config):
         """验证配置是否正确"""
-        exist_argument_list = ['user_id', 'service_name']
+        exist_argument_list = ['user_id']
         true_false_argument_list = ['filter']
 
         for argument in true_false_argument_list:
@@ -399,9 +403,12 @@ class WeiboSpider(object):
                         if wb:
                             if not self.__recent:
                                 continue
+                            if wb["id"] in self.received_weibo_ids:
+                                continue
                             if (not self.filter) or (
                                     'retweet' not in wb.keys()):
                                 latest_weibos.append(wb)
+                                self.received_weibo_ids.append(wb["id"])
                                 self.print_weibo(wb)
                             
             return latest_weibos

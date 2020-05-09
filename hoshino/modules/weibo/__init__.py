@@ -3,30 +3,39 @@ from hoshino.service import Service, Privilege as Priv
 from hoshino.res import R
 from hoshino import util
 
-sv = Service('weibo-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
-user_configs = util.load_config(__file__)
 '''
 sample config.json
 
 [{
-    "user_id": "6603867494",
     "service_name": "bcr-weibo",
-    "filter": true
+    "enable_on_default": true,
+    "users":[{
+        "user_id": "6603867494",
+        "filter": true
+    }]
+    
 }]
 '''
+def _load_config(services_config):
+    for sv_config in services_config:
+        sv.logger.debug(sv_config)
+        service_name = sv_config["service_name"]
+        enable_on_default = sv_config.get("enable_on_default", False)
+        users_config = sv_config["users"]
 
+        sv_spider_list = []
+        for user_config in users_config:
+            wb_spider = WeiboSpider(user_config)
+            sv_spider_list.append(wb_spider)
+        
+        subService = Service(service_name, enable_on_default=enable_on_default)
+        subr_dic[service_name] = {"service": subService, "spiders": sv_spider_list}
+
+
+sv = Service('weibo-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
+services_config = util.load_config(__file__)
 subr_dic = {}
-
-for config in user_configs:
-    sv.logger.debug(config)
-    wb_spider = WeiboSpider(config)
-    service_name = config["service_name"]
-
-    if service_name not in subr_dic:
-        subService = Service(service_name, enable_on_default=True)
-        subr_dic[service_name] = {"service": subService, "spiders": [wb_spider]}
-    else:
-        subr_dic[service_name]["spiders"].append(wb_spider)
+_load_config(services_config)
 
 def wb_to_message(wb):
     msg = f'@{wb["screen_name"]}:\n{wb["text"]}'
@@ -59,3 +68,11 @@ async def weibo_poller():
 
             weibos.extend(formatted_weibos)
         await ssv.broadcast(weibos, ssv.name, 0.5)
+
+@sv.scheduled_job('interval', seconds=60*60*24)
+async def clear_spider_buffer():
+    sv.logger.info("Clearing weibo spider buffer...")
+    for sv_name, serviceObj in subr_dic.items():
+        spiders = serviceObj["spiders"]
+        for spider in spiders:
+            spider.clear_buffer()
