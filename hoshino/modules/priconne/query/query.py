@@ -17,25 +17,31 @@ async def rank_sheet(bot, ctx, match):
     if not is_jp and not is_tw and not is_cn:
         await bot.send(ctx, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*B服rank表\n※B服：开服仅开放至金装，r10前无需考虑卡rank，装备强化消耗较多mana，如非前排建议不强化', at_sender=True)
         return
+    msg = [
+        '\n※不定期搬运，来源见图片',
+        '※图中若有广告与本bot无关',
+        '※表格仅供参考，升r有风险，强化需谨慎',
+        '※升级手Q至8.3.5以查看图片'
+    ]
     if is_jp:
-        await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR16-5 rank表：', at_sender=True)
+        msg.append('R16-5 rank表：')
         pos = match.group(3)
         if not pos or '前' in pos:
-            await bot.send(ctx, str(p4))
+            msg.append(str(p4))
         if not pos or '中' in pos:
-            await bot.send(ctx, str(p5))
+            msg.append(str(p5))
         if not pos or '后' in pos:
-            await bot.send(ctx, str(p6))
+            msg.append(str(p6))
+        await bot.send(ctx, '\n'.join(msg), at_sender=True)
         await util.silence(ctx, 60)
     elif is_tw:
-        await bot.send(ctx, '\n※不定期搬运，来源见图片\n※图中若有广告与本bot无关\n※升r有风险，强化需谨慎。表格仅供参考\n【本期争议较大 拿不准建议先卡着备足碎片】\n※手机QQ更新后无法正常显示，故分条发送，如有刷屏还请谅解\nR15-5 rank表：', at_sender=True)
-        await bot.send(ctx, str(p1))
-        await bot.send(ctx, str(p2))
+        msg.append(f'R15-5 rank表：\n{p1}{p2}')
+        await bot.send(ctx, '\n'.join(msg), at_sender=True)
         await util.silence(ctx, 60)
     elif is_cn:
         await bot.send(ctx, '\nB服：开服仅开放至金装，r10前无需考虑卡rank\n※装备强化消耗较多mana，如非前排建议不强化\n※唯一值得考量的是当前只开放至r8-3，保持r7满装满强或许会更强\n※关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
-        await bot.send(ctx, str(p7))
-        await util.silence(ctx, 60)
+        # await bot.send(ctx, str(p7))
+        # await util.silence(ctx, 60)
 
 
 @sv.on_command('arena-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'), only_to_me=False)

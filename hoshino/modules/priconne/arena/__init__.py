@@ -97,23 +97,21 @@ async def _arena_query(session:CommandSession, region:int):
     defen = f"防守方【{' '.join(defen)}】"
     at = str(MessageSegment.at(session.ctx["user_id"]))
 
-    msg1 = [
+    msg = [
         defen,
         f'已为骑士{at}查询到以下进攻方案：',
-        f'{atk_team}Support by pcrdfans_com'
-    ]
-    msg2 = [
-        f'为骑士{at}查询到作业评价👍&👎：', 
+        str(atk_team),
+        f'作业评价：', 
         *details,
         '※发送"点赞/点踩"可进行评价',
-        '※手机QQ无法正常显示图片故分条发送 如有刷屏还请谅解',
+        '※请升级手Q至8.3.5以查看图片',
     ]
     if region == 1:
-        msg2.append('※使用"b怎么拆"或"台怎么拆"可按服过滤')
+        msg.append('※使用"b怎么拆"或"台怎么拆"可按服过滤')
+    msg.append('Support by pcrdfans_com')
 
     sv.logger.debug('Arena sending result...')
-    await session.send('\n'.join(msg1))
-    await session.send('\n'.join(msg2))
+    await session.send('\n'.join(msg))
     sv.logger.debug('Arena result sent!')
 
 
