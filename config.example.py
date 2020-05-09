@@ -24,6 +24,7 @@ RESOURCE_DIR = './res/'
 
 # 资源库 URL  用于docker中的酷Q读取宿主机资源，注意以'/'结尾
 # 若留空则图片均采用base64编码发送，开销较大但部署方便
+# 若不清楚本项作用，请保持默认
 RESOURCE_URL = ''
 
 # 启用的模块
@@ -32,7 +33,6 @@ RESOURCE_URL = ''
 # 切忌一次性开启多个
 MODULES_ON = {
     'botmanage',
-    # 'deepchat',
     'dice',
     'groupmaster',
     # 'hourcall',
