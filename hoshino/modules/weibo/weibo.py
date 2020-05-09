@@ -3,6 +3,7 @@
 import json
 import random
 import sys
+import asyncio
 from collections import OrderedDict
 from datetime import date, datetime, timedelta
 from time import sleep
@@ -327,7 +328,7 @@ class WeiboSpider(object):
                 if weibo_info:
                     weibo = self.parse_weibo(weibo_info)
                     return weibo
-                sleep(random.randint(6, 10))
+                asyncio.sleep(random.randint(6, 10))
 
     def print_user_info(self):
         """打印用户信息"""
