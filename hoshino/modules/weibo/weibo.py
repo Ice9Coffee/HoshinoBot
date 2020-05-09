@@ -19,29 +19,24 @@ class WeiboSpider(object):
         self.validate_config(config)
         self.filter = config['filter'] 
         self.user_id = config['user_id']
-        self.user = self.get_user_info(self.user_id)
         self.received_weibo_ids = []
         self.__recent = False
+        asyncio.get_event_loop().run_until_complete(self._async_init())
     
-    def clear_buffer(self):
-        self.received_weibo_ids.clear()
-
+    async def _async_init(self):
+        self.user = await self.get_user_info(self.user_id)
+    
     async def get_json(self, params):
         """获取网页中json数据"""
         url = 'https://m.weibo.cn/api/container/getIndex?'
         async with httpx.AsyncClient() as client:
-            r = await client.get(url, params=params)
+            r = await client.get(url, params=params, timeout=10.0) # sometimes timeout
             return r.json()
 
-    def sync_get_json(self, params):
-        url = 'https://m.weibo.cn/api/container/getIndex?'
-        r = httpx.get(url, params=params)
-        return r.json()
-
-    def get_user_info(self, user_id):
+    async def get_user_info(self, user_id):
         """获取用户信息"""
         params = {'containerid': '100505' + str(user_id)}
-        js = self.sync_get_json(params)
+        js = await self.get_json(params)
         if js['ok']:
             info = js['data']['userInfo']
             user_info = OrderedDict()
@@ -62,7 +57,7 @@ class WeiboSpider(object):
             ]
             for i in en_list:
                 user_info[i] = ''
-            js = self.sync_get_json(params)
+            js =  await self.get_json(params)
             if js['ok']:
                 cards = js['data']['cards']
                 if isinstance(cards, list) and len(cards) > 1:
@@ -86,6 +81,9 @@ class WeiboSpider(object):
             user_info['verified_reason'] = info.get('verified_reason', '')
             user = self.standardize_info(user_info)
             return user
+
+    def clear_buffer(self):
+        self.received_weibo_ids.clear()
 
     def validate_config(self, config):
         """验证配置是否正确"""
