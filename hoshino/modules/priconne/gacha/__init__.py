@@ -25,12 +25,12 @@ POOL = ('MIX', 'JP', 'TW', 'BL')
 DEFAULT_POOL = POOL[0]
 
 _pool_config_file = os.path.expanduser('~/.hoshino/group_pool_config.json')
+_group_pool = {}
 try:
     with open(_pool_config_file, encoding='utf8') as f:
         _group_pool = json.load(f)
-except Exception as e:
-    _group_pool = {}
-    sv.logger.exception(e)
+except FileNotFoundError as e:
+    sv.logger.warning('group_pool_config.json not found, will create when needed.')
 _group_pool = defaultdict(lambda: DEFAULT_POOL, _group_pool)
 
 def dump_pool_config():

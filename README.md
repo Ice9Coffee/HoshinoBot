@@ -22,10 +22,12 @@ HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-red
 - **官方推特转发**
 - **官方四格推送**
 - **角色别称转换**
+- **切噜语编解码**：切噜～♪
+- **竞技场余矿查询**
 
 > 由于bot的功能会快速迭代开发，使用方式这里不进行具体的说明，请向bot发送"help"或移步[此文件](hoshino/modules/botmanage/help.py)查看详细。会战管理功能的详细说明，请[点击这里](hoshino/modules/pcrclanbattle/clanbattle/README.md)
 
-除上述与之外，HoshinoBot 还具有以下通用功能：
+HoshinoBot 还具有以下通用功能：
 
 - **[蜜柑计划](http://mikanani.me)番剧更新订阅**
 - **入群欢迎**&**退群提醒**
@@ -35,7 +37,7 @@ HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-red
 - **机器翻译**
 - **反馈发送**：反馈内容将由bot私聊发送给维护组
 
-另外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能：
+此外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能：
 
 - **官推转发**：「艦これ」開発/運営 & C2機関
 - **时报**
@@ -305,13 +307,13 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 ```
 
-保留其中的`token`参数，创建文件`hoshino\modules\subscribe\mikan\config.json`编写以下内容：
+保留其中的`token`参数，创建文件`hoshino\modules\mikan\config.json`编写以下内容：
 
 ```json
 {"MIKAN_TOKEN" : "abcdfegABCFEFG+123=="}
 ```
 
-注意：`token`中可能含有url转义，您需要将`%2b`替换为`+`，将`%3d`替换为`=`。
+注意：`token`中可能含有url转义，您需要将`%2b`替换为`+`，将`%2f`替换为`/`，将`%3d`替换为`=`。
 
 
 

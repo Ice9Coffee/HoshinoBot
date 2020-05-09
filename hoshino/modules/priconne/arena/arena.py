@@ -27,8 +27,8 @@ try:
             'like': set(DB[k].get('like', set())),
             'dislike': set(DB[k].get('dislike', set()))
         }
-except Exception as e:
-    logger.warning(e)
+except FileNotFoundError:
+    logger.warning(f'arena_db.json not found, will create when needed.')
 
 def dump_db():
     '''

@@ -593,6 +593,10 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     yyyy, mm, _ = bm.get_yyyymmdd(now)
     stat = bm.stat_score(1, now)
     stat.sort(key=lambda x: x[3], reverse=True)
+    
+    if not len(stat):
+        await bot.send(ctx, f"{clan['name']}{yyyy}年{mm}月会战统计数据为空", at_sender=True)
+        return
 
     # msg = [ f"\n{yyyy}年{mm}月会战{clan['name']}分数统计：" ]
     # for _, _, name, score in stat:
@@ -607,10 +611,17 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     name = list(map(lambda i: i[2], stat))
     y_pos = list(range(yn))
 
+    if score[0] >= 1e8:
+        unit = 1e8
+        unit_str = 'e'
+    else:
+        unit = 1e4
+        unit_str = 'w'
+
     y_size = 0.3 * yn + 1.0
     fig.set_size_inches(10, y_size)
     bars = ax.barh(y_pos, score, align='center')
-    ax.set_title(f"\n{yyyy}年{mm}月会战{clan['name']}分数统计")
+    ax.set_title(f"{clan['name']}{yyyy}年{mm}月会战分数统计")
     ax.set_yticks(y_pos)
     ax.set_yticklabels(name)
     ax.set_ylim((-0.6, yn - 0.4))
@@ -619,7 +630,7 @@ async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
     ax.ticklabel_format(axis='x', style='plain')
     for rect in bars:
         w = rect.get_width()
-        ax.text(w, rect.get_y() + rect.get_height() / 2, f'{w/1e8:.2f}e', ha='left', va='center')
+        ax.text(w, rect.get_y() + rect.get_height() / 2, f'{w/unit:.2f}{unit_str}', ha='left', va='center')
     plt.subplots_adjust(left=0.12, right=0.96, top=1 - 0.35 / y_size, bottom=0.55 / y_size)
     pic = util.fig2b64(plt)
     plt.close()
