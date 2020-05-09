@@ -198,7 +198,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     
     注意，此时您的机器人功能还不完全，部分功能可能无法正常工作。若希望您的机器人可以发送图片，或使用其他进阶功能，请参考本章**更进一步**的对应小节。
 
-##### 完全 docker 部署（推荐）
+##### 完全 docker 部署
 使用 docker 部署 Hoshino 有更好的隔离性。宿主机也不需要使用虚拟环境管理 python。使用 docker 网络，避免 Hoshino 端口暴露在外。对外仅暴露 coolq 的 VNC 端口。
 
 1. 安装 docker：参考https://docs.docker.com/engine/install/debian/
@@ -230,6 +230,12 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     > 
     > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
 4. 生成可运行 Hoshino 的镜像
+    - 在生成镜像前，我们需要先下载微软雅黑字体，我们之后需要将这个字体文件拷贝到镜像中。
+    - 在当前文件夹中新建文件夹 `fonts`，将下载的 ttf 重命名为 `Microsoft YaHei.ttf`，并放置在 `fonts` 文件夹中（`fonts/Microsoft YaHei.ttf`）。
+
+    > 您可以从 https://www.wfonts.com/font/microsoft-yahei 下载微软雅黑字体文件
+    > 如果镜像中缺少中文字体，Matplotlib 生成的图表中的中文将会乱码
+
     ```bash
     docker build . -t hoshino-env
     ```

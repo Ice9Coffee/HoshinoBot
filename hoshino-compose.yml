@@ -6,7 +6,7 @@ services:
       - 8080
     volumes:
       - ./:/bot/
-      - ~/.hoshino:/root/.hoshino # 如果你的静态资源不在 .hoshino 目录下，请在下面加一行挂载参数，将你的静态资源挂载刀 /root/.hoshino/res 中
+      - ~/.hoshino:/root/.hoshino # 如果你的静态资源不在 .hoshino 目录下，请在下面加一行挂载参数，将你的静态资源挂载到 /root/.hoshino/res 中
       # - ~/static_resources/res:/root/.hoshino/res
     command: python3.8 /bot/run.py
     networks:
