@@ -23,18 +23,18 @@ def setu_gener():
         random.shuffle(filelist)
         for filename in filelist:
             if os.path.isfile(os.path.join(setu_folder, filename)):
-                yield R.img('setu/', filename).cqcode
-                
+                yield R.img('setu/', filename)
+
 setu_gener = setu_gener()
 
 def get_setu():
     return setu_gener.__next__()
- 
+
 
 @sv.on_rex(re.compile(r'不够[涩瑟色]|[涩瑟色]图|来一?[点份张].*[涩瑟色]|再来[点份张]|看过了|铜'), normalize=True)
 async def setu(bot:NoneBot, ctx, match):
     """随机叫一份涩图，对每个用户有冷却时间"""
-    uid = ctx['user_id']    
+    uid = ctx['user_id']
     if not _nlmt.check(uid):
         await bot.send(ctx, EXCEED_NOTICE, at_sender=True)
         return
@@ -47,9 +47,9 @@ async def setu(bot:NoneBot, ctx, match):
     # conditions all ok, send a setu.
     pic = get_setu()
     try:
-        await bot.send(ctx, pic)
+        await bot.send(ctx, pic.cqcode)
     except CQHttpError:
-        sv.logger.error(f"发送图片{pic.data['file']}失败")
+        sv.logger.error(f"发送图片{pic.path}失败")
         try:
             await bot.send(ctx, '涩图太涩，发不出去勒...')
         except:
