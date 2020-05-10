@@ -38,7 +38,15 @@ subr_dic = {}
 _load_config(services_config)
 
 def wb_to_message(wb):
-    msg = f'@{wb["screen_name"]}:\n{wb["text"]}'
+    msg = f'@{wb["screen_name"]}'
+    if "retweet" in wb:
+        msg = f'{msg} 转发:\n{wb["text"]}\n======================'
+        wb = wb["retweet"]
+    else:
+        msg = f'{msg}:'
+
+    msg = f'{msg}\n{wb["text"]}'
+
     if sv.bot.config.IS_CQPRO and len(wb["pics"]) > 0:
         images_url = wb["pics"]
         msg = f'{msg}\n'
