@@ -157,8 +157,10 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     richardchien/cqhttp:latest
     ```
 
-    > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q，即可开始使用
+    > 使用这行命令`ip addr show docker0 | grep -Po 'inet \K[\d.]+'`查看你的docker桥ip，替换`CQHTTP_WS_REVERSE_URL`中的链接
     >
+    > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q
+    > 
     > 注：如果你希望先使用酷Q Air进行尝试，请将COOLQ_URL设置为`https://dlsec.cqp.me/cqa-xiaoi`；之后可以用CQP.exe替换CQA.exe以升级，或删除容器重新创建。
 
 3. 回到我们熟悉的命令行，安装 Python 3.8
@@ -171,14 +173,14 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     >
     > Google will help you greatly : )
 
-1. 克隆本仓库并安装依赖包
+4. 克隆本仓库并安装依赖包
     ```bash
     git clone https://github.com/Ice-Cirno/HoshinoBot.git
     cd HoshinoBot
     python3.8 -m pip install -r requirements.txt
     ```
 
-2. 编辑配置文件
+5. 编辑配置文件
     ```bash
     cp config.example.py config.py
     nano config.py
@@ -186,7 +188,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     > 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
     >
     > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
-3. 运行bot
+6. 运行bot
     ```bash
     python3.8 run.py
     ```
