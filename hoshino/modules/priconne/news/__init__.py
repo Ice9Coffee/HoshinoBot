@@ -22,7 +22,7 @@ async def sonet_news_poller():
 
 @svbl.scheduled_job('cron', minute='*/5', jitter=20)
 async def bili_news_poller():
-    await news_poller(SonetSpider, svbl, 'B服官网')
+    await news_poller(BiliSpider, svbl, 'B服官网')
 
 
 async def send_news(session, spider:BaseSpider, max_num=5):
