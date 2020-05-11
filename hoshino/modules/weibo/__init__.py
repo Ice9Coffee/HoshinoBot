@@ -2,6 +2,7 @@ from .weibo import WeiboSpider
 from hoshino.service import Service, Privilege as Priv
 from hoshino.res import R
 from hoshino import util
+from .exception import *
 
 '''
 sample config.json
@@ -11,6 +12,7 @@ sample config.json
     "enable_on_default": true,
     "users":[{
         "user_id": "6603867494",
+        "alias": ["公主连接", "公主连结", "公主链接"],
         "filter": true
     }]
     
@@ -21,20 +23,31 @@ def _load_config(services_config):
         sv.logger.debug(sv_config)
         service_name = sv_config["service_name"]
         enable_on_default = sv_config.get("enable_on_default", False)
+        
         users_config = sv_config["users"]
 
         sv_spider_list = []
         for user_config in users_config:
             wb_spider = WeiboSpider(user_config)
             sv_spider_list.append(wb_spider)
+            alias_list = user_config.get("alias", [])
+            for alias in alias_list:
+                if alias in alias_dic:
+                    raise DuplicateError(f"Alias {alias} is duplicate")
+                alias_dic[alias] = {
+                    "service_name":service_name, 
+                    "user_id":wb_spider.get_user_id()
+                    }
         
         subService = Service(service_name, enable_on_default=enable_on_default)
         subr_dic[service_name] = {"service": subService, "spiders": sv_spider_list}
 
-
+        
+        
 sv = Service('weibo-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
 services_config = util.load_config(__file__)
 subr_dic = {}
+alias_dic = {}
 _load_config(services_config)
 
 def wb_to_message(wb):
@@ -58,6 +71,27 @@ def wb_to_message(wb):
         res_videos = ';'.join(videos)
         msg = f'{msg}\n视频链接：{res_videos}'
     return msg
+
+# @bot 看微博 alias
+@sv.on_command('看微博', only_to_me=True)
+async def get_last_5_weibo(session):
+    alias = session.current_arg_text
+    if alias not in alias_dic:
+        await session.finish(f"未找到微博: {alias}")
+        return
+    service_name = alias_dic[alias]["service_name"]
+    user_id = alias_dic[alias]["user_id"]
+
+    spiders = subr_dic[service_name]["spiders"]
+    for spider in spiders:
+        if spider.get_user_id() == user_id:
+            last_5_weibos = spider.get_last_5_weibos()
+            formatted_weibos = [wb_to_message(wb) for wb in last_5_weibos]
+            for wb in formatted_weibos:
+                await session.send(wb)
+            await session.finish(f"以上为 {alias} 的最新 {len(formatted_weibos)} 条微博")
+            return
+    await session.finish(f"未找到微博: {alias}")
 
 @sv.scheduled_job('interval', seconds=20*60)
 async def weibo_poller():

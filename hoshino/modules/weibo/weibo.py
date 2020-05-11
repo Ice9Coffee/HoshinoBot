@@ -20,6 +20,7 @@ class WeiboSpider(object):
         self.filter = config['filter'] 
         self.user_id = config['user_id']
         self.received_weibo_ids = []
+        self.last_5_weibos = []
         self.__recent = False
         asyncio.get_event_loop().run_until_complete(self._async_init())
     
@@ -301,6 +302,9 @@ class WeiboSpider(object):
     def get_user_id(self):
         return self.user_id
 
+    def get_last_5_weibos(self):
+        return self.last_5_weibos
+
     async def get_weibo_json(self, page):
         """获取网页中微博json数据"""
         params = {
@@ -406,6 +410,10 @@ class WeiboSpider(object):
                                 continue
                             if (not self.filter) or (
                                     'retweet' not in wb.keys()):
+                                if len(self.last_5_weibos) == 5:
+                                    self.last_5_weibos.pop(0)
+                                self.last_5_weibos.append(wb)
+
                                 latest_weibos.append(wb)
                                 self.received_weibo_ids.append(wb["id"])
                                 self.print_weibo(wb)

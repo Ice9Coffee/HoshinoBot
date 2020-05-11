@@ -19,3 +19,6 @@ class ParseError(WeiboError):
 
 class NotFoundError(WeiboError):
     pass
+
+class DuplicateError(WeiboError):
+    pass
