@@ -238,6 +238,27 @@ class BattleMaster(object):
         return ret
 
     
+    def stat_damage(self, cid, time):
+        '''
+        统计cid会各成员的本月各Boss伤害总量
+        :return: [(uid, alt, name, [total_dmg, dmg1, ..., dmg5])]
+        '''
+        clan = self.get_clan(cid)
+        if not clan:
+            raise NotFoundError(f'未找到公会{cid}')
+        server = clan['server']
+        stat = self.stat_challenge(cid, time, only_one_day=False, zone_num=self.get_timezone_num(server))
+        ret = []
+        for mem, challens in stat:
+            dmgs = [0] * 6
+            for ch in challens:
+                d = ch['dmg']
+                dmgs[0] += d
+                dmgs[ch['boss']] += d
+            ret.append((mem['uid'], mem['alt'], mem['name'], dmgs))
+        return ret
+
+
     def stat_score(self, cid, time):
         '''
         统计cid会各成员的本月总分数

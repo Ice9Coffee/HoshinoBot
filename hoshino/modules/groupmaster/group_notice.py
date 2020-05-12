@@ -17,3 +17,11 @@ async def increace_notice(session:NoticeSession):
     gid = str(session.ctx['group_id'])
     if gid in welcome_dic:
         await session.send(welcome_dic[gid], at_sender=True)
+
+
+@on_notice('group_decrease.kick_me')
+async def kick_me_alert(session:NoticeSession):
+    group_id = session.event.group_id
+    operator_id = session.event.operator_id
+    coffee = session.bot.config.SUPERUSERS[0]
+    await session.bot.send_private_msg(self_id=session.event.self_id, user_id=coffee, message=f'被Q{operator_id}踢出群{group_id}')
