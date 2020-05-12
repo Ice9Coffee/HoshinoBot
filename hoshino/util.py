@@ -60,10 +60,25 @@ async def silence(ctx, ban_time, ignore_super_user=False):
         logger.exception(e)
 
 
-def pic2b64(pic:Image) -> str:
+def checkBase64Length(base64_len):
+    return base64_len * 0.75 < 4000000
+
+def resize_4m(img: Image, b64_len):
+    b64_len *= 0.75
+    if b64_len < 4000000:
+        return img
+    scale = b64_len / 4000000
+    w, h = img.size
+    img.thumbnail((int(w / scale), int(h / scale)), Image.ANTIALIAS)
+    return img
+
+def pic2b64(pic: Image) -> str:
     buf = BytesIO()
     pic.save(buf, format='PNG')
     base64_str = base64.b64encode(buf.getvalue()).decode()   #, encoding='utf8')
+    b64_len = len(base64_str)
+    if not checkBase64Length(b64_len):
+        return pic2b64(resize_4m(pic, b64_len))
     return 'base64://' + base64_str
 
 
