@@ -19,7 +19,7 @@ URL_TIMELINE = 'statuses/user_timeline'
 
 subr_dic = {
     Service('kc-twitter', enable_on_default=False): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi'],
-    Service('pcr-twitter', enable_on_default=True): ['priconne_redive'],
+    Service('pcr-twitter', enable_on_default=True): ['priconne_redive', 'priconne_anime'],
     Service('pripri-twitter', enable_on_default=False, visible=False): ['pripri_anime'],
     Service('shiratama-twitter', enable_on_default=False, visible=False): ['shiratamacaron'],
     Service('kc-doujin-twitter', enable_on_default=False): ['suzukitoto0323', 'watanohara2'],

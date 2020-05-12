@@ -585,8 +585,65 @@ async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await bot.send(ctx, '\n' + msg, at_sender=True)
 
 
-@cb_cmd('统计', ArgParser(usage='!统计'))
-async def stat(bot:NoneBot, ctx:Context_T, args:ParseResult):
+@cb_cmd('伤害统计', ArgParser(usage='!伤害统计'))
+async def stat_damage(bot:NoneBot, ctx:Context_T, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    now = datetime.now()
+    clan = _check_clan(bm)
+    yyyy, mm, _ = bm.get_yyyymmdd(now)
+    stat = bm.stat_damage(1, now)
+
+    yn = len(stat)
+    if not yn:
+        await bot.send(ctx, f"{clan['name']}{yyyy}年{mm}月会战统计数据为空", at_sender=True)
+        return
+
+    stat.sort(key=lambda x: x[3][0], reverse=True)
+    name = [ s[2] for s in stat ]
+    y_pos = list(range(yn))
+    y_size = 0.3 * yn + 1.0
+    unit = 1e4
+    unit_str = 'w'
+
+    # convert to pre-sum
+    for s in stat:
+        d = s[3]
+        d[0] = 0
+        for i in range(2, 6):
+            d[i] += d[i - 1]
+    pre_sum_dmg = [
+        [ s[3][b] for s in stat ] for b in range(6)
+    ]
+
+    # generate statistic figure
+    fig, ax = plt.subplots()
+    fig.set_size_inches(10, y_size)
+    ax.set_title(f"{clan['name']}{yyyy}年{mm}月会战伤害统计")
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(name)
+    ax.set_ylim((-0.6, yn - 0.4))
+    ax.invert_yaxis()
+    ax.set_xlabel('伤害')
+    colors = ['#00a2e8', '#22b14c', '#b5e61d', '#fff200', '#ff7f27', '#ed1c24']
+    bars = [ ax.barh(y_pos, pre_sum_dmg[b], align='center', color=colors[b]) for b in range(5, -1, -1) ]
+    bars.reverse()
+    ax.ticklabel_format(axis='x', style='plain')
+    for b in range(1, 6):
+        for i, rect in enumerate(bars[b]):
+            x = (rect.get_width() + bars[b - 1][i].get_width()) / 2
+            y = rect.get_y() + rect.get_height() / 2
+            d = pre_sum_dmg[b][i] - pre_sum_dmg[b - 1][i]
+            if d > unit:
+                ax.text(x, y, f'{d/unit:.0f}{unit_str}', ha='center', va='center')
+    plt.subplots_adjust(left=0.12, right=0.96, top=1 - 0.35 / y_size, bottom=0.55 / y_size)
+    pic = util.fig2b64(plt)
+    plt.close()
+
+    await bot.send(ctx, ms.image(pic), at_sender=True)
+
+
+@cb_cmd(('统计', '分数统计'), ArgParser(usage='!分数统计'))
+async def stat_score(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
     clan = _check_clan(bm)
