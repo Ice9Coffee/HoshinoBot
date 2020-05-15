@@ -1,11 +1,4 @@
-import re
-from itertools import zip_longest
-from nonebot.message import escape
-from hoshino import Service, CommandSession
-
-sv = Service('pcr-cherugo')
-
-"""切噜语转换
+"""切噜语（ちぇる語, Language Cheru）转换
 
 定义:
     W_cheru = '切' ^ `CHERU_SET`+
@@ -15,11 +8,19 @@ sv = Service('pcr-cherugo')
     切噜语由切噜词与标点符号连接而成
 """
 
+import re
+from itertools import zip_longest
+from nonebot.message import escape
+from hoshino import Service, CommandSession
+
+sv = Service('pcr-cherugo')
+
 CHERU_SET = '切卟叮咧哔唎啪啰啵嘭噜噼巴拉蹦铃'
 CHERU_DIC = { c: i for i, c in enumerate(CHERU_SET) }
 ENCODING = 'gb18030'
 rex_split = re.compile(r'\b', re.U)
 rex_word = re.compile(r'^\w+$', re.U)
+rex_cheru_word:re.Pattern = re.compile(rf'切[{CHERU_SET}]+', re.U)
 
 def grouper(iterable, n, fillvalue=None):
     args = [iter(iterable)] * n
@@ -51,12 +52,13 @@ def str2cheru(s:str) -> str:
     return ''.join(c)
 
 def cheru2str(c:str) -> str:
-    s = []
-    for w in rex_split.split(c):
-        if rex_word.search(w):
-            w = cheru2word(w)
-        s.append(w)
-    return ''.join(s)
+    return rex_cheru_word.sub(lambda w: cheru2word(w.group()), c)
+    # s = []
+    # for w in rex_split.split(c):
+    #     if rex_word.search(w):
+    #         w = cheru2word(w)
+    #     s.append(w)
+    # return ''.join(s)
 
 @sv.on_command('切噜一下')
 async def cherulize(session:CommandSession):
