@@ -585,7 +585,7 @@ async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await bot.send(ctx, '\n' + msg, at_sender=True)
 
 
-@cb_cmd('伤害统计', ArgParser(usage='!伤害统计'))
+@cb_cmd(('统计', '伤害统计'), ArgParser(usage='!伤害统计'))
 async def stat_damage(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
@@ -638,11 +638,12 @@ async def stat_damage(bot:NoneBot, ctx:Context_T, args:ParseResult):
     plt.subplots_adjust(left=0.12, right=0.96, top=1 - 0.35 / y_size, bottom=0.55 / y_size)
     pic = util.fig2b64(plt)
     plt.close()
+    
+    msg = f"{ms.image(pic)}\n※分数统计请发送“!分数统计”"
+    await bot.send(ctx, msg, at_sender=True)
 
-    await bot.send(ctx, ms.image(pic), at_sender=True)
 
-
-@cb_cmd(('统计', '分数统计'), ArgParser(usage='!分数统计'))
+@cb_cmd('分数统计', ArgParser(usage='!分数统计'))
 async def stat_score(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
@@ -692,7 +693,8 @@ async def stat_score(bot:NoneBot, ctx:Context_T, args:ParseResult):
     pic = util.fig2b64(plt)
     plt.close()
 
-    await bot.send(ctx, ms.image(pic), at_sender=True)
+    msg = f"{ms.image(pic)}\n※伤害统计请发送“!伤害统计”"
+    await bot.send(ctx, msg, at_sender=True)
 
 
 async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:bool):
