@@ -261,6 +261,26 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     docker-compose -f hoshino-compose.yml up -d
     ```
 
+7. 部署静态资源服务器（非必要）
+    在不配置 `RESOURCE_URL` 的情况下，bot 发送的图片会先进行 base64 编码，再发送给 coolq。因此会导致 bot 发送较大图片时，响应速度会变慢。通过部署静态资源服务器，可以省去编码步骤，让 coolq 直接去静态资源服务器中获取相应图片，加快响应速度。
+
+    静态资源服务器可以部署在其他服务器上，但是部分功能可能受限，比如 `setu` 模块的随机图片是通过访问静态资源的本地文件夹实现的，如果将图片存储在其他服务器上，该模块将无法发送随即图片。因此不建议部署在其他服务器上。
+
+    以默认的静态资源目录 `~/.hoshino/res/` 为例（该目录就是 `config.py` 中的`RESOURCE_DIR`），运行以下命令使用 `docker` 部署静态资源服务器 `nginx`
+    ```
+    mv nginx-compose.yml ~/.hoshino/res/
+    cd ~/.hoshino/res/
+    docker-compose -f nginx-compose.yml up -d
+    ```
+
+    假设你的服务器 IP 地址为 `11.11.11.11`，此时在浏览器中访问 `http://11.11.11.11/nginx-compose.yml`，如果成功获得到 compose 文件，就说明部署成功。
+
+    然后修改 `config.py` 中的 `RESOURCE_URL` 为 `http://11.11.11.11` 即可
+
+    > `RESOURCE_URL` 中必须添加 `http://` 前缀
+    > 如需配置 `https` 访问，见该文档 http://nginx.org/en/docs/http/configuring_https_servers.html
+
+
 ### 更进一步
 
 现在，机器人已经可以使用`会战管理`、`模拟抽卡(纯文字版)`等基本功能了。但还无法使用`竞技场查询`、`番剧订阅`、`推特转发`等功能。这是因为，这些功能需要对应的静态图片资源以及相应的api key。相应资源获取有难有易，您可以根据自己的需要去获取。
