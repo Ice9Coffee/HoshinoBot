@@ -14,6 +14,7 @@ class BattleMaster(object):
     LAST    = BattleDao.LAST
     EXT     = BattleDao.EXT
     TIMEOUT = BattleDao.TIMEOUT
+    AUTO_DETECT = 0xff
 
     SERVER_JP = ClanDao.SERVER_JP
     SERVER_TW = ClanDao.SERVER_TW
@@ -237,6 +238,18 @@ class BattleMaster(object):
             ret.append((m, challens))
         return ret
 
+
+    def stat_single_member_challenge(self, cid, time, uid, alt, only_one_day=True, zone_num:int=8):
+        '''
+        统计单个成员的出刀
+        return challenge
+        '''
+        dao = self.get_battledao(cid, time)
+        challens = dao.find_by(uid=uid, alt=alt)
+        if only_one_day:
+            challens = self.filt_challenge_of_day(challens, time, zone_num)
+        return challens
+
     
     def stat_damage(self, cid, time):
         '''
@@ -287,22 +300,6 @@ class BattleMaster(object):
         remain_n = 3 - (norm + timeout + last)
         remain_e = last - ext
         '''
-        def count(challens):
-            norm = 0
-            last = 0
-            ext = 0
-            timeout = 0
-            for ch in challens:
-                f = ch['flag']
-                if f & BattleMaster.EXT:
-                    ext = ext + 1
-                elif f & BattleMaster.LAST:
-                    last = last + 1
-                elif f & BattleMaster.TIMEOUT:
-                    timeout = timeout + 1
-                else:
-                    norm = norm + 1
-            return norm, last, ext, timeout
 
         clan = self.get_clan(cid)
         if not clan:
@@ -310,7 +307,7 @@ class BattleMaster(object):
         ret = []
         stat = self.stat_challenge(cid, time, only_one_day=True, zone_num=self.get_timezone_num(clan['server']))
         for mem, challens in stat:
-            norm, last, ext, timeout = count(challens)
+            norm, last, ext, timeout = BattleMaster._count_challenge(challens)
             r = (
                 mem['uid'], mem['alt'], mem['name'],
                 3 - (norm + timeout + last),
@@ -318,6 +315,38 @@ class BattleMaster(object):
             )
             ret.append(r)
         return ret
+
+
+    def single_member_challenge_remain(self, cid, time, uid, alt):
+        '''
+        return remain_n,remain_e
+        '''
+
+        clan = self.get_clan(cid)
+        if not clan:
+            raise NotFoundError(f'未找到公会{cid}')
+        stat = self.stat_single_member_challenge(cid, time, uid, alt, only_one_day=True, zone_num=self.get_timezone_num(clan['server']))
+        norm, last, ext, timeout = BattleMaster._count_challenge(stat)
+        return 3 - (norm + timeout + last), last - ext
+
+
+    @staticmethod
+    def _count_challenge(challens):
+        norm = 0
+        last = 0
+        ext = 0
+        timeout = 0
+        for ch in challens:
+            f = ch['flag']
+            if f & BattleMaster.EXT:
+                ext = ext + 1
+            elif f & BattleMaster.LAST:
+                last = last + 1
+            elif f & BattleMaster.TIMEOUT:
+                timeout = timeout + 1
+            else:
+                norm = norm + 1
+        return norm, last, ext, timeout
 
 
     def get_challenge_progress(self, cid, time):

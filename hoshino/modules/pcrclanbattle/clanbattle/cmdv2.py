@@ -191,15 +191,18 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     mem = _check_member(bm, ch.uid, ch.alt)
 
     cur_round, cur_boss, cur_hp = bm.get_challenge_progress(1, now)
+    flag = ch.flag if ch.flag != BattleMaster.AUTO_DETECT else _detect_challenge_flag(bm, ch.uid, ch.alt)
     round_ = ch.round or cur_round
     boss = ch.boss or cur_boss
-    damage = ch.damage if ch.flag != BattleMaster.LAST else (ch.damage or cur_hp)
-    flag = ch.flag
+    damage = ch.damage if flag != BattleMaster.LAST else (ch.damage or cur_hp)
 
-    if (ch.flag == BattleMaster.LAST) and (ch.round or ch.boss) and (not damage):
+    if (flag == BattleMaster.LAST) and (ch.round or ch.boss) and (not damage):
         raise NotFoundError('补报尾刀请给出伤害值')     # 补报尾刀必须给出伤害值
 
     msg = ['']
+    if flag == BattleMaster.EXT and ch.flag == BattleMaster.AUTO_DETECT:
+        msg.append('√️已经自动记录为补时刀')
+
     if round_ != cur_round or boss != cur_boss:
         msg.append('⚠️上报与当前进度不一致')
     else:   # 伤害校对
@@ -235,6 +238,15 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     await auto_unsubscribe(bot, ctx, bm.group, mem['uid'], boss)
 
 
+def _detect_challenge_flag(bm:BattleMaster, uid, alt):
+    r_n, r_e = bm.single_member_challenge_remain(1, datetime.now(), uid, alt)
+    if r_e > 0:
+        # 剩余的补时刀优先出
+        return BattleMaster.EXT
+    else:
+        # 是否是尾刀交给后面的伤害判断
+        return BattleMaster.NORM
+
 @cb_cmd(('出刀', '报刀'), ArgParser(usage='!出刀 <伤害值> (@qq)', arg_dict={
     '': ArgHolder(tip='伤害值', type=damage_int),
     '@': ArgHolder(tip='qq号', type=int, default=0),
@@ -247,7 +259,7 @@ async def add_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
         'damage': args.get(''),
         'uid': args['@'] or args.at or ctx['user_id'],
         'alt': ctx['group_id'],
-        'flag': BattleMaster.NORM
+        'flag': BattleMaster.NORM if args['@'] or args.R or args.B or args.at else BattleMaster.AUTO_DETECT
     })
     await process_challenge(bot, ctx, challenge)
 
