@@ -55,6 +55,9 @@ class AsyncResponse:
 
     async def json(self, **kwargs) -> Any:
         return await run_sync_func(self.raw_response.json, **kwargs)
+    
+    def raise_for_status(self):
+        self.raw_response.raise_for_status()
 
 
 async def request(method, url, **kwargs) -> AsyncResponse:
