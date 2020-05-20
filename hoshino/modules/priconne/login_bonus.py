@@ -1,5 +1,5 @@
 import random
-from hoshino.service import Service
+from hoshino import Service, R
 from hoshino.util import DailyNumberLimiter
 
 sv = Service('pcr-login-bonus')
@@ -50,4 +50,4 @@ async def give_okodokai(session):
     lmt.increase(uid)
     present = random.choice(login_presents)
     todo = random.choice(todo_list)
-    await session.send(f'おかえりなさいませ、主さま\n私からのプレゼントです\n{present}を獲得しました\n主さま今天要{todo}吗？', at_sender=True)
+    await session.send(f'\nおかえりなさいませ、主さま{R.img("priconne/kokkoro_stamp.png").cqcode}\n{present}を獲得しました\n私からのプレゼントです\n主人今天要{todo}吗？', at_sender=True)

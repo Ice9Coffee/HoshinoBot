@@ -23,14 +23,12 @@ class BattleMaster(object):
     SERVER_TW_NAME = ('tw', 'TW', 'Tw', '台', '台服', str(SERVER_TW))
     SERVER_CN_NAME = ('cn', 'CN', 'Cn', '国', '国服', 'B', 'B服', str(SERVER_CN))
     
-    config = get_config()
-
     def __init__(self, group):
         super().__init__()
         self.group = group
         self.clandao = ClanDao()
         self.memberdao = MemberDao()
-        BattleMaster.config = get_config()
+        self.config = get_config()
 
 
     @staticmethod
@@ -60,40 +58,41 @@ class BattleMaster(object):
 
 
     @staticmethod
-    def next_boss(round_, boss):
-        boss = boss + 1
-        if boss > 5:
-            boss = 1
-            round_ = round_ + 1
-        return (round_, boss)
+    def next_boss(round_:int, boss:int):
+        return (round_, boss + 1) if boss < 5 else (round_ + 1, 1)
 
 
     @staticmethod
-    def get_stage(round_):
+    def get_stage(round_, server):
+        if server == BattleMaster.SERVER_CN:
+            y, m, _ = BattleMaster.get_yyyymmdd(datetime.now(), 8)
+            if y == 2020:
+                if m < 9:
+                    return 5 if round_ == 1 else 6
+                elif m < 12:
+                    return 7 if round_ <= 3 else 8
+        # All other situation
         return 4 if round_ >= 35 else 3 if round_ >= 11 else 2 if round_ >= 4 else 1
 
 
-    @staticmethod
-    def get_boss_info(round_, boss, server):
+    def get_boss_info(self, round_, boss, server):
         """@return: boss_max_hp, score_rate"""
-        stage = BattleMaster.get_stage(round_)
-        config = BattleMaster.config
+        stage = BattleMaster.get_stage(round_, server)
+        config = self.config
         boss_hp = config[ config["BOSS_HP"][server] ][ stage-1 ][ boss-1 ]
         score_rate = config[ config["SCORE_RATE"][server] ][ stage-1 ][ boss-1 ]
         return boss_hp, score_rate
 
 
-    @staticmethod
-    def get_boss_hp(round_, boss, server):
-        stage = BattleMaster.get_stage(round_)
-        config = BattleMaster.config
+    def get_boss_hp(self, round_, boss, server):
+        stage = BattleMaster.get_stage(round_, server)
+        config = self.config
         return config[ config["BOSS_HP"][server] ][ stage-1 ][ boss-1 ]
 
 
-    @staticmethod
-    def get_score_rate(round_, boss, server):
-        stage = BattleMaster.get_stage(round_)
-        config = BattleMaster.config
+    def get_score_rate(self, round_, boss, server):
+        stage = BattleMaster.get_stage(round_, server)
+        config = self.config
         return config[ config["SCORE_RATE"][server] ][ stage-1 ][ boss-1 ]
 
 
@@ -239,6 +238,27 @@ class BattleMaster(object):
         return ret
 
     
+    def stat_damage(self, cid, time):
+        '''
+        统计cid会各成员的本月各Boss伤害总量
+        :return: [(uid, alt, name, [total_dmg, dmg1, ..., dmg5])]
+        '''
+        clan = self.get_clan(cid)
+        if not clan:
+            raise NotFoundError(f'未找到公会{cid}')
+        server = clan['server']
+        stat = self.stat_challenge(cid, time, only_one_day=False, zone_num=self.get_timezone_num(server))
+        ret = []
+        for mem, challens in stat:
+            dmgs = [0] * 6
+            for ch in challens:
+                d = ch['dmg']
+                dmgs[0] += d
+                dmgs[ch['boss']] += d
+            ret.append((mem['uid'], mem['alt'], mem['name'], dmgs))
+        return ret
+
+
     def stat_score(self, cid, time):
         '''
         统计cid会各成员的本月总分数

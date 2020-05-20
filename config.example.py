@@ -13,9 +13,12 @@ NICKNAME = ''           # 机器人的昵称。呼叫昵称等同于@bot，可�
 
 # hoshino监听的端口与ip
 PORT = 8080
-HOST = '127.0.0.1'      # Windows本地部署使用此条配置
-# HOST = '172.17.0.1'   # docker使用此条配置
-# HOST = '172.18.0.1'   # 阿里云服务器的docker使用此条配置
+HOST = '127.0.0.1'      # Windows部署使用此条配置
+# HOST = '172.17.0.1'   # linux + docker使用此条配置
+# docker桥的ip可能随环境不同而有变化
+# 使用这行命令`ip addr show docker0 | grep -Po 'inet \K[\d.]+'`查看你的docker桥ip
+# HOST = '172.18.0.1'   # 阿里云的linux + docker多数情况是这样
+# HOST = '0.0.0.0'      # 开放公网访问使用此条配置（不安全）
 
 IS_CQPRO = False        # 是否使用Pro版酷Q功能
 
@@ -24,6 +27,7 @@ RESOURCE_DIR = './res/'
 
 # 资源库 URL  用于docker中的酷Q读取宿主机资源，注意以'/'结尾
 # 若留空则图片均采用base64编码发送，开销较大但部署方便
+# 若不清楚本项作用，请保持默认
 RESOURCE_URL = ''
 
 # 启用的模块
@@ -32,7 +36,6 @@ RESOURCE_URL = ''
 # 切忌一次性开启多个
 MODULES_ON = {
     'botmanage',
-    # 'deepchat',
     'dice',
     'groupmaster',
     # 'hourcall',
