@@ -25,7 +25,10 @@ class WeiboSpider(object):
         asyncio.get_event_loop().run_until_complete(self._async_init())
     
     async def _async_init(self):
+        self.__init = True
         self.user = await self.get_user_info(self.user_id)
+        await self.get_latest_weibos()
+        self.__init = False
     
     async def get_json(self, params):
         """获取网页中json数据"""
@@ -158,16 +161,6 @@ class WeiboSpider(object):
                     break
         return location
 
-    def get_article_url(self, selector):
-        """获取微博中头条文章的url"""
-        article_url = ''
-        text = selector.xpath('string(.)')
-        if text.startswith(u'发布了头条文章'):
-            url = selector.xpath('//a/@data-url')
-            if url and url[0].startswith('http://t.cn'):
-                article_url = url[0]
-        return article_url
-
     def get_topics(self, selector):
         """获取参与的微博话题"""
         span_list = selector.xpath("//span[@class='surl-text']")
@@ -193,6 +186,27 @@ class WeiboSpider(object):
             at_users = ','.join(at_list)
         return at_users
 
+    def get_text(self, text_body):
+        selector = etree.HTML(text_body)
+        url_lists = selector.xpath('//a[@data-url]/@data-url')
+        url_elems = selector.xpath('//a[@data-url]/span[@class="surl-text"]')
+
+        '''
+        Add the url of <a/> to the text of <a/>
+        For example:
+            <a data-url="http://t.cn/A622uDbW" href="https://weibo.com/ttarticle/p/show?id=2309404507062473195617">
+            <span class=\'url-icon\'>
+            <img style=\'width: 1rem;height: 1rem\' src=\'https://h5.sinaimg.cn/upload/2015/09/25/3/timeline_card_small_article_default.png\'></span>
+            <span class="surl-text">本地化笔记第三期——剧情活动排期调整及版本更新内容前瞻</span>
+            </a>
+
+            replace <span class="surl-text">本地化笔记第三期——剧情活动排期调整及版本更新内容前瞻</span>
+            with <span class="surl-text">本地化笔记第三期——剧情活动排期调整及版本更新内容前瞻(http://t.cn/A622uDbW)</span>
+        '''
+        for i in range(0, len(url_lists)):
+            url_elems[i].text = f'{url_elems[i].text}({url_lists[i]})'
+        return selector.xpath('string(.)')
+
     def string_to_int(self, string):
         """字符串转换为整数"""
         if isinstance(string, int):
@@ -217,11 +231,17 @@ class WeiboSpider(object):
             hour = created_at[:created_at.find(u"小时")]
             hour = timedelta(hours=int(hour))
             created_at = (datetime.now() - hour).strftime("%Y-%m-%d")
-            self.__recent = False
+            if self.__init:
+                self.__recent = True
+            else:
+                self.__recent = False
         elif u"昨天" in created_at:
             day = timedelta(days=1)
             created_at = (datetime.now() - day).strftime("%Y-%m-%d")
-            self.__recent = False
+            if self.__init:
+                self.__recent = True
+            else:
+                self.__recent = False
         elif created_at.count('-') == 1:
             year = datetime.now().strftime("%Y")
             created_at = year + "-" + created_at
@@ -250,8 +270,10 @@ class WeiboSpider(object):
         weibo['bid'] = weibo_info['bid']
         text_body = weibo_info['text']
         selector = etree.HTML(text_body)
-        weibo['text'] = etree.HTML(text_body).xpath('string(.)')
-        weibo['article_url'] = self.get_article_url(selector)
+
+        
+        weibo['text'] = self.get_text(text_body)
+
         weibo['pics'] = self.get_pics(weibo_info)
         weibo['video_url'] = self.get_video_url(weibo_info)
         weibo['location'] = self.get_location(selector)

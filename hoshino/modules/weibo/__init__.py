@@ -18,6 +18,9 @@ sample config.json
     
 }]
 '''
+
+lmt = util.FreqLimiter(5)
+
 def _load_config(services_config):
     for sv_config in services_config:
         sv.logger.debug(sv_config)
@@ -70,11 +73,17 @@ def wb_to_message(wb):
         videos = wb["video_url"]
         res_videos = ';'.join(videos)
         msg = f'{msg}\n视频链接：{res_videos}'
+
     return msg
 
 # @bot 看微博 alias
 @sv.on_command('看微博', only_to_me=True)
 async def get_last_5_weibo(session):
+    uid = session.ctx['user_id']
+    if not lmt.check(uid):
+        session.finish('您查询得过于频繁，请稍等片刻', at_sender=True)
+    lmt.start_cd(uid)
+
     alias = session.current_arg_text
     if alias not in alias_dic:
         await session.finish(f"未找到微博: {alias}")
