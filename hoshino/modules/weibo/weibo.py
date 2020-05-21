@@ -111,6 +111,12 @@ class WeiboSpider(object):
             pic_list = [pic['large']['url'] for pic in pic_info]
         else:
             pic_list = []
+
+        """获取文章封面图片url"""
+        if 'page_info' in weibo_info and weibo_info['page_info']['type'] == 'article':
+            if 'page_pic' in weibo_info['page_info']:
+                pic_list.append(weibo_info['page_info']['page_pic']['url'])
+
         return pic_list
 
     def get_live_photo(self, weibo_info):
