@@ -50,7 +50,7 @@ class SqliteDao(object):
         os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
         self.table = table
         self._engine = create_engine(
-            f"sqlite:///{DB_PATH}", echo=DEBUG,connect_args=DB_ARGS
+            f"sqlite:///{DB_PATH}", echo=DEBUG, connect_args=DB_ARGS
         )
         self._sessionFactory = sessionmaker(
             bind=self._engine, autocommit=True, autoflush=True
@@ -334,3 +334,69 @@ class BattleDao(SqliteDao):
             )
             items = [models.BattleItem(**models.DB2Dict(i)) for i in queryResult]
         return items
+
+
+class PlanDamage(SqliteDao):
+    def __init__(self):
+        super().__init__(table=tables.PlannedDamage)
+        self.table: tables.PlannedDamage
+
+    @exceptError
+    def add(self, uid: int, alt: int, damage: int, boss: int, type: int) -> int:
+        with self._connect() as session:
+            tableData = self.table(uid=uid, alt=alt, dmg=damage, boss=boss, type=type)
+            session.add(tableData)
+            session.flush()
+            pid = tableData.pid
+        return pid
+
+    @exceptError
+    def read(
+        self,
+        pid: Optional[int] = None,
+        uid: Optional[int] = None,
+        alt: Optional[int] = None,
+        boss: Optional[int] = None,
+        type: Optional[int] = None,
+    ) -> List[dict]:
+        assert uid or alt or pid
+        with self._connect() as session:
+            queryResult = (
+                session.query(self.table)
+                .filter((self.table.uid == uid) if uid is not None else True)
+                .filter((self.table.alt == alt) if alt is not None else True)
+                .filter((self.table.pid == pid) if pid is not None else True)
+                .filter((self.table.boss == boss) if boss is not None else True)
+                .filter((self.table.type == type) if type is not None else True)
+                .order_by(self.table.uid)
+                .order_by(self.table.boss)
+                .order_by(self.table.type)
+                .order_by(self.table.dmg.desc())
+                .all()
+            )
+            items = [models.DB2Dict(i) for i in queryResult]
+        return items
+
+    @exceptError
+    def delete(
+        self,
+        pid: Optional[int] = None,
+        uid: Optional[int] = None,
+        alt: Optional[int] = None,
+        boss: Optional[int] = None,
+        type: Optional[int] = None,
+    ):
+        assert uid or alt or pid
+        with self._connect() as session:
+            queryResult = (
+                session.query(self.table)
+                .filter((self.table.uid == uid) if uid is not None else True)
+                .filter((self.table.alt == alt) if alt is not None else True)
+                .filter((self.table.pid == pid) if pid is not None else True)
+                .filter((self.table.boss == boss) if boss is not None else True)
+                .filter((self.table.type == type) if type is not None else True)
+                .all()
+            )
+            for i in queryResult:
+                session.delete(i)
+        return

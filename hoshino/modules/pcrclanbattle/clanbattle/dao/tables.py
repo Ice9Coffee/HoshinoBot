@@ -32,3 +32,13 @@ class Battle(Base):
     boss = Column(Integer, nullable=False)
     dmg = Column(Integer, nullable=False)
     flag = Column(Integer, nullable=False)
+
+
+class PlannedDamage(Base):
+    __tablename__ = "planned_damage"
+    pid = Column(Integer, primary_key=True)
+    uid = Column(Integer, ForeignKey("member.uid"),nullable=False)
+    alt = Column(Integer, ForeignKey("member.alt"),nullable=False)
+    dmg = Column(Integer,nullable=False)
+    boss = Column(Integer,nullable=False)
+    type = Column(Integer,nullable=False)
