@@ -2,6 +2,7 @@ import os
 from functools import partial, wraps
 from typing import Any, Callable, List, Optional, Dict
 from urllib.parse import urlsplit, urlunsplit
+from sqlite3 import PARSE_COLNAMES, PARSE_DECLTYPES
 
 from sqlalchemy import MetaData, Table
 from sqlalchemy.engine import create_engine
@@ -10,31 +11,36 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from hoshino.log import logger
 
-from ..exception import AlreadyExistError, DatabaseError, NotFoundError
+from ..exception import DatabaseError
 from . import models, tables
+from config import DEBUG
 
 DB_PATH = os.path.expanduser("~/.hoshino/clanbattle.db")
+DB_ARGS = {
+    "check_same_thread": False,
+    "detect_types": PARSE_COLNAMES | PARSE_DECLTYPES,
+}
 ItemDict_T = Dict[str, Any]
 
 
 def exceptError(
     function: Optional[Callable] = None,
-    raiseException: bool = True,
     prompt: Optional[str] = None,
+    ignoreException: bool = False,
 ) -> Callable:
     if function is None:
-        return partial(exceptError, raiseException=raiseException, prompt=prompt)
+        return partial(exceptError, prompt=prompt, ignoreException=ignoreException)
 
     @wraps(function)
     def wrapper(*args, **kwargs) -> Any:
         try:
             return function(*args, **kwargs)
         except SQLAlchemyError as e:
-            logger.error(f"[{function.__qualname__}] {e}")
-            if raiseException:
-                raise DatabaseError(prompt or "数据库请求失败")
+            logger.error(f"[{function.__qualname__}] {type(e).__name__}:{e}")
+            if ignoreException:
+                return
             else:
-                return None
+                raise DatabaseError(prompt or "数据库发生未知错误")
 
     return wrapper
 
@@ -43,7 +49,9 @@ class SqliteDao(object):
     def __init__(self, table: tables.Base):
         os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
         self.table = table
-        self._engine = create_engine(f"sqlite://{DB_PATH}")
+        self._engine = create_engine(
+            f"sqlite:///{DB_PATH}", echo=DEBUG,connect_args=DB_ARGS
+        )
         self._sessionFactory = sessionmaker(
             bind=self._engine, autocommit=True, autoflush=True
         )
@@ -51,8 +59,8 @@ class SqliteDao(object):
 
     def _create_table(self):
         table: Table = self.table.__table__
-        data: MetaData = table.metadata
-        data.create_all(bind=self._engine, tables=[table])
+        table.name = self.table.__tablename__
+        table.create(bind=self._engine, checkfirst=True)
 
     def _connect(self):
         class Transaction:
@@ -60,13 +68,13 @@ class SqliteDao(object):
                 self._session = session
 
             def __enter__(self) -> Session:
-                self._transaction = self._session.begin(subtransactions=True).__enter__
+                self._session.begin(subtransactions=True)
                 return self._session
 
             def __exit__(self, *args):
-                self._transaction.__exit__(*args)
+                self._session.transaction.__exit__(*args)
 
-        return Transaction(session=self._sessionFactory)
+        return Transaction(session=self._sessionFactory())
 
 
 class ClanDao(SqliteDao):
@@ -95,7 +103,7 @@ class ClanDao(SqliteDao):
                 .first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             session.delete(queryResult)
 
     @exceptError(prompt="修改工会失败")
@@ -109,7 +117,7 @@ class ClanDao(SqliteDao):
                 .first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             for k, v in clanData.dict(exclude={"cid", "gid"}).items():
                 setattr(queryResult, k, v)
 
@@ -123,20 +131,20 @@ class ClanDao(SqliteDao):
                 .first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             item = models.ClanItem(**models.DB2Dict(queryResult))
         return item
 
     @exceptError(prompt="查找公会失败")
     def find_all(self) -> List[models.ClanItem]:
-        with self._connect as session:
+        with self._connect() as session:
             queryResult = session.query(self.table).all()
             items = [models.ClanItem(**models.DB2Dict(i)) for i in queryResult]
         return items
 
     @exceptError(prompt="查找公会失败")
     def find_by_gid(self, gid: int) -> List[models.ClanItem]:
-        with self._connect as session:
+        with self._connect() as session:
             queryResult = session.query(self.table).filter(self.table.gid == gid).all()
             items = [models.ClanItem(**models.DB2Dict(i)) for i in queryResult]
         return items
@@ -144,7 +152,7 @@ class ClanDao(SqliteDao):
 
 class MemberDao(SqliteDao):
     def __init__(self):
-        super.__init__(table=tables.Member)
+        super().__init__(table=tables.Member)
         self.table: tables.Member
 
     @exceptError(prompt="添加成员失败")
@@ -163,13 +171,13 @@ class MemberDao(SqliteDao):
                 .first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             session.delete(queryResult)
 
     @exceptError(prompt="修改成员失败")
     def modify(self, member: ItemDict_T):
         memberData = models.MemberItem(**member)
-        with self._connect as session:
+        with self._connect() as session:
             queryResult = (
                 session.query(self.table)
                 .filter(self.table.uid == memberData.uid)
@@ -177,13 +185,13 @@ class MemberDao(SqliteDao):
                 .first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             for k, v in memberData.dict(exclude={"uid", "alt"}).items():
                 setattr(queryResult, k, v)
 
     @exceptError(prompt="查找成员失败")
     def find_one(self, uid: int, alt: int) -> models.MemberItem:
-        with self._connect as session:
+        with self._connect() as session:
             queryResult = (
                 session.query(self.table)
                 .filter(self.table.uid == uid)
@@ -191,16 +199,14 @@ class MemberDao(SqliteDao):
                 .first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             item = models.MemberItem(**models.DB2Dict(queryResult))
         return item
 
     @exceptError(prompt="查找成员失败")
     def find_all(self) -> List[models.MemberItem]:
-        with self._connect as session:
+        with self._connect() as session:
             queryResult = session.query(self.table).all()
-            if not queryResult:
-                raise NotFoundError
             items = [models.MemberItem(**models.DB2Dict(i)) for i in queryResult]
         return items
 
@@ -212,7 +218,7 @@ class MemberDao(SqliteDao):
         uid: Optional[int] = None,
     ) -> List[models.MemberItem]:
         assert gid or cid or uid
-        with self._connect as session:
+        with self._connect() as session:
             queryResult = (
                 session.query(self.table)
                 .filter((self.table.gid == gid) if gid is not None else True)
@@ -220,8 +226,6 @@ class MemberDao(SqliteDao):
                 .filter((self.table.uid == uid) if uid is not None else True)
                 .all()
             )
-            if not queryResult:
-                raise NotFoundError
             items = [models.MemberItem(**models.DB2Dict(i)) for i in queryResult]
         return items
 
@@ -233,7 +237,7 @@ class MemberDao(SqliteDao):
         uid: Optional[int] = None,
     ):
         assert gid or cid or uid
-        with self._connect as session:
+        with self._connect() as session:
             queryResult = (
                 session.query(self.table)
                 .filter((self.table.gid == gid) if gid is not None else True)
@@ -241,8 +245,6 @@ class MemberDao(SqliteDao):
                 .filter((self.table.uid == uid) if uid is not None else True)
                 .all()
             )
-            if not queryResult:
-                raise NotFoundError
             for i in queryResult:
                 session.delete(i)
         return
@@ -256,14 +258,14 @@ class BattleDao(SqliteDao):
 
     def __init__(self, gid, cid, yyyy, mm):
         table = tables.Battle
-        table.__tablename__ = "battle_%d_%d_%04d%02d" % (gid, cid, yyyy, mm)
+        table.__tablename__ = f"battle_{gid}_{cid}_{yyyy:04d}{mm:02d}"
         super().__init__(table=table)
         self.table: tables.Battle
 
     @exceptError(prompt="添加记录失败")
     def add(self, challenge: ItemDict_T) -> int:
         battleData = models.BattleItem(**challenge)
-        with self._connect as session:
+        with self._connect() as session:
             tableData = self.table(**battleData.dict(exclude={"eid"}))
             session.add(tableData)
             session.flush()
@@ -277,7 +279,7 @@ class BattleDao(SqliteDao):
                 session.query(self.table).filter(self.table.eid == eid).first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             session.delete(queryResult)
         return
 
@@ -291,7 +293,7 @@ class BattleDao(SqliteDao):
                 .first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             for k, v in battleData.dict(exclude={"eid"}).items():
                 setattr(queryResult, k, v)
         return
@@ -303,7 +305,7 @@ class BattleDao(SqliteDao):
                 session.query(self.table).filter(self.table.eid == eid).first()
             )
             if not queryResult:
-                raise NotFoundError
+                return
             item = models.BattleItem(**models.DB2Dict(queryResult))
         return item
 
@@ -311,8 +313,6 @@ class BattleDao(SqliteDao):
     def find_all(self) -> List[models.BattleItem]:
         with self._connect() as session:
             queryResult = session.query(self.table).all()
-            if not queryResult:
-                raise NotFoundError
             items = [models.BattleItem(**models.DB2Dict(i)) for i in queryResult]
         return items
 
@@ -324,7 +324,7 @@ class BattleDao(SqliteDao):
         order_by_user: bool = False,
     ) -> List[models.BattleItem]:
         assert uid or alt
-        with self._connect as session:
+        with self._connect() as session:
             queryResult = (
                 session.query(self.table)
                 .filter((self.table.uid == uid) if uid is not None else True)
@@ -332,7 +332,5 @@ class BattleDao(SqliteDao):
                 .order_by(self.table.round if not order_by_user else self.table.uid)
                 .all()
             )
-            if not queryResult:
-                raise NotFoundError
             items = [models.BattleItem(**models.DB2Dict(i)) for i in queryResult]
         return items

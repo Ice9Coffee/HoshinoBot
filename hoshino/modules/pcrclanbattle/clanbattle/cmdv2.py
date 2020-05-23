@@ -739,7 +739,7 @@ async def list_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
     msg = [ f'{clan["name"]}出刀记录：\n编号|出刀者|周目|Boss|伤害|标记' ]
     challenstr = 'E{eid:0>3d}|{name}|r{round}|b{boss}|{dmg: >7,d}{flag_str}'
-    for c in challen:
+    for c in [dict(i) for i in challen]:
         mem = bm.get_member(c['uid'], c['alt'])
         c['name'] = mem['name'] if mem else c['uid']
         flag = c['flag']

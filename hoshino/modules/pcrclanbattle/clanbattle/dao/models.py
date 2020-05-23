@@ -12,6 +12,9 @@ class ItemBase(BaseModel):
     def __getitem__(self, key: str):
         return dict(self).__getitem__(key)
 
+    def __setitem__(self, key: str, value: Any):
+        setattr(self, key, value)
+
 
 class ClanItem(ItemBase):
     gid: int
