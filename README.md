@@ -22,10 +22,12 @@ HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-red
 - **官方推特转发**
 - **官方四格推送**
 - **角色别称转换**
+- **切噜语编解码**：切噜～♪
+- **竞技场余矿查询**
 
 > 由于bot的功能会快速迭代开发，使用方式这里不进行具体的说明，请向bot发送"help"或移步[此文件](hoshino/modules/botmanage/help.py)查看详细。会战管理功能的详细说明，请[点击这里](hoshino/modules/pcrclanbattle/clanbattle/README.md)
 
-除上述与之外，HoshinoBot 还具有以下通用功能：
+HoshinoBot 还具有以下通用功能：
 
 - **[蜜柑计划](http://mikanani.me)番剧更新订阅**
 - **入群欢迎**&**退群提醒**
@@ -35,7 +37,7 @@ HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-red
 - **机器翻译**
 - **反馈发送**：反馈内容将由bot私聊发送给维护组
 
-另外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能：
+此外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能：
 
 - **官推转发**：「艦これ」開発/運営 & C2機関
 - **时报**
@@ -99,6 +101,8 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     }
     ```
 
+    关于CQHTTP插件的配置说明，详见 [CQHTTP 文档 -> 配置](https://cqhttp.cc/docs/#/Configuration)
+
 4. 打开一个合适的文件夹，点击资源管理器左上角的 `文件 -> 打开Windows Powershell`
 
 5. 输入以下命令安装依赖
@@ -112,7 +116,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     >
     >若安装python依赖库时下载速度缓慢，可以尝试使用`py -3.8 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt`
 
-6. 回到资源管理器，复制`config_sample.py`至同目录下，重命名为`config.py`，右键使用Notepad++打开，按照其中的注释说明进行编辑。
+6. 回到资源管理器，复制`config.example.py`至同目录下，重命名为`config.py`，右键使用Notepad++打开，按照其中的注释说明进行编辑。
 
     > 如果您不清楚某项设置的作用，请保持默认
     
@@ -132,11 +136,11 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 #### Linux 部署
 
-由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/#/Docker)找到详细的说明。下面将带领您进行部署：
+由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/)找到详细的说明。下面将带领您进行部署：
 
 1. 安装 docker：参考https://docs.docker.com/engine/install/debian/
 
-2. 部署 docker：下面一条命令仅供参考，请根据实际情况修改参数
+2. 部署 docker：下面一条命令仅供参考，请根据实际情况修改参数；详细说明可见 [CQHTTP 文档 -> Docker](https://cqhttp.cc/docs/#/Docker)
 
     ```bash
     sudo docker run -d --name=hoshino \
@@ -153,7 +157,11 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     richardchien/cqhttp:latest
     ```
 
-    > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q，即可开始使用
+    > 使用这行命令`ip addr show docker0 | grep -Po 'inet \K[\d.]+'`查看你的docker桥ip，替换`CQHTTP_WS_REVERSE_URL`中的链接
+    >
+    > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q
+    > 
+    > 注：如果你希望先使用酷Q Air进行尝试，请将COOLQ_URL设置为`https://dlsec.cqp.me/cqa-xiaoi`；之后可以用CQP.exe替换CQA.exe以升级，或删除容器重新创建。
 
 3. 回到我们熟悉的命令行，安装 Python 3.8
 
@@ -165,22 +173,22 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     >
     > Google will help you greatly : )
 
-1. 克隆本仓库并安装依赖包
+4. 克隆本仓库并安装依赖包
     ```bash
     git clone https://github.com/Ice-Cirno/HoshinoBot.git
     cd HoshinoBot
     python3.8 -m pip install -r requirements.txt
     ```
 
-2. 编辑配置文件
+5. 编辑配置文件
     ```bash
-    cp config_sample.py config.py
+    cp config.example.py config.py
     nano config.py
     ```
     > 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
     >
     > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
-3. 运行bot
+6. 运行bot
     ```bash
     python3.8 run.py
     ```
@@ -237,19 +245,19 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 > 请先在`config.py`的`MODULES_ON`中取消`mikan`的注释  
 > 本功能默认关闭，在群内发送 "启用 bangumi" 即可开启
 
-番剧订阅数据来自[蜜柑计划 - Mikan Project](https://mikanani.me/)，您可以注册一个帐号，添加订阅的番剧，之后点击Mikan首页的RSS订阅，复制类似于下面的url地址：
+番剧订阅数据来自[蜜柑计划 - Mikan Project](https://mikanani.me/)，您可以注册一个账号，添加订阅的番剧，之后点击Mikan首页的RSS订阅，复制类似于下面的url地址：
 
 ```
 https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 ```
 
-保留其中的`token`参数，创建文件`hoshino\modules\subscribe\mikan\config.json`编写以下内容：
+保留其中的`token`参数，创建文件`hoshino\modules\mikan\config.json`编写以下内容：
 
 ```json
 {"MIKAN_TOKEN" : "abcdfegABCFEFG+123=="}
 ```
 
-注意：`token`中可能含有url转义，您需要将`%2b`替换为`+`，将`%3d`替换为`=`。
+注意：`token`中可能含有url转义，您需要将`%2b`替换为`+`，将`%2f`替换为`/`，将`%3d`替换为`=`。
 
 
 
@@ -287,9 +295,9 @@ https://mikanani.me/RSS/MyBangumi?token=abcdfegABCFEFG%2b123%3d%3d
 
 #### 推特转发
 
-推特转发功能需要推特开发者帐号，具体申请方法请自行[Google](http://google.com)。注：现在推特官方大概率拒绝来自中国大陆的新申请，自备海外手机号及大学邮箱可能会帮到您。
+推特转发功能需要推特开发者账号，具体申请方法请自行[Google](http://google.com)。注：现在推特官方大概率拒绝来自中国大陆的新申请，自备海外手机号及大学邮箱可能会帮到您。
 
-若您已有推特开发者帐号，创建文件`hoshino/modules/twitter/config.json`编写以下内容：
+若您已有推特开发者账号，创建文件`hoshino/modules/twitter/config.json`编写以下内容：
 
 ```json
 {
