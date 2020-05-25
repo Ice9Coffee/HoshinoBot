@@ -196,36 +196,133 @@ async def process_challenge(bot:NoneBot, ctx:Context_T, ch:ParseResult):
     damage = ch.damage if ch.flag != BattleMaster.LAST else (ch.damage or cur_hp)
     flag = ch.flag
 
+    zone = bm.get_timezone_num(clan['server'])
+    challen = bm.list_challenge_of_user_of_day(mem['uid'], mem['alt'], now, zone)
+    if challen:
+        ezflag = challen[-1]['flag']
+    else:
+        ezflag = BattleMaster.NORM
+
     if (ch.flag == BattleMaster.LAST) and (ch.round or ch.boss) and (not damage):
         raise NotFoundError('补报尾刀请给出伤害值')     # 补报尾刀必须给出伤害值
-
+    eps = 1   # 伤害校对参数，默认3000
     msg = ['']
-    if round_ != cur_round or boss != cur_boss:
-        msg.append('⚠️上报与当前进度不一致')
-    else:   # 伤害校对
-        eps = 30000
-        if damage > cur_hp + eps:
-            damage = cur_hp
-            msg.append(f'⚠️过度虐杀 伤害数值已自动修正为{damage}')
-            if flag == BattleMaster.NORM:
-                flag = BattleMaster.LAST
-                msg.append('⚠️已自动标记为尾刀')
-        elif flag == BattleMaster.LAST:
-            if damage < cur_hp - eps:
-                msg.append('⚠️尾刀伤害不足 请未报刀成员及时上报')
-            elif damage < cur_hp:
-                if damage % 1000 == 0:
+    if ezflag != BattleMaster.LAST:    # 普通刀与补时刀性质一致
+        if ch.flag == BattleMaster.NORM or ch.flag == BattleMaster.LAST or ch.flag == BattleMaster.TIMEOUT:
+            if round_ != cur_round or boss != cur_boss:
+                msg.append('⚠️上报与当前进度不一致')
+            else:   # 伤害校对
+                if damage > cur_hp + eps:
                     damage = cur_hp
-                    msg.append(f'⚠️尾刀伤害已自动修正为{damage}')
-                else:
-                    msg.append('⚠️Boss仍有少量残留血量')
+                    msg.append(f'⚠️过度虐杀 伤害数值已自动修正为{damage}')
+                    if flag == BattleMaster.NORM:
+                        flag = BattleMaster.LAST
+                        msg.append('⚠️已自动标记为尾刀')
+                elif flag == BattleMaster.LAST:
+                    if damage < cur_hp - eps:
+                        msg.append('⚠️尾刀伤害不足 请未报刀成员及时上报')
+                    elif damage < cur_hp:
+                        if damage % 1000 == 0:
+                            damage = cur_hp
+                            msg.append(f'⚠️尾刀伤害已自动修正为{damage}')
+                        else:
+                            msg.append('⚠️Boss仍有少量残留血量')
 
-    eid = bm.add_challenge(mem['uid'], mem['alt'], round_, boss, damage, flag, now)
-    aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
-    max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
-    msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害\n")
-    msg.append(_gen_progress_text(clan['name'], aft_round, aft_boss, aft_hp, max_hp, score_rate))
-    await bot.send(ctx, '\n'.join(msg), at_sender=True)
+            eid = bm.add_challenge(mem['uid'], mem['alt'], round_, boss, damage, flag, now)
+            aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
+            max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
+            msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害\n")
+            msg.append(_gen_progress_text(clan['name'], aft_round, aft_boss, aft_hp, max_hp, score_rate))
+            await bot.send(ctx, '\n'.join(msg), at_sender=True)
+        
+        elif ch.flag == BattleMaster.EXT:
+            if round_ != cur_round or boss != cur_boss:
+                msg.append('⚠️上报与当前进度不一致')
+            else:   # 伤害校对
+                msg.append('⚠️🐒保护机制 已自动补足尾刀')
+                eid = bm.add_challenge(mem['uid'], mem['alt'], round_, boss, cur_hp, BattleMaster.LAST, now)
+                aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
+                max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
+                await call_subscribe(bot, ctx, aft_round, aft_boss)
+                await auto_unlock_boss(bot, ctx, bm)
+                await auto_unsubscribe(bot, ctx, bm.group, mem['uid'], boss)
+
+                msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{cur_hp:,d}点伤害")
+                # await bot.send(ctx, '\n'.join(msg), at_sender=True)
+
+                now = datetime.now()
+                cur_round, cur_boss, cur_hp = bm.get_challenge_progress(1, now)
+                round_ = ch.round or cur_round
+                boss = ch.boss or cur_boss
+                damage = ch.damage if ch.flag != BattleMaster.LAST else (ch.damage or cur_hp)
+                flag = ch.flag
+
+                if damage > cur_hp + eps:
+                    damage = cur_hp
+                    msg.append(f'⚠️过度虐杀 伤害数值已自动修正为{damage}')
+                    flag = BattleMaster.EXT   # 补时刀不能产生新的补时刀
+                    msg.append('⚠️连杀俩boss，尼🐴是不是在开挂')
+
+                eid = bm.add_challenge(mem['uid'], mem['alt'], round_, boss, damage, flag, now)
+                aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
+                max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
+                msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害\n")
+                msg.append(_gen_progress_text(clan['name'], aft_round, aft_boss, aft_hp, max_hp, score_rate))
+                await bot.send(ctx, '\n'.join(msg), at_sender=True)
+
+    elif ezflag == BattleMaster.LAST:
+        if ch.flag == BattleMaster.NORM or ch.flag == BattleMaster.LAST:
+            if round_ != cur_round or boss != cur_boss:
+                msg.append('⚠️上报与当前进度不一致')
+            else:   # 伤害校对
+                msg.append('⚠️🐒保护机制 已自动转为补时刀')
+
+                if ch.flag == BattleMaster.NORM:
+                    ch.flag = BattleMaster.EXT
+                    flag = BattleMaster.EXT
+
+                if damage > cur_hp + eps and flag == BattleMaster.EXT:
+                    damage = cur_hp
+                    msg.append(f'⚠️过度虐杀 伤害数值已自动修正为{damage}')
+                    if flag == BattleMaster.EXT:
+                        flag = BattleMaster.EXT   # 尾刀的尾刀不是补时刀
+                        msg.append('⚠️连杀俩boss，尼🐴是不是在开挂')
+
+                if flag == BattleMaster.LAST:
+                    msg.append('⚠️🐒保护机制 尾刀的尾刀无法补时')
+                    msg.append('⚠️连杀俩boss，尼🐴是不是在开挂')
+                    flag = BattleMaster.EXT   # 尾刀的尾刀是补时刀
+                    if damage < cur_hp - eps:                        
+                        msg.append('⚠️尾刀的尾刀伤害不足 请未报刀成员及时上报')
+                    elif damage < cur_hp:
+                        if damage % 1000 == 0:
+                            damage = cur_hp
+                            msg.append(f'⚠️尾刀的尾刀伤害已自动修正为{damage}')
+                        else:
+                            msg.append('⚠️Boss仍有少量残留血量')
+
+            eid = bm.add_challenge(mem['uid'], mem['alt'], round_, boss, damage, flag, now)
+            aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
+            max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
+            msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害\n")
+            msg.append(_gen_progress_text(clan['name'], aft_round, aft_boss, aft_hp, max_hp, score_rate))
+            await bot.send(ctx, '\n'.join(msg), at_sender=True)
+
+        elif ch.flag == BattleMaster.EXT:
+            if round_ != cur_round or boss != cur_boss:
+                    msg.append('⚠️上报与当前进度不一致')
+            else:   # 伤害校对
+                if damage > cur_hp + eps:
+                    damage = cur_hp
+                    msg.append(f'⚠️过度虐杀 伤害数值已自动修正为{damage}')
+                    msg.append('⚠️连杀俩boss，尼🐴是不是在开挂')
+
+            eid = bm.add_challenge(mem['uid'], mem['alt'], round_, boss, damage, flag, now)
+            aft_round, aft_boss, aft_hp = bm.get_challenge_progress(1, now)
+            max_hp, score_rate = bm.get_boss_info(aft_round, aft_boss, clan['server'])
+            msg.append(f"记录编号E{eid}：\n{mem['name']}给予{round_}周目{bm.int2kanji(boss)}王{damage:,d}点伤害\n")
+            msg.append(_gen_progress_text(clan['name'], aft_round, aft_boss, aft_hp, max_hp, score_rate))
+            await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
     # 判断是否更换boss，呼叫预约
     if aft_round != cur_round or aft_boss != cur_boss:
