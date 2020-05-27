@@ -35,8 +35,7 @@ async def comic(bot, ctx):
         l_input = input.split(' ',1)
         if l_input[1].startswith('官漫'):
             episode = l_input[1].lstrip('官漫')
-            print(episode)
-            if not episode:
+            if not episode or episode.isnumeric() is False:
                 await bot.send(ctx, '请输入漫画集数 如：官漫132', at_sender=True)
                 return
             index = load_index()
