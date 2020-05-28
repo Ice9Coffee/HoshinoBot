@@ -87,7 +87,12 @@ class WeiboSpider(object):
             return user
 
     def clear_buffer(self):
-        self.received_weibo_ids.clear()
+        """
+        如果清理缓存前一分钟，该微博账号瞬间发送了 20 条微博
+        然后清理缓存仅仅保留后 10 条的微博id，因此可能会重复推送前 10 条微博
+        当然这种情况通常不会发生
+        """
+        self.received_weibo_ids = self.received_weibo_ids[-10:]
 
     def validate_config(self, config):
         """验证配置是否正确"""
@@ -251,7 +256,10 @@ class WeiboSpider(object):
         elif created_at.count('-') == 1:
             year = datetime.now().strftime("%Y")
             created_at = year + "-" + created_at
-            self.__recent = False
+            if self.__init:
+                self.__recent = True
+            else:
+                self.__recent = False
         return created_at
 
     def standardize_info(self, weibo):

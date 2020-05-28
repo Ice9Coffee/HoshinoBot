@@ -8,7 +8,7 @@ from .exception import *
 sample config.json
 
 [{
-    "service_name": "bcr-weibo",
+    "service_name": "weibo-bcr",
     "enable_on_default": true,
     "users":[{
         "user_id": "6603867494",
@@ -47,7 +47,7 @@ def _load_config(services_config):
 
         
         
-sv = Service('weibo-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
+sv = Service('weibo-poller', manage_priv=Priv.SUPERUSER, visible=False)
 services_config = util.load_config(__file__)
 subr_dic = {}
 alias_dic = {}
@@ -76,18 +76,38 @@ def wb_to_message(wb):
 
     return msg
 
+weibo_url_prefix = "https://weibo.com/u"
+@sv.on_command('weibo-config',aliases=('查看微博服务', '微博服务', '微博配置', '查看微博配置'))
+async def weibo_config(session):
+    msg = '微博推送配置：服务名，别名，微博链接'
+    index = 1
+    for service_config in services_config:
+        service_name = service_config['service_name']
+        users_config = service_config['users']
+        for user_config in users_config:
+            weibo_id =  user_config['user_id']
+            alias = user_config['alias']
+            weibo_url = f'{weibo_url_prefix}/{weibo_id}'
+            msg = f'{msg}\n{index}. {service_name}, {alias}, {weibo_url}'
+            index+=1
+    session.finish(msg)
+
+
 # @bot 看微博 alias
 @sv.on_command('看微博', only_to_me=True)
 async def get_last_5_weibo(session):
     uid = session.ctx['user_id']
     if not lmt.check(uid):
         session.finish('您查询得过于频繁，请稍等片刻', at_sender=True)
+        return
+
     lmt.start_cd(uid)
 
     alias = session.current_arg_text
     if alias not in alias_dic:
-        await session.finish(f"未找到微博: {alias}")
+        session.finish(f"未找到微博: {alias}")
         return
+
     service_name = alias_dic[alias]["service_name"]
     user_id = alias_dic[alias]["user_id"]
 
@@ -98,9 +118,9 @@ async def get_last_5_weibo(session):
             formatted_weibos = [wb_to_message(wb) for wb in last_5_weibos]
             for wb in formatted_weibos:
                 await session.send(wb)
-            await session.finish(f"以上为 {alias} 的最新 {len(formatted_weibos)} 条微博")
+            session.finish(f"以上为 {alias} 的最新 {len(formatted_weibos)} 条微博")
             return
-    await session.finish(f"未找到微博: {alias}")
+    session.finish(f"未找到微博: {alias}")
 
 @sv.scheduled_job('interval', seconds=20*60)
 async def weibo_poller():
