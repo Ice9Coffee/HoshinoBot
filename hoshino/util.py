@@ -93,7 +93,7 @@ def normalize_str(string) -> str:
     return string
 
 
-MONTH_NAME = ('睦月', '如月', '弥生', '卯月', '皐月', '水無月'
+MONTH_NAME = ('睦月', '如月', '弥生', '卯月', '皐月', '水無月',
               '文月', '葉月', '長月', '神無月', '霜月', '師走')
 def month_name(x:int) -> str:
     return MONTH_NAME[x - 1]
