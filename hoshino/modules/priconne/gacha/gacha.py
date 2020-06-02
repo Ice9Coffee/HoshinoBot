@@ -14,17 +14,19 @@ class Gacha(object):
     def load_pool(self, pool_name:str):
         config = util.load_config(__file__)
         pool = config[pool_name]
-        self.up_prob = pool["up_prob"]
+        self.up_prob = pool["up_prob"]          # 当期up
+        self.fes_prob = pool["fes_prob"]        # 当期FES
         self.s3_prob = pool["s3_prob"]
         self.s2_prob = pool["s2_prob"]
         self.s1_prob = 1000 - self.s2_prob - self.s3_prob
         self.up = pool["up"]
+        self.fes = pool["fes"]                  # 当期Fes
         self.star3 = pool["star3"]
         self.star2 = pool["star2"]
         self.star1 = pool["star1"]
 
 
-    def gacha_one(self, up_prob:int, s3_prob:int, s2_prob:int, s1_prob:int=None):
+    def gacha_one(self, ten_flag:bool = False):
         '''
         sx_prob: x星概率，要求和为1000
         up_prob: UP角色概率（从3星划出）
@@ -36,15 +38,18 @@ class Gacha(object):
         |   ***   |  **  |    *   |
         ---------------------------
         '''
-        if s1_prob is None:
-            s1_prob = 1000 - s3_prob - s2_prob
-        total_ = s3_prob + s2_prob + s1_prob
+        if self.s1_prob is None:
+            self.s1_prob = 1000 - self.s3_prob - self.s2_prob
+        total_ = self.s3_prob + self.s2_prob + self.s1_prob
         pick = random.randint(1, total_)
-        if pick <= up_prob:
+        
+        if pick <= self.up_prob:
             return Chara.fromname(random.choice(self.up), 3), 100
-        elif pick <= s3_prob:
+        elif pick <= self.up_prob + self.fes_prob:   # fes
+            return Chara.fromname(random.choice(self.fes), 3), 50
+        elif pick <= self.s3_prob:
             return Chara.fromname(random.choice(self.star3), 3), 50
-        elif pick <= s2_prob + s3_prob:
+        elif (pick <= self.s2_prob + self.s3_prob) or (ten_flag == True):
             return Chara.fromname(random.choice(self.star2), 2), 10
         else:
             return Chara.fromname(random.choice(self.star1), 1), 1
@@ -58,10 +63,10 @@ class Gacha(object):
         s2 = self.s2_prob
         s1 = 1000 - s3 - s2
         for _ in range(9):    # 前9连
-            c, y = self.gacha_one(up, s3, s2, s1)
+            c, y = self.gacha_one(False)
             result.append(c)
             hiishi += y
-        c, y = self.gacha_one(up, s3, s2 + s1, 0)    # 保底第10抽
+        c, y = self.gacha_one(True)    # 保底第10抽
         result.append(c)
         hiishi += y
 
@@ -75,24 +80,27 @@ class Gacha(object):
         s3 = self.s3_prob
         s2 = self.s2_prob
         s1 = 1000 - s3 - s2
-        for i in range(9 * 30):
-            c, y = self.gacha_one(up, s3, s2, s1)
-            if 100 == y:
-                result['up'].append(c)
-                first_up_pos = min(first_up_pos, 10 * ((i+1) // 9) + ((i+1) % 9))
-            elif 50 == y:
-                result['s3'].append(c)
-            elif 10 == y:
-                result['s2'].append(c)
-            elif 1 == y:
-                result['s1'].append(c)
-            else:
-                pass    # should never reach here
         for i in range(30):
-            c, y = self.gacha_one(up, s3, s2 + s1, 0)
+            # 前9抽
+            # print("\n", i * 10, "-", i * 10 + 10)
+            for k in range(9):
+                c, y = self.gacha_one(False)
+                if 100 == y:
+                    result['up'].append(c)
+                    first_up_pos = min(first_up_pos, i * 10 + k)
+                elif 50 == y:
+                    result['s3'].append(c)
+                elif 10 == y:
+                    result['s2'].append(c)
+                elif 1 == y:
+                    result['s1'].append(c)
+                else:
+                    pass    # should never reach here
+            # 第10抽保底
+            c, y = self.gacha_one(True)
             if 100 == y:
                 result['up'].append(c)
-                first_up_pos = min(first_up_pos, 10 * (i+1))
+                first_up_pos = min(first_up_pos, 10 * (i + 1))
             elif 50 == y:
                 result['s3'].append(c)
             elif 10 == y:
