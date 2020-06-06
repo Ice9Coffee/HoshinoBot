@@ -28,8 +28,8 @@ async def _clanbattle_bus(bot:NoneBot, ctx):
 
     # find cmd
     plain_text = ctx['message'].extract_plain_text()
-    cmd, *args = plain_text.split()
-    cmd = util.normalize_str(cmd[1:])
+    cmd, *args = plain_text[1:].split()
+    cmd = util.normalize_str(cmd)
     if cmd in _registry:
         func, parser = _registry[cmd]
         try:

@@ -15,7 +15,7 @@ async def broadcast(session:CommandSession):
         gl = await session.bot.get_group_list(self_id=sid)
         gl = [ g['group_id'] for g in gl ]
         for g in gl:
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(0.5)
             try:
                 await session.bot.send_group_msg(self_id=sid, group_id=g, message=msg)
                 logger.info(f'群{g} 投递广播成功')
