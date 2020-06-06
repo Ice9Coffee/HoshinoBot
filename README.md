@@ -135,6 +135,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 
 #### Linux 部署
+##### docker 部署酷Q，直接部署 Hoshino
 
 由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/)找到详细的说明。下面将带领您进行部署：
 
@@ -143,7 +144,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 2. 部署 docker：下面一条命令仅供参考，请根据实际情况修改参数；详细说明可见 [CQHTTP 文档 -> Docker](https://cqhttp.cc/docs/#/Docker)
 
     ```bash
-    sudo docker run -d --name=hoshino \
+    sudo docker run -d --name=cqhttp \
     -v $(pwd)/coolq:/home/user/coolq \
     -p 9000:9000 \
     -e VNC_PASSWD=MAXchar8 \
@@ -194,9 +195,92 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     ```
     
     私聊机器人发送`在？`，若机器人有回复，恭喜您！您已经成功搭建起HoshinoBot了。之后您可以尝试在群内发送`!帮助`以查看会战管理的相关说明，发送`help`查看其他一般功能的相关说明，发送`pcr速查`查看常用网址等。
+
+    使用 `python3.8 run.py -d` 以守护进程运行。
     
     注意，此时您的机器人功能还不完全，部分功能可能无法正常工作。若希望您的机器人可以发送图片，或使用其他进阶功能，请参考本章**更进一步**的对应小节。
 
+##### 完全 docker 部署
+使用 docker 部署 Hoshino 有更好的隔离性。宿主机也不需要使用虚拟环境管理 python。使用 docker 网络，避免 Hoshino 端口暴露在外。对外仅暴露 coolq 的 VNC 端口。
+
+1. 安装 docker：参考https://docs.docker.com/engine/install/debian/
+2. 安装 docker-compose: 参考https://docs.docker.com/compose/install/
+3. 创建 docker 网络 `coolq-bridge`
+    ```bash
+    docker network create coolq-bridge
+    ```
+4. 部署 cqhttp 容器：`coolq-compose.yml` 仅供参考，请根据实际情况修改参数
+
+    ```bash
+    sudo docker-compose -f coolq-compose.yml up -d
+    ```
+
+    > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q，即可开始使用
+2. 克隆本仓库
+    ```bash
+    git clone https://github.com/Ice-Cirno/HoshinoBot.git
+    cd HoshinoBot
+    ```
+
+3. 编辑配置文件
+    ```bash
+    cp config_sample.py config.py
+    nano config.py
+    ```
+    > 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
+    > 由于使用 docker 网络桥接了 cqhttp 与 Hoshino，因此将 HOST 设置为 127.0.0.1 即可。如有问题，建议直接改为 0.0.0.0
+    > 
+    > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
+4. 生成可运行 Hoshino 的镜像
+    - 在生成镜像前，我们需要先下载微软雅黑字体，我们之后需要将这个字体文件拷贝到镜像中。
+    - 在当前文件夹中新建文件夹 `fonts`，将下载的 ttf 重命名为 `Microsoft YaHei.ttf`，并放置在 `fonts` 文件夹中（`fonts/Microsoft YaHei.ttf`）。
+
+    > 您可以从 https://www.wfonts.com/font/microsoft-yahei 下载微软雅黑字体文件
+    > 如果镜像中缺少中文字体，Matplotlib 生成的图表中的中文将会乱码
+
+    ```bash
+    docker build . -t hoshino-env
+    ```
+5. 部署 Hoshino 容器：`hoshino-compose.yml` 仅供参考，请根据实际情况修改参数
+    ```bash
+    docker-compose -f hoshino-compose.yml up -d
+    ```
+    > 注意 `volume` 的第二个参数 `~/.hoshino/res:/root/.hoshino/res` 
+    > `~/.hoshino/res` 为宿主机的静态资源路径
+    > `/root/.hoshino/res` 为 docker 镜像内静态资源路径，需要与 `config.py` 中的 `RESOURCE_DIR` 保持一致
+    >
+    > 示例：
+    > 假设宿主机的静态资源位于 `/whatever/path/res`；`RESOURCE_DIR` 设置为 `~/.hoshino/res`
+    > 容器内默认使用 `root` 用户， 因此容器内的路径 `~/.hoshino/res` 就相当于 `/root/.hoshino/res`
+    > 那么 `volume` 的第二个参数就应该是 `/whatever/path/res:/root/hoshino/res`
+
+    可使用 `docker logs <container_id>` 查看 Hoshino 日志
+
+6. 代码更新
+    如果后续对 Hoshino 有任何改动，利用 docker-compose 可以快速重启
+    ```bash
+    docker-compose -f hoshino-compose.yml down
+    docker-compose -f hoshino-compose.yml up -d
+    ```
+
+7. 部署静态资源服务器（非必要）
+    在不配置 `RESOURCE_URL` 的情况下，bot 发送的图片会先进行 base64 编码，再发送给 coolq。因此会导致 bot 发送较大图片时，响应速度会变慢。通过部署静态资源服务器，可以省去编码步骤，让 coolq 直接去静态资源服务器中获取相应图片，加快响应速度。
+
+    静态资源服务器可以部署在其他服务器上，但是部分功能可能受限，比如 `setu` 模块的随机图片是通过访问静态资源的本地文件夹实现的，如果将图片存储在其他服务器上，该模块将无法发送随即图片。因此不建议部署在其他服务器上。
+
+    以默认的静态资源目录 `~/.hoshino/res/` 为例（该目录就是 `config.py` 中的`RESOURCE_DIR`），运行以下命令使用 `docker` 部署静态资源服务器 `nginx`
+    ```
+    mv nginx-compose.yml ~/.hoshino/res/
+    cd ~/.hoshino/res/
+    docker-compose -f nginx-compose.yml up -d
+    ```
+
+    假设你的服务器 IP 地址为 `11.11.11.11`，此时在浏览器中访问 `http://11.11.11.11/nginx-compose.yml`，如果成功获得到 compose 文件，就说明部署成功。
+
+    然后修改 `config.py` 中的 `RESOURCE_URL` 为 `http://11.11.11.11` 即可
+
+    > `RESOURCE_URL` 中必须添加 `http://` 前缀
+    > 如需配置 `https` 访问，见该文档 http://nginx.org/en/docs/http/configuring_https_servers.html
 
 
 ### 更进一步
