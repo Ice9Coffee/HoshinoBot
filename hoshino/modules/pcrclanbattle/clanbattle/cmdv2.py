@@ -320,23 +320,90 @@ async def del_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
 # TODO 将预约信息转至数据库
 SUBSCRIBE_PATH = os.path.expanduser('~/.hoshino/clanbattle_sub/')
 SUBSCRIBE_MAX = [99, 6, 6, 6, 6, 6]
-SUBSCRIBE_TREE_KEY = '0'
-LOCK_KEY = 'lock'
 os.makedirs(SUBSCRIBE_PATH, exist_ok=True)
 
-def _load_sub(gid):
+class SubscribeData:
+
+    def __init__(self, data:dict):
+        for i in '12345':
+            data.setdefault(i, [])
+            data.setdefault('m' + i, [])
+            l = len(data[i])
+            if len(data['m' + i]) != l:
+                data['m' + i] = [None] * l
+        data.setdefault('tree', [])
+        data.setdefault('lock', [])
+        if 'max' not in data or len(data['max']) != 6:
+            data['max'] = [99, 6, 6, 6, 6, 6]
+        self._data = data
+        
+    @staticmethod
+    def default():
+        return SubscribeData({
+            '1':[], '2':[], '3':[], '4':[], '5':[],
+            'm1':[], 'm2':[], 'm3':[], 'm4':[], 'm5':[],
+            'tree':[], 'lock':[],
+            'max': [99, 6, 6, 6, 6, 6]
+        })
+    
+    def get_sub_list(self, boss:int):
+        return self._data[str(boss)]
+        
+    def get_memo_list(self, boss:int):
+        return self._data[f'm{boss}']
+    
+    def get_tree_list(self):
+        return self._data['tree']
+
+    def get_sub_limit(self, boss:int):
+        return self._data['max'][boss]
+
+    def set_sub_limit(self, boss:int, limit:int):
+        self._data['max'][boss] = limit
+
+    def add_sub(self, boss:int, uid:int, memo:str):
+        self._data[str(boss)].append(uid)
+        self._data[f'm{boss}'].append(memo)
+
+    def remove_sub(self, boss:int, uid:int):
+        s = self._data[str(boss)]
+        m = self._data[f'm{boss}']
+        i = s.index(uid)
+        s.pop(i)
+        m.pop(i)
+
+    def add_tree(self, uid:int):
+        self._data['tree'].append(uid)
+        
+    def clear_tree(self):
+        self._data['tree'].clear()
+        
+    def get_lock_info(self):
+        return self._data['lock']
+    
+    def set_lock(self, uid:int, ts):
+        self._data['lock'] = [ (uid, ts) ]
+
+    def clear_lock(self):
+        self._data['lock'].clear()
+
+    def dump(self, filename):
+        with open(filename, 'w', encoding='utf8') as f:
+            json.dump(self._data, f, ensure_ascii=False)
+
+
+def _load_sub(gid) -> SubscribeData:
     filename = os.path.join(SUBSCRIBE_PATH, f"{gid}.json")
     if os.path.exists(filename):
         with open(filename, 'r', encoding='utf8') as f:
-            return json.load(f)
+            return SubscribeData(json.load(f))
     else:
-        return {'1':[], '2':[], '3':[], '4':[], '5':[], SUBSCRIBE_TREE_KEY:[], LOCK_KEY:[]}
+        return SubscribeData.default()
 
 
-def _save_sub(sub, gid):
+def _save_sub(sub:SubscribeData, gid):
     filename = os.path.join(SUBSCRIBE_PATH, f"{gid}.json")
-    with open(filename, 'w', encoding='utf8') as f:
-        json.dump(sub, f, ensure_ascii=False)
+    sub.dump(filename)
 
 
 def _gen_namelist_text(bm:BattleMaster, uidlist:List[int], memolist:List[str]=None, do_at=False):
@@ -353,7 +420,12 @@ def _gen_namelist_text(bm:BattleMaster, uidlist:List[int], memolist:List[str]=No
     return mems
 
 
-SUBSCRIBE_TIP = 'β>预约现在可附留言(不可包含空格)\n例："!预约 5 m留言"'
+SUBSCRIBE_TIP = '''
+※预约可附留言(不可包含空格)
+例："!预约 5 m留言"
+※使用"!预约上限"可设置上限
+例："!预约上限 B5 6"将五王的预约上限设置为6'
+'''
 
 @cb_cmd('预约', ArgParser(usage='!预约 <Boss号> M留言', arg_dict={
     '': ArgHolder(tip='Boss编号', type=boss_code),
@@ -366,22 +438,22 @@ async def subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     sub = _load_sub(bm.group)
     boss = args['']
     memo = args.M
-    memo_key = 'm' + str(boss)
-    sub.setdefault(str(boss), [])
-    slist = sub[str(boss)]
-    sub.setdefault(memo_key, [None] * len(slist))
-    mlist = sub[memo_key]
+    boss_name = bm.int2kanji(boss)
+    slist = sub.get_sub_list(boss)
+    mlist = sub.get_memo_list(boss)
+    limit = sub.get_sub_limit(boss)
     if uid in slist:
-        raise AlreadyExistError(f'您已经预约过{bm.int2kanji(boss)}王了')
+        raise AlreadyExistError(f'您已经预约过{boss_name}王了')
     msg = ['']
-    if len(slist) < SUBSCRIBE_MAX[boss]:
-        slist.append(uid)
-        mlist.append(memo)
+    if len(slist) < limit:
+        sub.add_sub(boss, uid, memo)
         _save_sub(sub, bm.group)
-        msg.append(f'已为您预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}\n{SUBSCRIBE_TIP}')
+        msg.append(f'已为您预约{boss_name}王！')
     else:
-        msg.append(f'预约失败：{bm.int2kanji(boss)}王预约人数已达上限{SUBSCRIBE_MAX[boss]}')
+        msg.append(f'预约失败：{boss_name}王预约人数已达上限')
+    msg.append(f'=== 当前队列 {len(slist)}/{limit} ===')
     msg.extend(_gen_namelist_text(bm, slist, mlist))
+    msg.append(SUBSCRIBE_TIP)
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
@@ -394,33 +466,26 @@ async def unsubscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     _check_member(bm, uid, bm.group)
     sub = _load_sub(bm.group)
     boss = args['']
-    sub.setdefault(str(boss), [])
-    slist = sub[str(boss)]
-    memo_key = 'm' + str(boss)
-    sub.setdefault(memo_key, [None] * len(slist))
-    mlist = sub[memo_key]
+    boss_name = bm.int2kanji(boss)    
+    slist = sub.get_sub_list(boss)
+    mlist = sub.get_memo_list(boss)
+    limit = sub.get_sub_limit(boss)    
     if uid not in slist:
-        raise NotFoundError(f'您没有预约{bm.int2kanji(boss)}王')
-    i = slist.index(uid)
-    slist.pop(i)
-    mlist.pop(i)
+        raise NotFoundError(f'您没有预约{boss_name}王')
+    sub.remove_sub(boss, uid)
     _save_sub(sub, bm.group)
-    msg = [ f'\n已为您取消预约{bm.int2kanji(boss)}王！\n该Boss当前预约人数：{len(slist)}' ]
-    msg.extend(_gen_namelist_text(bm, slist))
+    msg = [ f'\n已为您取消预约{boss_name}王！' ]
+    msg.append(f'=== 当前队列 {len(slist)}/{limit} ===')    
+    msg.extend(_gen_namelist_text(bm, slist, mlist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
 async def auto_unsubscribe(bot:NoneBot, ctx:Context_T, gid, uid, boss):
     sub = _load_sub(gid)
-    slist = sub[str(boss)]
-    memo_key = 'm' + str(boss)
-    sub.setdefault(memo_key, [None] * len(slist))
-    mlist = sub[memo_key]
+    slist = sub.get_sub_list(boss)
     if uid not in slist:
         return
-    i = slist.index(uid)
-    slist.pop(i)
-    mlist.pop(i)
+    sub.remove_sub(boss, uid)
     _save_sub(sub, gid)
     await bot.send(ctx, f'已为{ms.at(uid)}自动取消{BattleMaster.int2kanji(boss)}王的订阅')
 
@@ -429,9 +494,9 @@ async def call_subscribe(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
     bm = BattleMaster(ctx['group_id'])
     msg = []
     sub = _load_sub(bm.group)
-    slist = sub.get(str(boss), [])
-    mlist = sub.get('m' + str(boss), [])
-    tlist = sub.get(SUBSCRIBE_TREE_KEY, [])
+    slist = sub.get_sub_list(boss)
+    mlist = sub.get_memo_list(boss)
+    tlist = sub.get_tree_list()
     if slist:
         msg.append(f"您们预约的老{BattleMaster.int2kanji(boss)}出现啦！")
         msg.extend(_gen_namelist_text(bm, slist, mlist, do_at=True))
@@ -440,7 +505,7 @@ async def call_subscribe(bot:NoneBot, ctx:Context_T, round_:int, boss:int):
     if tlist:
         msg.append(f"以下成员可以下树了")
         msg.extend(map(lambda x: str(ms.at(x)), tlist))
-        tlist.clear()
+        sub.clear_tree()
         _save_sub(sub, bm.group)
     if msg:
         await bot.send(ctx, '\n'.join(msg), at_sender=False)    # do not at the sender
@@ -453,9 +518,10 @@ async def list_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     msg = [ f"\n{clan['name']}当前预约情况：" ]
     sub = _load_sub(bm.group)
     for boss in range(1, 6):
-        slist = sub.get(str(boss), [])
-        mlist = sub.get('m' + str(boss), [])
-        msg.append(f"========\n老{bm.int2kanji(boss)}: {len(slist)}人")
+        slist = sub.get_sub_list(boss)
+        mlist = sub.get_memo_list(boss)
+        limit = sub.get_sub_limit(boss)
+        msg.append(f"========\n{bm.int2kanji(boss)}王: {len(slist)}/{limit}")
         msg.extend(_gen_namelist_text(bm, slist, mlist))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
@@ -468,8 +534,8 @@ async def clear_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
     _check_admin(ctx, '才能清理预约队列')
     sub = _load_sub(bm.group)
     boss = args['']
-    slist = sub[str(boss)]
-    mlist = sub.get('m' + str(boss), [])
+    slist = sub.get_sub_list(boss)
+    mlist = sub.get_memo_list(boss)
     if slist:
         slist.clear()
         mlist.clear()
@@ -479,6 +545,23 @@ async def clear_subscribe(bot:NoneBot, ctx:Context_T, args:ParseResult):
         raise NotFoundError(f"无人预约{bm.int2kanji(boss)}王")
 
 
+@cb_cmd(('预约上限', ), ArgParser(usage='!预约上限 B<Boss号> <上限值>', arg_dict={
+    'B': ArgHolder(tip='Boss编号', type=boss_code),
+    '': ArgHolder(tip='上限值', type=int)
+}))
+async def set_subscribe_limit(bot:NoneBot, ctx, args:ParseResult):
+    bm = BattleMaster(ctx['group_id'])
+    clan = _check_clan(bm)
+    _check_admin(ctx, '才能设置预约上限')
+    limit = args['']
+    if not (0 < limit <= 30):
+        raise ClanBattleError('预约上限只能为1~30内的整数')
+    sub = _load_sub(bm.group)
+    sub.set_sub_limit(args.B, limit)    
+    _save_sub(sub, bm.group)
+    await bot.send(ctx, f'{bm.int2kanji(args.B)}王预约上限已设置为：{limit}')
+
+
 @cb_cmd(('挂树', '上树'), ArgParser('!挂树'))
 async def add_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
@@ -486,14 +569,14 @@ async def add_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
     clan = _check_clan(bm)
     _check_member(bm, uid, bm.group)
     sub = _load_sub(bm.group)
-    sub.setdefault(SUBSCRIBE_TREE_KEY, [])
-    if uid in sub[SUBSCRIBE_TREE_KEY]:
+    tree = sub.get_tree_list()
+    if uid in tree:
         raise AlreadyExistError("您已在树上")
-    sub[SUBSCRIBE_TREE_KEY].append(uid)
+    sub.add_tree(uid)
     _save_sub(sub, bm.group)
     msg = [ "\n您已上树，本Boss被击败时将会通知您",
-           f"目前{clan['name']}树上共{len(sub[SUBSCRIBE_TREE_KEY])}人" ]
-    msg.extend(_gen_namelist_text(bm, sub[SUBSCRIBE_TREE_KEY]))
+           f"目前{clan['name']}挂树人数为{len(tree)}人：" ]
+    msg.extend(_gen_namelist_text(bm, tree))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
@@ -502,9 +585,9 @@ async def list_sos(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     clan = _check_clan(bm)
     sub = _load_sub(bm.group)
-    slist = sub.get(SUBSCRIBE_TREE_KEY, [])
-    msg = [ f"\n目前{clan['name']}树上共{len(sub[SUBSCRIBE_TREE_KEY])}人" ]
-    msg.extend(_gen_namelist_text(bm, slist))
+    tree = sub.get_tree_list()
+    msg = [ f"\n目前{clan['name']}挂树人数为{len(tree)}人：" ]
+    msg.extend(_gen_namelist_text(bm, tree))
     await bot.send(ctx, '\n'.join(msg), at_sender=True)
 
 
@@ -514,9 +597,9 @@ async def lock_boss(bot:NoneBot, ctx:Context_T, args:ParseResult):
     _check_clan(bm)
     _check_member(bm, ctx['user_id'], bm.group)
     sub = _load_sub(bm.group)
-    slist = sub.get(LOCK_KEY, [])
-    if slist:
-        uid, ts = slist[0]
+    lock = sub.get_lock_info()
+    if lock:
+        uid, ts = lock[0]
         time = datetime.fromtimestamp(ts)
         mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
         delta = datetime.now() - time
@@ -526,7 +609,7 @@ async def lock_boss(bot:NoneBot, ctx:Context_T, args:ParseResult):
     else:
         uid = ctx['user_id']
         time = datetime.now()
-        sub[LOCK_KEY] = [ (uid, time.timestamp()) ]
+        sub.set_lock(uid, datetime.now().timestamp())
         _save_sub(sub, bm.group)
         msg = f"已锁定Boss"
         await bot.send(ctx, msg, at_sender=True)
@@ -537,17 +620,16 @@ async def unlock_boss(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     _check_clan(bm)
     sub = _load_sub(bm.group)
-    slist = sub.get(LOCK_KEY, [])
-    if slist:
-        uid, ts = slist[0]
+    lock = sub.get_lock_info()
+    if lock:
+        uid, ts = lock[0]
         time = datetime.fromtimestamp(ts)
         if uid != ctx['user_id']:
             mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
             delta = datetime.now() - time
             delta = timedelta(seconds=round(delta.total_seconds()))     # ignore miliseconds
             _check_admin(ctx, f"才能解锁其他人\n解锁失败：{mem['name']}于{delta}前锁定了Boss")
-            sub = _load_sub(bm.group)   # await后重新加载，避免协程间的不安全问题
-        sub[LOCK_KEY] = []
+        sub.clear_lock()
         _save_sub(sub, bm.group)
         msg = f"\nBoss已解锁"
         await bot.send(ctx, msg, at_sender=True)
@@ -558,9 +640,9 @@ async def unlock_boss(bot:NoneBot, ctx:Context_T, args:ParseResult):
 
 async def auto_unlock_boss(bot:NoneBot, ctx:Context_T, bm:BattleMaster):
     sub = _load_sub(bm.group)
-    slist = sub.get(LOCK_KEY, [])
-    if slist:
-        uid, ts = slist[0]
+    lock = sub.get_lock_info()
+    if lock:
+        uid, ts = lock[0]
         time = datetime.fromtimestamp(ts)
         if uid != ctx['user_id']:
             mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0) or {'name': str(uid)}
@@ -569,7 +651,7 @@ async def auto_unlock_boss(bot:NoneBot, ctx:Context_T, bm:BattleMaster):
             msg = f"⚠️{mem['name']}于{delta}前锁定了Boss，您出刀前未申请锁定！"
             await bot.send(ctx, msg, at_sender=True)
         else:
-            sub[LOCK_KEY] = []
+            sub.clear_lock()
             _save_sub(sub, bm.group)
             msg = f"\nBoss已自动解锁"
             await bot.send(ctx, msg, at_sender=True)
@@ -585,7 +667,7 @@ async def show_progress(bot:NoneBot, ctx:Context_T, args:ParseResult):
     await bot.send(ctx, '\n' + msg, at_sender=True)
 
 
-@cb_cmd('伤害统计', ArgParser(usage='!伤害统计'))
+@cb_cmd(('统计', '伤害统计'), ArgParser(usage='!伤害统计'))
 async def stat_damage(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
@@ -638,11 +720,12 @@ async def stat_damage(bot:NoneBot, ctx:Context_T, args:ParseResult):
     plt.subplots_adjust(left=0.12, right=0.96, top=1 - 0.35 / y_size, bottom=0.55 / y_size)
     pic = util.fig2b64(plt)
     plt.close()
+    
+    msg = f"{ms.image(pic)}\n※分数统计请发送“!分数统计”"
+    await bot.send(ctx, msg, at_sender=True)
 
-    await bot.send(ctx, ms.image(pic), at_sender=True)
 
-
-@cb_cmd(('统计', '分数统计'), ArgParser(usage='!分数统计'))
+@cb_cmd('分数统计', ArgParser(usage='!分数统计'))
 async def stat_score(bot:NoneBot, ctx:Context_T, args:ParseResult):
     bm = BattleMaster(ctx['group_id'])
     now = datetime.now()
@@ -692,7 +775,8 @@ async def stat_score(bot:NoneBot, ctx:Context_T, args:ParseResult):
     pic = util.fig2b64(plt)
     plt.close()
 
-    await bot.send(ctx, ms.image(pic), at_sender=True)
+    msg = f"{ms.image(pic)}\n※伤害统计请发送“!伤害统计”"
+    await bot.send(ctx, msg, at_sender=True)
 
 
 async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:bool):

@@ -90,7 +90,8 @@ async def _arena_query(session:CommandSession, region:int):
     details = [ " ".join([
         f"赞{e['up']}+{e['my_up']}" if e['my_up'] else f"赞{e['up']}",
         f"踩{e['down']}+{e['my_down']}" if e['my_down'] else f"踩{e['down']}",
-        e['qkey']
+        e['qkey'],
+        "你赞过" if e['user_like'] > 0 else "你踩过" if e['user_like'] < 0 else ""
     ]) for e in res ]
 
     defen = [ Chara.fromid(x).name for x in defen ]
@@ -103,8 +104,7 @@ async def _arena_query(session:CommandSession, region:int):
         str(atk_team),
         f'作业评价：', 
         *details,
-        '※发送"点赞/点踩"可进行评价',
-        '※请升级手Q至8.3.5以查看图片',
+        '※发送"点赞/点踩"可进行评价'
     ]
     if region == 1:
         msg.append('※使用"b怎么拆"或"台怎么拆"可按服过滤')
