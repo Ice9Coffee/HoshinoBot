@@ -1,5 +1,8 @@
 import os
+import asyncio
 from PIL import Image
+import httpx
+from io import BytesIO
 from urllib.request import pathname2url
 from urllib.parse import urljoin
 
@@ -19,7 +22,28 @@ class R:
     def img(path, *paths):
         return ResImg(os.path.join('img', path, *paths))
 
+    @staticmethod
+    def remote_img(url):
+        return RemoteResImg(url)
 
+class RemoteResObj:
+    def __init__(self, url):
+        self.__path = url
+    
+    @property
+    def url(self):
+        return self.__path
+
+class RemoteResImg(RemoteResObj):
+    @property
+    def cqcode(self) -> MessageSegment:
+        return MessageSegment.image(self.url)
+    
+    async def open(self) -> Image:
+        async with httpx.AsyncClient() as client:
+            r = await client.get(self.url)
+            return Image.open(BytesIO(r))
+    
 
 class ResObj:
 
