@@ -23,7 +23,7 @@ class Mikan(object):
     def get_rss():
         res = []
         try:
-            resp = requests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=1)
+            resp = requests.get('https://mikanani.me/RSS/MyBangumi', params='token='+ Mikan.get_token(), timeout=1)
             rss = etree.XML(resp.content)
         except Exception as e:
             sv.logger.error(f'[get_rss] Error: {e}')
