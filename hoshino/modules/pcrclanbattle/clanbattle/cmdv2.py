@@ -22,8 +22,7 @@ from aiocqhttp.exceptions import ActionFailed
 from nonebot import NoneBot
 from nonebot import MessageSegment as ms
 from nonebot.typing import Context_T
-from hoshino import util
-from hoshino.service import Privilege as Priv
+from hoshino import util, priv
 
 from . import sv, cb_cmd
 from .argparse import ArgParser, ArgHolder, ParseResult
@@ -59,7 +58,7 @@ def _check_member(bm:BattleMaster, uid:int, alt:int, tip=None):
     return mem
 
 def _check_admin(ctx:Context_T, tip:str=''):
-    if not sv.check_priv(ctx, Priv.ADMIN):
+    if not priv.check_priv(ctx, priv.ADMIN):
         raise PermissionDeniedError(ERROR_PERMISSION_DENIED + tip)
 
 

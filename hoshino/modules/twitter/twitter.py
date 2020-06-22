@@ -1,19 +1,20 @@
-import re
-import pytz
-import random
 import asyncio
+import random
+import re
+from collections import defaultdict
 from datetime import datetime
 from functools import partial, wraps
-from collections import defaultdict
+
+import pytz
+from nonebot import MessageSegment as ms
 from TwitterAPI import TwitterAPI, TwitterResponse
 
-from nonebot import MessageSegment as ms
 from hoshino import util
-from hoshino.service import Service, Privilege as Priv
+from hoshino.config import twitter as cfg
+from hoshino.service import Service, priv
 
-cfg = util.load_config(__file__)
-api = TwitterAPI(cfg['consumer_key'], cfg['consumer_secret'], cfg['access_token_key'], cfg['access_token_secret'])
-sv = Service('twitter-poller', use_priv=Priv.ADMIN, manage_priv=Priv.SUPERUSER, visible=False)
+api = TwitterAPI(cfg.consumer_key, cfg.consumer_secret, cfg.access_token_key, cfg.access_token_secret)
+sv = Service('twitter-poller', use_priv=priv.ADMIN, manage_priv=priv.SUPERUSER, visible=False)
 
 URL_TIMELINE = 'statuses/user_timeline'
 

@@ -1,14 +1,13 @@
-import os
 import base64
-
+import os
 from io import BytesIO
-from PIL import Image
 
 import zhconv
+from PIL import Image
+
+from hoshino import R, logger
 
 from .priconne_data import _PriconneData
-from hoshino.log import logger
-from hoshino.res import R, ResImg
 
 try:
     gadget_equip = R.img('priconne/gadget/equip.png').open()
@@ -66,7 +65,7 @@ class Chara:
 
 
     @property
-    def icon(self) -> ResImg:
+    def icon(self):
         star = '3' if 1 <= self.star <= 5 else '6'
         res = R.img(f'priconne/unit/icon_unit_{self.id}{star}1.png')
         if not res.exist:

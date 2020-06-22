@@ -3,6 +3,7 @@
 
 from nonebot.default_config import *
 
+
 DEBUG = False
 
 SUPERUSERS = [10000]    # 填写超级用户的QQ号，可填多个用半角逗号","隔开
@@ -22,13 +23,18 @@ HOST = '127.0.0.1'      # Windows部署使用此条配置
 
 IS_CQPRO = False        # 是否使用Pro版酷Q功能
 
-# 资源库文件夹  Nonebot访问本机资源
-RESOURCE_DIR = r'./res/'
+RES_DIR = './res/'      # 资源库文件夹，需可读可写
 
-# 资源库 URL  用于docker中的酷Q读取宿主机资源，注意以'/'结尾
-# 若留空则图片均采用base64编码发送，开销较大但部署方便
-# 若不清楚本项作用，请保持默认
-RESOURCE_URL = ''
+# 发送图片的协议
+# 可选 http, file, base64
+# 建议Windows部署使用file协议
+# 建议Linux部署配合本地web server使用http协议
+# 如果你不清楚上面在说什么，请用base64协议（发送大图时可能会失败）
+RES_PROTOCOL = 'base64'
+
+# 使用http协议时需填写，原则上该url应指向RES_DIR目录
+RES_URL = 'http://127.0.0.1:5000/static/'
+
 
 # 启用的模块
 # 初次尝试部署时请先保持默认

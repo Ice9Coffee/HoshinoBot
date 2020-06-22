@@ -2,13 +2,15 @@ import re
 import time
 from collections import defaultdict
 
-from nonebot import CommandSession, MessageSegment, get_bot
-from hoshino.util import silence, concat_pic, pic2b64, FreqLimiter
-from hoshino.service import Service, Privilege as Priv
-
-sv = Service('pcr-arena', manage_priv=Priv.SUPERUSER)
+import hoshino
+from hoshino import Service
+from hoshino.typing import *
+from hoshino.util import FreqLimiter, concat_pic, pic2b64, silence
 
 from ..chara import Chara
+
+sv = Service('pcr-arena')
+
 from . import arena
 
 DISABLE_NOTICE = '本群竞技场查询功能已禁用\n如欲开启，请与维护组联系'
@@ -77,7 +79,7 @@ async def _arena_query(session:CommandSession, region:int):
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
 
     # 发送回复
-    if get_bot().config.IS_CQPRO:
+    if hoshino.config.IS_CQPRO:
         sv.logger.info('Arena generating picture...')
         atk_team = [ Chara.gen_team_pic(entry['atk']) for entry in res ]
         atk_team = concat_pic(atk_team)

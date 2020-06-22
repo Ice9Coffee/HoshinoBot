@@ -1,22 +1,21 @@
 # 公主连接Re:Dive会战管理插件
 # clan == クラン == 戰隊（直译为氏族）（CLANNAD的CLAN（笑））
 
-from typing import Callable, Dict, Tuple, Iterable
+from nonebot import on_command
 
-from nonebot import NoneBot, on_command, CommandSession
-from hoshino import util
-from hoshino.service import Service, Privilege
-from hoshino.res import R
+from hoshino import R, Service, util
+from hoshino.typing import *
+
 from .argparse import ArgParser
 from .exception import *
 
-sv = Service('clanbattle', manage_priv=Privilege.SUPERUSER, enable_on_default=True)
+sv = Service('clanbattle')
 SORRY = 'ごめんなさい！嘤嘤嘤(〒︿〒)'
 
 _registry:Dict[str, Tuple[Callable, ArgParser]] = {}
 
 @sv.on_message('group')
-async def _clanbattle_bus(bot:NoneBot, ctx):
+async def _clanbattle_bus(bot, ctx):
     # check prefix
     start = ''
     for m in ctx['message']:
@@ -63,7 +62,6 @@ def cb_cmd(name, parser:ArgParser) -> Callable:
     return deco
 
 
-# from .cmdv1 import *
 from .cmdv2 import *
 
 

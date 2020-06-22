@@ -1,16 +1,15 @@
 import os
-from PIL import Image
-from urllib.request import pathname2url
 from urllib.parse import urljoin
+from urllib.request import pathname2url
 
-from nonebot import get_bot
-from nonebot import MessageSegment
+from nonebot import MessageSegment, get_bot
+from PIL import Image
 
-from hoshino.util import pic2b64
-from hoshino import logger
+import hoshino
+from hoshino import logger, util
+
 
 class R:
-
     @staticmethod
     def get(path, *paths):
         return ResObj(os.path.join(path, *paths))
@@ -20,33 +19,23 @@ class R:
         return ResImg(os.path.join('img', path, *paths))
 
 
-
 class ResObj:
-
     def __init__(self, res_path):
-        res_dir = os.path.expanduser(get_bot().config.RESOURCE_DIR)
+        res_dir = os.path.expanduser(hoshino.config.RES_DIR)
         fullpath = os.path.abspath(os.path.join(res_dir, res_path))
         if not fullpath.startswith(os.path.abspath(res_dir)):
             raise ValueError('Cannot access outside RESOUCE_DIR')
         self.__path = os.path.normpath(res_path)
 
-
     @property
     def url(self):
-        """
-        @return: 资源文件的url，供酷Q（或其他远程服务）使用
-        """
-        return urljoin(get_bot().config.RESOURCE_URL, pathname2url(self.__path))
-
+        """资源文件的url，供酷Q（或其他远程服务）使用"""
+        return urljoin(hoshino.config.RES_URL, pathname2url(self.__path))
 
     @property
     def path(self):
-        """
-        @return: 资源文件的路径，供Nonebot内部使用
-        """
-        res_dir = os.path.expanduser(get_bot().config.RESOURCE_DIR)
-        return os.path.join(res_dir, self.__path)
-
+        """资源文件的路径，供bot内部使用"""
+        return os.path.join(hoshino.config.RES_DIR, self.__path)
 
     @property
     def exist(self):
@@ -56,14 +45,19 @@ class ResObj:
 class ResImg(ResObj):
     @property
     def cqcode(self) -> MessageSegment:
-        if get_bot().config.RESOURCE_URL:
+        if hoshino.config.RES_PROTOCOL == 'http':
             return MessageSegment.image(self.url)
+        elif hoshino.config.RES_PROTOCOL == 'file':
+            return MessageSegment.image(f'file:///{os.path.abspath(self.path)}')
         else:
             try:
-                return MessageSegment.image(pic2b64(self.open()))
+                return MessageSegment.image(util.pic2b64(self.open()))
             except Exception as e:
                 logger.exception(e)
-                return MessageSegment.text('[图片]')
+                return MessageSegment.text('[图片出错]')
 
     def open(self) -> Image:
-        return Image.open(self.path)
+        try:
+            return Image.open(self.path)
+        except FileNotFoundError:
+            hoshino.logger.error(f'缺少图片资源：{self.path}')
