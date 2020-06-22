@@ -1,36 +1,49 @@
 import os
-from os import path 
-import logging
 import nonebot
 
-os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
-from .log import logger
+from . import config
+from .log import new_logger
 
-def init(config) -> nonebot.NoneBot:
+_bot = None
+HoshinoBot = nonebot.NoneBot
+logger = new_logger('hoshino', config.DEBUG)
 
+def check_config():
+    assert config.RES_PROTOCOL in ('http', 'file', 'base64')
+    config.RES_DIR = os.path.expanduser(config.RES_DIR)
+
+
+def init() -> HoshinoBot:
+    global _bot
+    check_config()
+    os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
     nonebot.init(config)
-    bot = nonebot.get_bot()
+    _bot = nonebot.get_bot()
 
     from .log import error_handler, critical_handler
-    logger.setLevel(logging.DEBUG if bot.config.DEBUG else logging.INFO)
-    nonebot.logger.setLevel(logging.DEBUG if bot.config.DEBUG else logging.INFO)
     nonebot.logger.addHandler(error_handler)
     nonebot.logger.addHandler(critical_handler)
 
     for module_name in config.MODULES_ON:
         nonebot.load_plugins(
-            path.join(path.dirname(__file__), 'modules', module_name),
-            f'hoshino.modules.{module_name}'
-        )
+            os.path.join(os.path.dirname(__file__), 'modules', module_name),
+            f'hoshino.modules.{module_name}')
 
-    return bot
-
-
-def get_bot() -> nonebot.NoneBot:
-    return nonebot.get_bot()
+    return _bot
 
 
-from nonebot import NoneBot, CommandSession, MessageSegment
+def get_bot() -> HoshinoBot:
+    if _bot is None:
+        raise ValueError('HoshinoBot has not been initialized')
+    return _bot
 
-from .service import Service, Privilege
+
+def get_self_ids():
+    return _bot._wsr_api_clients.keys()
+
+
+from nonebot import message_preprocessor
+from nonebot.message import CanceledException
+
 from .res import R
+from .service import Service

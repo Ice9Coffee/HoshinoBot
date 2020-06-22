@@ -5,9 +5,9 @@ from hoshino.service import Service
 
 sv = Service('dice')
 
-async def do_dice(bot, ctx, num, min_, max_, opr, offset, TIP="的掷骰结果是："):
+async def do_dice(bot, ev, num, min_, max_, opr, offset, TIP="的掷骰结果是："):
     if num == 0:
-        await bot.send(ctx, '咦？我骰子呢？')
+        await bot.send(ev, '咦？我骰子呢？')
         return
     min_, max_ = min(min_, max_), max(min_, max_)
     rolls = list(map(lambda _: random.randint(min_, max_), range(num)))
@@ -24,13 +24,13 @@ async def do_dice(bot, ctx, num, min_, max_, opr, offset, TIP="的掷骰结果�
         f'={res}' if offset or num > 1 else '',
     ]
     msg = ''.join(msg)
-    await bot.send(ctx, msg, at_sender=True)
+    await bot.send(ev, msg, at_sender=True)
 
 
-@sv.on_rex(re.compile(r'^\.r\s*((?P<num>\d{0,2})d((?P<min>\d{1,4})~)?(?P<max>\d{0,4})((?P<opr>[+-])(?P<offset>\d{0,5}))?)?\b', re.I),
-           normalize=False)
-async def dice(bot, ctx, match):
+@sv.on_rex(re.compile(r'^\.r\s*((?P<num>\d{0,2})d((?P<min>\d{1,4})~)?(?P<max>\d{0,4})((?P<opr>[+-])(?P<offset>\d{0,5}))?)?\b', re.I))
+async def dice(bot, ev):
     num, min_, max_, opr, offset = 1, 1, 100, 1, 0
+    match = ev['match']
     if s := match.group('num'):
         num = int(s)
     if s := match.group('min'):
@@ -41,11 +41,11 @@ async def dice(bot, ctx, match):
         opr = -1 if s == '-' else 1
     if s := match.group('offset'):
         offset = int(s)
-    await do_dice(bot, ctx, num, min_, max_, opr, offset)
+    await do_dice(bot, ev, num, min_, max_, opr, offset)
 
 
 @sv.on_command('.qj', only_to_me=False)
 async def kc_marriage(session):
     args = session.current_arg_text.split()
     tip = f'与{args[0]}的ケッコンカッコカリ结果是：' if args else '的ケッコンカッコカリ结果是：'
-    await do_dice(session.bot, session.ctx, 1, 3, 6, 1, 0, tip)
+    await do_dice(session.bot, session.ev, 1, 3, 6, 1, 0, tip)

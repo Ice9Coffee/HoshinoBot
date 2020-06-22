@@ -18,9 +18,9 @@ def get_img_cq(yy, mm, ss):
         return ms.image(rank_url(yy, mm, ss))
 
 
-@sv.on_rex(r'^\*?人事表\s*(\d{6})', normalize=False)
-async def rank_result(bot, ctx, match):
-    rankid = match.group(1)
+@sv.on_rex(r'^\*?人事表\s*(\d{6})')
+async def rank_result(bot, ev):
+    rankid = ev['match'].group(1)
     yy, mm, ss = int(rankid[0:2]), int(rankid[2:4]), int(rankid[4:6])
     if 13 <= yy and 1 <= mm <= 12 and 1 <= ss <= 20:
-        await bot.send(ctx, get_img_cq(yy, mm, ss))
+        await bot.send(ev, get_img_cq(yy, mm, ss))

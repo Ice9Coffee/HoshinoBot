@@ -1,21 +1,23 @@
 import itertools
-from hoshino import util, R, CommandSession
+from hoshino import util, R
+from hoshino.typing import CQEvent
 from . import sv
 
-p1 = R.img('priconne/quick/r16-3-tw-0.png').cqcode
-p2 = R.img('priconne/quick/r16-3-tw-1.png').cqcode
+p1 = R.img('priconne/quick/r16-4-tw-0.png').cqcode
+p2 = R.img('priconne/quick/r16-4-tw-1.png').cqcode
 p4 = R.img('priconne/quick/r17-3-jp-1.png').cqcode
 p5 = R.img('priconne/quick/r17-3-jp-2.png').cqcode
 p6 = R.img('priconne/quick/r17-3-jp-3.png').cqcode
 p7 = R.img('priconne/quick/r8-3.jpg').cqcode
 
-@sv.on_rex(r'^(\*?([日台国b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$', normalize=True)
-async def rank_sheet(bot, ctx, match):
+@sv.on_rex(r'^(\*?([日台国b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
+async def rank_sheet(bot, ev):
+    match = ev['match']
     is_jp = match.group(2) == '日'
     is_tw = match.group(2) == '台'
     is_cn = match.group(2) == '国' or match.group(2) == 'b'
     if not is_jp and not is_tw and not is_cn:
-        await bot.send(ctx, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*B服rank表\n※B服：当前仅开放至金装，r10前无需考虑卡rank，装备强化消耗较多mana，如非前排建议不强化', at_sender=True)
+        await bot.send(ev, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*B服rank表\n※B服：当前仅开放至金装，r10前无需考虑卡rank，装备强化消耗较多mana，如非前排建议不强化', at_sender=True)
         return
     msg = [
         '\n※表格仅供参考，升r有风险，强化需谨慎',
@@ -29,21 +31,21 @@ async def rank_sheet(bot, ctx, match):
             msg.append(str(p5))
         if not pos or '后' in pos:
             msg.append(str(p6))
-        await bot.send(ctx, '\n'.join(msg), at_sender=True)
-        await util.silence(ctx, 60)
+        await bot.send(ev, '\n'.join(msg), at_sender=True)
+        await util.silence(ev, 60)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\n※油管有介绍视频及原文档\nR16-3 rank表：\n{p1}{p2}')
-        await bot.send(ctx, '\n'.join(msg), at_sender=True)
-        await util.silence(ctx, 60)
+        msg.append(f'※不定期搬运自漪夢奈特\n※油管有介绍视频及原文档\nR16-4 rank表：\n{p1}{p2}')
+        await bot.send(ev, '\n'.join(msg), at_sender=True)
+        await util.silence(ev, 60)
     elif is_cn:
-        await bot.send(ctx, '\n※B服当前仅开放至金装，r10前无需考虑卡rank\n※暂未发现公开的靠谱rank推荐表\n※装备强化消耗较多mana，如非前排建议不强化\n※关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
-        # await bot.send(ctx, str(p7))
-        # await util.silence(ctx, 60)
+        await bot.send(ev, '\n※B服当前仅开放至金装，r10前无需考虑卡rank\n※暂未发现公开的靠谱rank推荐表\n※装备强化消耗较多mana，如非前排建议不强化\n※关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
+        # await bot.send(ev, str(p7))
+        # await util.silence(ev, 60)
 
 
-@sv.on_command('arena-database', aliases=('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'), only_to_me=False)
-async def say_arina_database(session):
-    await session.send('公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
+@sv.on_fullmatch(('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'))
+async def say_arina_database(bot, ev):
+    await bot.send(ev, '公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
 
 
 OTHER_KEYWORDS = '【日rank】【台rank】【b服rank】【jjc作业网】【黄骑充电表】【一个顶俩】'
@@ -79,14 +81,14 @@ BCR_SITES = f'''
 {OTHER_KEYWORDS}
 ※日台服速查请输入【pcr速查】'''
 
-@sv.on_command('pcr-sites', aliases=('pcr速查', 'pcr图书馆', 'pcr圖書館', '图书馆', '圖書館'))
-async def pcr_sites(session:CommandSession):
-    await session.send(PCR_SITES, at_sender=True)
-    await util.silence(session.ctx, 60)
-@sv.on_command('bcr-sites', aliases=('bcr速查', 'bcr攻略'))
-async def bcr_sites(session:CommandSession):
-    await session.send(BCR_SITES, at_sender=True)
-    await util.silence(session.ctx, 60)
+@sv.on_fullmatch(('pcr速查', 'pcr图书馆', 'pcr圖書館', '图书馆', '圖書館'))
+async def pcr_sites(bot, ev: CQEvent):
+    await bot.send(ev, PCR_SITES, at_sender=True)
+    await util.silence(ev, 60)
+@sv.on_fullmatch(('bcr速查', 'bcr攻略'))
+async def bcr_sites(bot, ev: CQEvent):
+    await bot.send(ev, BCR_SITES, at_sender=True)
+    await util.silence(ev, 60)
 
 
 YUKARI_SHEET_ALIAS = map(lambda x: ''.join(x), itertools.product(('黄骑', '酒鬼', '黃騎'), ('充电', '充电表', '充能', '充能表')))
@@ -97,10 +99,10 @@ YUKARI_SHEET = f'''
 ※对面羊驼或中后卫坦 有可能歪
 ※我方羊驼算一号位
 ※图片搬运自漪夢奈特'''
-@sv.on_command('yukari-sheet', aliases=YUKARI_SHEET_ALIAS)
-async def yukari_sheet(session:CommandSession):
-    await session.send(YUKARI_SHEET, at_sender=True)
-    await util.silence(session.ctx, 60)
+@sv.on_fullmatch(YUKARI_SHEET_ALIAS)
+async def yukari_sheet(bot, ev):
+    await bot.send(ev, YUKARI_SHEET, at_sender=True)
+    await util.silence(ev, 60)
 
 
 DRAGON_TOOL = f'''
@@ -108,7 +110,7 @@ DRAGON_TOOL = f'''
 龍的探索者們小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame
 镜像 https://hoshino.monster/KyaruMiniGame
 网站内有全词条和搜索，或需科学上网'''
-@sv.on_command('拼音接龙', aliases=('一个顶俩', '韵母接龙'))
-async def dragon(session:CommandSession):
-    await session.send(DRAGON_TOOL, at_sender=True)
-    await util.silence(session.ctx, 60)
+@sv.on_fullmatch(('一个顶俩', '拼音接龙', '韵母接龙'))
+async def dragon(bot, ev):
+    await bot.send(ev, DRAGON_TOOL, at_sender=True)
+    await util.silence(ev, 60)

@@ -1,7 +1,6 @@
-import config
 import hoshino
 
-bot = hoshino.init(config)
+bot = hoshino.init()
 app = bot.asgi
 
 if __name__ == '__main__':

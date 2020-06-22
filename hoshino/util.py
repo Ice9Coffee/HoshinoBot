@@ -1,23 +1,26 @@
+import base64
 import os
 import time
-import pytz
-import base64
-import zhconv
 import unicodedata
-from io import BytesIO
-from PIL import Image
 from collections import defaultdict
-from matplotlib import pyplot as plt
 from datetime import datetime, timedelta
+from io import BytesIO
+
+import pytz
+import zhconv
+from aiocqhttp.exceptions import ActionFailed
+from matplotlib import pyplot as plt
+from PIL import Image
+
+import hoshino
+from hoshino import get_bot
+
 try:
     import ujson as json
 except:
     import json
 
-from nonebot import get_bot
-from aiocqhttp.exceptions import ActionFailed
 
-from .log import logger
 
 
 def load_config(inbuilt_file_var):
@@ -31,7 +34,7 @@ def load_config(inbuilt_file_var):
             config = json.load(f)
             return config
     except Exception as e:
-        logger.exception(e)
+        hoshino.logger.exception(e)
         return {}
 
 
@@ -41,9 +44,9 @@ async def delete_msg(ctx):
             msg_id = ctx['message_id']
             await get_bot().delete_msg(self_id=ctx['self_id'], message_id=msg_id)
     except ActionFailed as e:
-        logger.error(f'撤回失败 retcode={e.retcode}')
+        hoshino.logger.error(f'撤回失败 retcode={e.retcode}')
     except Exception as e:
-        logger.exception(e)
+        hoshino.logger.exception(e)
 
 
 async def silence(ctx, ban_time, ignore_super_user=False):
@@ -55,9 +58,9 @@ async def silence(ctx, ban_time, ignore_super_user=False):
         if ignore_super_user or user_id not in bot.config.SUPERUSERS:
             await bot.set_group_ban(self_id=self_id, group_id=group_id, user_id=user_id, duration=ban_time)
     except ActionFailed as e:
-        logger.error(f'禁言失败 retcode={e.retcode}')
+        hoshino.logger.error(f'禁言失败 retcode={e.retcode}')
     except Exception as e:
-        logger.exception(e)
+        hoshino.logger.exception(e)
 
 
 def pic2b64(pic:Image) -> str:

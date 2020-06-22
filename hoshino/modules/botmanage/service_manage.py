@@ -1,13 +1,12 @@
 from functools import cmp_to_key
 
-from nonebot import on_command, CommandSession
+from nonebot import CommandSession, CQHttpError, on_command
 from nonebot import permission as perm
-from nonebot import CQHttpError
 from nonebot.argparse import ArgumentParser
 
-from hoshino.service import Service, Privilege as Priv
+from hoshino.service import Service, priv
 
-PRIV_TIP = f'群主={Priv.OWNER} 群管={Priv.ADMIN} 群员={Priv.NORMAL} bot维护组={Priv.SUPERUSER}'
+PRIV_TIP = f'群主={priv.OWNER} 群管={priv.ADMIN} 群员={priv.NORMAL} bot维护组={priv.SUPERUSER}'
 
 @on_command('lssv', aliases=('服务列表', '功能列表'), permission=perm.GROUP_ADMIN, only_to_me=False, shell_like=True)
 async def lssv(session:CommandSession):
@@ -56,7 +55,7 @@ async def switch_service(session:CommandSession, turn_on:bool):
         for name in names:
             if name in svs:
                 sv = svs[name]
-                u_priv = sv.get_user_priv(session.ctx)
+                u_priv = priv.get_user_priv(session.ctx)
                 if u_priv >= sv.manage_priv:
                     sv.set_enable(group_id) if turn_on else sv.set_disable(group_id)
                     succ.append(name)

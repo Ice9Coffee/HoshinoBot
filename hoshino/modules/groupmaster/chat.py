@@ -2,16 +2,16 @@ import random
 from datetime import timedelta
 
 from nonebot import on_command
-from hoshino import util
-from hoshino.res import R
-from hoshino.service import Service, Privilege as Priv
+
+from hoshino import R, Service, priv, util
+
 
 # basic function for debug, not included in Service('chat')
 @on_command('zai?', aliases=('在?', '在？', '在吗', '在么？', '在嘛', '在嘛？'))
 async def say_hello(session):
     await session.send('はい！私はいつも貴方の側にいますよ！')
 
-sv = Service('chat', manage_priv=Priv.SUPERUSER, visible=False)
+sv = Service('chat', manage_priv=priv.SUPERUSER, visible=False)
 
 @sv.on_command('沙雕机器人', aliases=('沙雕機器人',), only_to_me=False)
 async def say_sorry(session):
@@ -19,7 +19,7 @@ async def say_sorry(session):
 
 @sv.on_command('老婆', aliases=('waifu', 'laopo'), only_to_me=True)
 async def chat_waifu(session):
-    if not sv.check_priv(session.ctx, Priv.SUPERUSER):
+    if not priv.check_priv(session.ctx, priv.SUPERUSER):
         await session.send(R.img('laopo.jpg').cqcode)
     else:
         await session.send('mua~')
@@ -62,3 +62,7 @@ async def chat_clanba(bot, ctx):
 async def chat_neigui(bot, ctx):
     if random.random() < 0.10:
         await bot.send(ctx, R.img('内鬼.png').cqcode)
+
+@sv.on_prefix('歪比')
+async def test(bot, event):
+    await bot.send(event, f'的歪比：\n{event.message}', at_sender=True)

@@ -1,18 +1,12 @@
-'''
-Provide logger object.
-
-Any other modules in "hoshino" should use "logger" from this module to log messages.
-'''
-
+import logging
 import os
 import sys
-import logging
 
-_error_log_file = os.path.expanduser('~/.hoshino/error.log')
-_critical_log_file = os.path.expanduser('~/.hoshino/critical.log')
+os.makedirs('./log', exist_ok=True)
+_error_log_file = os.path.expanduser('./log/error.log')
+_critical_log_file = os.path.expanduser('./log/critical.log')
 
 formatter = logging.Formatter('[%(asctime)s %(name)s] %(levelname)s: %(message)s')
-logger = logging.getLogger('hoshino')
 default_handler = logging.StreamHandler(sys.stdout)
 default_handler.setFormatter(formatter)
 error_handler = logging.FileHandler(_error_log_file, encoding='utf8')
@@ -21,6 +15,12 @@ error_handler.setFormatter(formatter)
 critical_handler = logging.FileHandler(_critical_log_file, encoding='utf8')
 critical_handler.setLevel(logging.CRITICAL)
 critical_handler.setFormatter(formatter)
-logger.addHandler(default_handler)
-logger.addHandler(error_handler)
-logger.addHandler(critical_handler)
+
+
+def new_logger(name, debug=True):
+    logger = logging.getLogger(name)
+    logger.addHandler(default_handler)
+    logger.addHandler(error_handler)
+    logger.addHandler(critical_handler)
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
+    return logger

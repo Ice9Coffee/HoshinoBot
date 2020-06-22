@@ -1,17 +1,20 @@
 import os
 import random
 from collections import defaultdict
+
+from hoshino import Service, priv, util
+from hoshino.typing import *
+from hoshino.util import DailyNumberLimiter, concat_pic, pic2b64, silence
+
+from ..chara import Chara
+from .gacha import Gacha
+
 try:
     import ujson as json
 except:
     import json
 
-from hoshino import util
-from hoshino import NoneBot, CommandSession, MessageSegment, Service, Privilege as Priv
-from hoshino.util import silence, concat_pic, pic2b64, DailyNumberLimiter
 
-from .gacha import Gacha
-from ..chara import Chara
 
 sv = Service('gacha')
 jewel_limit = DailyNumberLimiter(6000)
@@ -61,7 +64,7 @@ async def gacha_info(session:CommandSession):
 POOL_NAME_TIP = '请选择以下卡池\n> 选择卡池 jp\n> 选择卡池 tw\n> 选择卡池 bilibili\n> 选择卡池 mix'
 @sv.on_command('切换卡池', aliases=('选择卡池', '切換卡池', '選擇卡池'), only_to_me=False)
 async def set_pool(session:CommandSession):
-    if not sv.check_priv(session.ctx, required_priv=Priv.ADMIN):
+    if not priv.check_priv(session.ctx, priv.ADMIN):
         session.finish('只有群管理才能切换卡池', at_sender=True)
     name = util.normalize_str(session.current_arg_text)
     if not name:
@@ -217,17 +220,16 @@ async def gacha_300(session:CommandSession):
     silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
     await silence(session.ctx, silence_time)
 
-
-@sv.on_rex(r'^氪金$', normalize=False)
-async def kakin(bot: NoneBot, ctx, match):
-    if ctx['user_id'] not in bot.config.SUPERUSERS:
+@sv.on_prefix('氪金')
+async def kakin(bot: NoneBot, event:CQEvent):
+    if event.user_id not in bot.config.SUPERUSERS:
         return
     count = 0
-    for m in ctx['message']:
+    for m in event.message:
         if m.type == 'at' and m.data['qq'] != 'all':
             uid = int(m.data['qq'])
             jewel_limit.reset(uid)
             tenjo_limit.reset(uid)
             count += 1
     if count:
-        await bot.send(ctx, f"已为{count}位用户充值完毕！谢谢惠顾～")
+        await bot.send(event, f"已为{count}位用户充值完毕！谢谢惠顾～")

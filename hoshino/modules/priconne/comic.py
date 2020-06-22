@@ -8,11 +8,8 @@ try:
 except:
     import json
 
-from nonebot import CQHttpError, NLPSession
-
-from hoshino import aiorequests
-from hoshino.res import R
-from hoshino.service import Service
+from hoshino import aiorequests, R, Service
+from hoshino.typing import *
 
 sv = Service('pcr-comic')
 
@@ -25,20 +22,20 @@ def get_pic_name(id_):
     end = '.png'
     return f'{pre}{id_}{end}'
 
-@sv.on_rex(r'^官漫\s*(\d{0,4})', normalize=False)
-async def comic(bot, ctx, match):
-    episode = match.group(1)
+@sv.on_rex(r'^官漫\s*(\d{0,4})')
+async def comic(bot, ev: CQEvent):
+    episode = ev.match.group(1)
     if not episode:
-        await bot.send(ctx, '请输入漫画集数 如：官漫132', at_sender=True)
+        await bot.send(ev, '请输入漫画集数 如：官漫132', at_sender=True)
         return
     index = load_index()
     if episode not in index:
-        await bot.send(ctx, f'未查找到第{episode}话，敬请期待官方更新', at_sender=True)
+        await bot.send(ev, f'未查找到第{episode}话，敬请期待官方更新', at_sender=True)
         return
     title = index[episode]['title']
     pic = R.img('priconne/comic/', get_pic_name(episode)).cqcode
     msg = f'プリンセスコネクト！Re:Dive公式4コマ\n第{episode}話 {title}\n{pic}'
-    await bot.send(ctx, msg, at_sender=True)
+    await bot.send(ev, msg, at_sender=True)
 
 
 async def download_img(save_path, link):
