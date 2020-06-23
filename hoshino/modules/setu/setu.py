@@ -1,9 +1,6 @@
 import os
-import re
-import time
 import random
 
-from nonebot import on_command, CommandSession, MessageSegment, NoneBot
 from nonebot.exceptions import CQHttpError
 
 from hoshino import R, Service, priv
@@ -31,8 +28,8 @@ def get_setu():
     return setu_gener.__next__()
 
 
-@sv.on_rex(re.compile(r'不够[涩瑟色]|[涩瑟色]图|来一?[点份张].*[涩瑟色]|再来[点份张]|看过了|铜'))
-async def setu(bot:NoneBot, ev):
+@sv.on_rex(r'不够[涩瑟色]|[涩瑟色]图|来一?[点份张].*[涩瑟色]|再来[点份张]|看过了|铜')
+async def setu(bot, ev):
     """随机叫一份涩图，对每个用户有冷却时间"""
     uid = ev['user_id']
     if not _nlmt.check(uid):

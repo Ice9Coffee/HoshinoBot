@@ -20,9 +20,9 @@ async def broadcast(session:CommandSession):
                 await session.bot.send_group_msg(self_id=sid, group_id=g, message=msg)
                 hoshino.logger.info(f'群{g} 投递广播成功')
             except CQHttpError as e:
-                hoshino.logger.error(f'Error: 群{g} 投递广播失败 {type(e)}')
+                hoshino.logger.error(f'群{g} 投递广播失败：{type(e)}')
                 try:
-                    await session.send(f'Error: 群{g} 投递广播失败 {type(e)}')
+                    await session.send(f'群{g} 投递广播失败：{type(e)}')
                 except CQHttpError as e:
                     hoshino.logger.critical(f'向广播发起者进行错误回报时发生错误：{type(e)}')
     await session.send(f'广播完成！')

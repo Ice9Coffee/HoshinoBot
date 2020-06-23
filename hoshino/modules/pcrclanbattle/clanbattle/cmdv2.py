@@ -419,12 +419,7 @@ def _gen_namelist_text(bm:BattleMaster, uidlist:List[int], memolist:List[str]=No
     return mems
 
 
-SUBSCRIBE_TIP = '''
-※预约可附留言(不可包含空格)
-例："!预约 5 m留言"
-※使用"!预约上限"可设置上限
-例："!预约上限 B5 6"将五王的预约上限设置为6'
-'''
+SUBSCRIBE_TIP = ''
 
 @cb_cmd('预约', ArgParser(usage='!预约 <Boss号> M留言', arg_dict={
     '': ArgHolder(tip='Boss编号', type=boss_code),

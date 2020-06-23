@@ -24,31 +24,31 @@ def _load_data():
 DB = _load_data()
 
 
-@sv.on_command('随机舰娘', only_to_me=False)
-async def random_ship(session):
+@sv.on_fullmatch('随机舰娘')
+async def random_ship(bot, ev):
     filelist = os.listdir(ship_folder)
     path = None
     while not path or not os.path.isfile(path):
         filename = random.choice(filelist)
         path = os.path.join(ship_folder, filename)
     pic = R.img('kancolle/ship/', filename).cqcode
-    await session.send(pic, at_sender=True)
+    await bot.send(ev, pic, at_sender=True)
 
 
-@sv.on_command('随机装备', only_to_me=False)
-async def random_equip(session):
+@sv.on_fullmatch('随机装备')
+async def random_equip(bot, ev):
     filelist = os.listdir(equip_folder)
     path = None
     while not path or not os.path.isfile(path):
         filename = random.choice(filelist)
         path = os.path.join(equip_folder, filename)
     pic = R.img('kancolle/equip/', filename).cqcode
-    await session.send(pic, at_sender=True)
+    await bot.send(ev, pic, at_sender=True)
 
 
 @sv.on_prefix('*')
-async def kc_query(bot, ctx, m):
-    key = ctx['message'].extract_plain_text()
+async def kc_query(bot, ev):
+    key = ev.message.extract_plain_text()
     if key in DB:
         sv.logger.info(DB[key])
-        await bot.send(ctx, DB[key], at_sender=True)
+        await bot.send(ev, DB[key], at_sender=True)

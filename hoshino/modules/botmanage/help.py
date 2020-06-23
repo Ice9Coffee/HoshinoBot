@@ -1,4 +1,5 @@
 from hoshino import Service, priv
+from hoshino.typing import CQEvent
 
 sv = Service('_help_', manage_priv=priv.SUPERUSER, visible=False)
 
@@ -71,6 +72,6 @@ MANUAL = '''
 ※※调教时请注意使用频率，您的滥用可能会导致bot账号被封禁
 '''.strip()
 
-@sv.on_command('help', aliases=('manual', '帮助', '说明', '使用说明', '幫助', '說明', '使用說明', '菜单', '菜單'), only_to_me=False)
-async def send_help(session):
-    await session.send(MANUAL)
+@sv.on_fullmatch(('help', 'manual', '帮助', '说明', '使用说明', '幫助', '說明', '使用說明', '菜单', '菜單'))
+async def send_help(bot, ev: CQEvent):
+    await bot.send(ev, MANUAL)

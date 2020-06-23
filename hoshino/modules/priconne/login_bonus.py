@@ -1,5 +1,6 @@
 import random
 from hoshino import Service, R
+from hoshino.typing import CQEvent
 from hoshino.util import DailyNumberLimiter
 
 sv = Service('pcr-login-bonus')
@@ -42,12 +43,13 @@ todo_list = [
     '搓一把日麻'
 ]
 
-@sv.on_command('签到', aliases=('盖章', '妈', '妈?', '妈妈', '妈!', '妈！', '妈妈！'), only_to_me=True)
-async def give_okodokai(session):
-    uid = session.ctx['user_id']
+@sv.on_fullmatch(('签到', '盖章', '妈', '妈?', '妈妈', '妈!', '妈！', '妈妈！'), only_to_me=True)
+async def give_okodokai(bot, ev: CQEvent):
+    uid = ev.user_id
     if not lmt.check(uid):
-        session.finish('明日はもう一つプレゼントをご用意してお待ちしますね', at_sender=True)
+        await bot.send(ev, '明日はもう一つプレゼントをご用意してお待ちしますね', at_sender=True)
+        return
     lmt.increase(uid)
     present = random.choice(login_presents)
     todo = random.choice(todo_list)
-    await session.send(f'\nおかえりなさいませ、主さま{R.img("priconne/kokkoro_stamp.png").cqcode}\n{present}を獲得しました\n私からのプレゼントです\n主人今天要{todo}吗？', at_sender=True)
+    await bot.send(ev, f'\nおかえりなさいませ、主さま{R.img("priconne/kokkoro_stamp.png").cqcode}\n{present}を獲得しました\n私からのプレゼントです\n主人今天要{todo}吗？', at_sender=True)

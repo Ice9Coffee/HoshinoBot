@@ -1,8 +1,11 @@
 import os
-import nonebot
 
-from . import config
+import nonebot
+from nonebot import Message, MessageSegment, message_preprocessor
+from nonebot.message import CanceledException
+
 from .log import new_logger
+from . import config
 
 _bot = None
 HoshinoBot = nonebot.NoneBot
@@ -19,6 +22,7 @@ def init() -> HoshinoBot:
     os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
     nonebot.init(config)
     _bot = nonebot.get_bot()
+    _bot.finish = _finish
 
     from .log import error_handler, critical_handler
     nonebot.logger.addHandler(error_handler)
@@ -32,6 +36,12 @@ def init() -> HoshinoBot:
     return _bot
 
 
+async def _finish(event, message, **kwargs):
+    if message:
+        await _bot.send(event, message, **kwargs)
+    raise CanceledException('ServiceFunc of HoshinoBot finished.')
+
+
 def get_bot() -> HoshinoBot:
     if _bot is None:
         raise ValueError('HoshinoBot has not been initialized')
@@ -41,9 +51,6 @@ def get_bot() -> HoshinoBot:
 def get_self_ids():
     return _bot._wsr_api_clients.keys()
 
-
-from nonebot import message_preprocessor
-from nonebot.message import CanceledException
 
 from .res import R
 from .service import Service
