@@ -53,3 +53,17 @@ MODULES_ON = {
     # 'translate',
     # 'twitter',
 }
+
+# ==================勿改动以下代码======================= #
+
+import importlib
+from hoshino import log
+
+logger = log.new_logger('config')
+
+for module in MODULES_ON:
+    try:
+        importlib.import_module('hoshino.config.' + module)
+        logger.info(f'Succeeded to load config of "{module}"')
+    except ModuleNotFoundError:
+        logger.warning(f'Not found config of "{module}"')

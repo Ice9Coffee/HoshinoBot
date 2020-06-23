@@ -22,9 +22,13 @@ def get_pic_name(id_):
     end = '.png'
     return f'{pre}{id_}{end}'
 
-@sv.on_rex(r'^官漫\s*(\d{0,4})')
+
+@sv.on_prefix('官漫')
 async def comic(bot, ev: CQEvent):
-    episode = ev.match.group(1)
+    episode = ev.message.extract_plain_text()
+    if not re.fullmatch(r'\d{0,3}', episode):
+        return    
+    episode = episode.lstrip('0')
     if not episode:
         await bot.send(ev, '请输入漫画集数 如：官漫132', at_sender=True)
         return

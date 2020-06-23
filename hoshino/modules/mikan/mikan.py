@@ -99,11 +99,11 @@ async def mikan_poller():
 
 DISABLE_NOTICE = '本群蜜柑番剧功能已禁用\n使用【启用 bangumi】以启用（需群管理）\n开启本功能后将自动推送字幕组更新'
 
-@sv.on_command('来点新番', aliases=('來點新番', ), deny_tip=DISABLE_NOTICE, only_to_me=False)
-async def send_bangumi(session):
+@sv.on_fullmatch(('来点新番', '來點新番'))
+async def send_bangumi(bot, ev):
     if not Mikan.rss_cache:
         Mikan.update_cache()
 
     msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in Mikan.rss_cache[:min(5, len(Mikan.rss_cache))] ]
     msg = '\n'.join(msg)
-    await session.send(f'最近更新的番剧：\n{msg}')
+    await bot.send(ev, f'最近更新的番剧：\n{msg}')

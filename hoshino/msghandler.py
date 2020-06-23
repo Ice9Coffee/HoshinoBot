@@ -26,6 +26,8 @@ async def handle_message(bot, event: CQEvent, _):
 
     try:
         await sf.func(bot, event)
+    except CanceledException:
+        raise
     except Exception as e:
         sf.sv.logger.error(f'{type(e)} occured when {sf.__name__} handling message {event.message_id}.')
         sf.sv.logger.exception(e)
