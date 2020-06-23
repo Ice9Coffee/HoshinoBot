@@ -27,7 +27,7 @@ def get_pic_name(id_):
 async def comic(bot, ev: CQEvent):
     episode = ev.message.extract_plain_text()
     if not re.fullmatch(r'\d{0,3}', episode):
-        return    
+        return
     episode = episode.lstrip('0')
     if not episode:
         await bot.send(ev, '请输入漫画集数 如：官漫132', at_sender=True)

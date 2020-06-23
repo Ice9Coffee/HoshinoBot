@@ -15,6 +15,6 @@ async def feedback(session:CommandSession):
     if not text:
         await session.send(f"来杯咖啡[空格]后输入您要反馈的内容~", at_sender=True)
     else:
-        await session.bot.send_private_msg(self_id=session.ctx['self_id'], user_id=coffee, message=f'Q{uid}@群{session.ctx["group_id"]}\n{text}')
+        await session.bot.send_private_msg(self_id=session.event.self_id, user_id=coffee, message=f'Q{uid}@群{session.ctx["group_id"]}\n{text}')
         await session.send(f'您的反馈已发送！\n=======\n{text}', at_sender=True)
         _lmt.increase(uid)

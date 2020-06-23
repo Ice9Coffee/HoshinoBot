@@ -7,7 +7,8 @@ from hoshino import Service
 from hoshino.typing import *
 from hoshino.util import FreqLimiter, concat_pic, pic2b64
 
-from ..chara import Chara
+from .. import chara
+
 
 sv = Service('pcr-arena')
 
@@ -57,9 +58,9 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     if 5 < len(argv):
         await bot.finish(ev, '编队不能多于5名角色', at_sender=True)
 
-    defen = [ Chara.name2id(name) for name in argv ]
+    defen = [ chara.name2id(name) for name in argv ]
     for i, id_ in enumerate(defen):
-        if Chara.UNKNOWN == id_:
+        if chara.UNKNOWN == id_:
             await bot.finish(ev, f'编队中含未知角色"{argv[i]}"，请尝试使用官方译名\n您可@bot来杯咖啡+反馈未收录别称\n或前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充', at_sender=True)
     if len(defen) != len(set(defen)):
         await bot.finish(ev, '编队中出现重复角色', at_sender=True)
@@ -79,9 +80,9 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
 
     # 发送回复
-    if hoshino.config.IS_CQPRO:
+    if hoshino.config.USE_CQPRO:
         sv.logger.info('Arena generating picture...')
-        atk_team = [ Chara.gen_team_pic(entry['atk']) for entry in res ]
+        atk_team = [ chara.gen_team_pic(entry['atk']) for entry in res ]
         atk_team = concat_pic(atk_team)
         atk_team = pic2b64(atk_team)
         atk_team = str(MessageSegment.image(atk_team))
@@ -96,7 +97,7 @@ async def _arena_query(bot, ev: CQEvent, region: int):
         "你赞过" if e['user_like'] > 0 else "你踩过" if e['user_like'] < 0 else ""
     ]) for e in res ]
 
-    defen = [ Chara.fromid(x).name for x in defen ]
+    defen = [ chara.fromid(x).name for x in defen ]
     defen = f"防守方【{' '.join(defen)}】"
     at = str(MessageSegment.at(ev.user_id))
 
@@ -104,7 +105,7 @@ async def _arena_query(bot, ev: CQEvent, region: int):
         defen,
         f'已为骑士{at}查询到以下进攻方案：',
         str(atk_team),
-        f'作业评价：', 
+        f'作业评价：',
         *details,
         '※发送"点赞/点踩"可进行评价'
     ]

@@ -1,7 +1,7 @@
 from nonebot import on_command, CommandSession
 from nonebot import permission as perm
 from nonebot.argparse import ArgumentParser
-
+from hoshino import sucmd
 from hoshino.service import Service
 
 async def ls_group(session: CommandSession):
@@ -16,7 +16,7 @@ async def ls_group(session: CommandSession):
 
 
 async def ls_friend(session: CommandSession):
-    gl = await session.bot.get_friend_list(self_id=session.ctx['self_id'])
+    gl = await session.bot.get_friend_list(self_id=session.event.self_id)
     msg = [ "{user_id} {nickname}".format_map(g) for g in gl ]
     msg = "\n".join(msg)
     msg = f"| QQ号 | 昵称 | 共{len(gl)}个好友\n" + msg
@@ -42,7 +42,7 @@ async def ls_bot(session:CommandSession):
     await session.send(msg)
 
 
-@on_command('ls', permission=perm.SUPERUSER, shell_like=True)
+@sucmd('ls', shell_like=True)
 async def ls(session: CommandSession):
     parser = ArgumentParser(session=session)
     switch = parser.add_mutually_exclusive_group()

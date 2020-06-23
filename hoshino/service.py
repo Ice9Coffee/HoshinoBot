@@ -8,10 +8,9 @@ from functools import wraps
 import nonebot
 import pytz
 from nonebot.command import SwitchException, _FinishException, _PauseException
-from nonebot.message import CanceledException
 
 import hoshino
-from hoshino import log, msghandler, priv, trigger, util
+from hoshino import log, priv, trigger
 from hoshino.typing import *
 
 try:
@@ -24,6 +23,7 @@ _loaded_services: Dict[str, "Service"] = {}  # {name: service}
 _re_illegal_char = re.compile(r'[\\/:*?"<>|\.]')
 _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
 os.makedirs(_service_config_dir, exist_ok=True)
+sulogger = log.new_logger('sucmd')
 
 
 def _load_service_config(service_name):
@@ -124,7 +124,7 @@ class Service:
         self.enable_group = set(config.get('enable_group', []))
         self.disable_group = set(config.get('disable_group', []))
 
-        self.logger = hoshino.log.new_logger(name)
+        self.logger = log.new_logger(name)
 
         assert self.name not in _loaded_services, f'Service name "{self.name}" already exist!'
         _loaded_services[self.name] = self
@@ -234,7 +234,6 @@ class Service:
     def on_keyword(self, keywords, only_to_me=False) -> Callable:
         if isinstance(keywords, str):
             keywords = (keywords, )
-        keywords = tuple(util.normalize_str(kw) for kw in keywords)
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me)
             for kw in keywords:
@@ -274,8 +273,7 @@ class Service:
                         self.logger.info(
                             f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.'
                         )
-                    except (_PauseException, _FinishException,
-                            SwitchException) as e:
+                    except (_PauseException, _FinishException, SwitchException) as e:
                         raise e
                     except Exception as e:
                         self.logger.exception(e)
@@ -285,6 +283,7 @@ class Service:
                     return
             return nonebot.on_command(name, **kwargs)(wrapper)
         return deco
+
 
     def on_natural_language(self, keywords=None, **kwargs) -> Callable:
         def deco(func) -> Callable:
@@ -342,3 +341,49 @@ class Service:
             except Exception as e:
                 self.logger.exception(e)
                 self.logger.error(f"群{gid} 投递{TAG}失败：{type(e)}")
+
+
+    def on_request(self, *events):
+        def deco(func):
+            @wraps(func)
+            async def wrapper(session):
+                if not self.check_enabled(session.event.group_id):
+                    return
+                await func(session)
+            return nonebot.on_request(*events)(wrapper)
+        return deco
+    
+    
+    def on_notice(self, *events):
+        def deco(func):
+            @wraps(func)
+            async def wrapper(session):
+                if not self.check_enabled(session.event.group_id):
+                    return
+                await func(session)
+            return nonebot.on_notice(*events)(wrapper)
+        return deco
+
+
+
+def sucmd(name, **kwargs) -> Callable:
+    kwargs['privileged'] = True
+    kwargs['only_to_me'] = False
+    def deco(func) -> Callable:
+        @wraps(func)
+        async def wrapper(session: CommandSession):
+            if session.event.user_id not in hoshino.config.SUPERUSERS:
+                return
+            if session.event.detail_type != 'private':
+                await session.send('> This command should only use in private session.')
+                return
+            try:
+                await func(session)
+            except (_PauseException, _FinishException, SwitchException):
+                raise
+            except Exception as e:
+                sulogger.error(f'{type(e)} occured when {func.__name__} handling message {session.event.message_id}.')
+                sulogger.exception(e)
+            return
+        return nonebot.on_command(name, **kwargs)(wrapper)
+    return deco

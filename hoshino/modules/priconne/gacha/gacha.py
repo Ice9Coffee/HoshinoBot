@@ -1,12 +1,12 @@
 import random
 
 from hoshino import util
-from ..chara import Chara
+from .. import chara
 
 
 class Gacha(object):
 
-    def __init__(self, pool_name:str="MIX"):
+    def __init__(self, pool_name:str = "MIX"):
         super().__init__()
         self.load_pool(pool_name)
 
@@ -24,7 +24,7 @@ class Gacha(object):
         self.star1 = pool["star1"]
 
 
-    def gacha_one(self, up_prob:int, s3_prob:int, s2_prob:int, s1_prob:int=None):
+    def gacha_one(self, up_prob:int, s3_prob:int, s2_prob:int, s1_prob:int = None):
         '''
         sx_prob: x星概率，要求和为1000
         up_prob: UP角色概率（从3星划出）
@@ -41,13 +41,13 @@ class Gacha(object):
         total_ = s3_prob + s2_prob + s1_prob
         pick = random.randint(1, total_)
         if pick <= up_prob:
-            return Chara.fromname(random.choice(self.up), 3), 100
+            return chara.fromname(random.choice(self.up), 3), 100
         elif pick <= s3_prob:
-            return Chara.fromname(random.choice(self.star3), 3), 50
+            return chara.fromname(random.choice(self.star3), 3), 50
         elif pick <= s2_prob + s3_prob:
-            return Chara.fromname(random.choice(self.star2), 2), 10
+            return chara.fromname(random.choice(self.star2), 2), 10
         else:
-            return Chara.fromname(random.choice(self.star1), 1), 1
+            return chara.fromname(random.choice(self.star1), 1), 1
 
 
     def gacha_ten(self):
