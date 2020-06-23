@@ -1,7 +1,7 @@
-from hoshino.typing import CQEvent
+from hoshino.typing import CQEvent, MessageSegment
 from hoshino.util import FreqLimiter
 
-from ..chara import Chara
+from .. import chara
 from . import sv
 
 _lmt = FreqLimiter(5)
@@ -15,12 +15,13 @@ async def whois(bot, ev: CQEvent):
         return
     _lmt.start_cd(uid)
 
-    name = ev.message.extract_plain_text()
-    chara = Chara.fromname(name, star=0)
-    if chara.id == Chara.UNKNOWN:
-        _lmt.start_cd(uid, 600)
-        await bot.send(ev, f'兰德索尔似乎没有叫"{name}"的人\n角色别称补全计划：github.com/Ice-Cirno/HoshinoBot/issues/5\n您的下次查询将于10分钟后可用', at_sender=True)
+    name = ev.message.extract_plain_text().strip()
+    c = chara.fromname(name, star=0)
+    if c.id == chara.UNKNOWN:
+        # _lmt.start_cd(uid, 600)
+        msg = MessageSegment.share(url='https://github.com/Ice-Cirno/HoshinoBot/issues/5', title='角色别称补全计划', content=f'兰德索尔似乎没有叫"{name}"的人')
+        await bot.send(ev, msg)
         return
 
-    msg = f'{chara.icon.cqcode} {chara.name}'
+    msg = f'{c.icon.cqcode} {c.name}'
     await bot.send(ev, msg, at_sender=True)

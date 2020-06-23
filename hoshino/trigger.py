@@ -104,8 +104,7 @@ class KeywordTrigger(BaseTrigger):
 
 
     def find_handler(self, event: CQEvent) -> "ServiceFunc":
-        text = event.message.extract_plain_text()
-        text = util.normalize_str(text)
+        text = event.norm_text
         for kw in self.allkw:
             if kw in text:
                 return self.allkw[kw]
@@ -126,15 +125,24 @@ class RexTrigger(BaseTrigger):
 
 
     def find_handler(self, event: CQEvent) -> "ServiceFunc":
-        plain_text = event.message.extract_plain_text()
-        plain_text = plain_text.strip()
-        event['plain_text'] = plain_text
+        text = event.norm_text
         for rex in self.allrex:
-            match = rex.search(plain_text)
+            match = rex.search(text)
             if match:
                 event['match'] = match
                 return self.allrex[rex]
         return None
+
+
+
+class _PlainTextExtractor(BaseTrigger):
+    def find_handler(self, event: CQEvent):
+        event.plain_text = event.message.extract_plain_text().strip()
+
+class _TextNormalizer(_PlainTextExtractor):
+    def find_handler(self, event: CQEvent):
+        super().find_handler(event)
+        event.norm_text = util.normalize_str(event.plain_text)
 
 
 prefix = PrefixTrigger()
@@ -145,6 +153,7 @@ rex = RexTrigger()
 chain = [
     prefix,
     suffix,
+    _TextNormalizer(),
     keyword,
     rex,
 ]

@@ -6,7 +6,7 @@ from hoshino import Service, priv, util
 from hoshino.typing import *
 from hoshino.util import DailyNumberLimiter, concat_pic, pic2b64, silence
 
-from ..chara import Chara
+from .. import chara
 from .gacha import Gacha
 
 try:
@@ -53,9 +53,9 @@ async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
     gacha = Gacha(_group_pool[gid])
     up_chara = gacha.up
-    if sv.bot.config.IS_CQPRO:
+    if sv.bot.config.USE_CQPRO:
         up_chara = map(lambda x: str(
-            Chara.fromname(x).icon.cqcode) + x, up_chara)
+            chara.fromname(x).icon.cqcode) + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}")
 
@@ -109,7 +109,7 @@ async def gacha_1(bot, ev: CQEvent):
     silence_time = hiishi * 60
 
     res = f'{chara.name} {"★"*chara.star}'
-    if sv.bot.config.IS_CQPRO:
+    if sv.bot.config.USE_CQPRO:
         res = f'{chara.icon.cqcode} {res}'
 
     await silence(ev, silence_time)
@@ -128,9 +128,9 @@ async def gacha_10(bot, ev: CQEvent):
     result, hiishi = gacha.gacha_ten()
     silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
-    if sv.bot.config.IS_CQPRO:
-        res1 = Chara.gen_team_pic(result[:5], star_slot_verbose=False)
-        res2 = Chara.gen_team_pic(result[5:], star_slot_verbose=False)
+    if sv.bot.config.USE_CQPRO:
+        res1 = chara.gen_team_pic(result[:5], star_slot_verbose=False)
+        res2 = chara.gen_team_pic(result[5:], star_slot_verbose=False)
         res = concat_pic([res1, res2])
         res = pic2b64(res)
         res = MessageSegment.image(res)
@@ -174,7 +174,7 @@ async def gacha_300(bot, ev: CQEvent):
         pics = []
         for i in range(0, lenth, step):
             j = min(lenth, i + step)
-            pics.append(Chara.gen_team_pic(res[i:j], star_slot_verbose=False))
+            pics.append(chara.gen_team_pic(res[i:j], star_slot_verbose=False))
         res = concat_pic(pics)
         res = pic2b64(res)
         res = MessageSegment.image(res)

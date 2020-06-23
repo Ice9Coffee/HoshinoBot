@@ -1,13 +1,55 @@
-import base64
-import os
-from io import BytesIO
-
-import zhconv
+import importlib
 from PIL import Image
+from hoshino import R, log, sucmd, util
+from hoshino.typing import CommandSession
+from . import _data
 
-from hoshino import R, logger
+UNKNOWN = 1000
+logger = log.new_logger('chara')
 
-from .priconne_data import _PriconneData
+class Roster:
+
+    def __init__(self):
+        self._roster = {}
+        self.update()
+    
+    def update(self):
+        importlib.reload(_data)
+        self._roster.clear()
+        for idx, names in _data.CHARA_NAME.items():
+            for n in names:
+                n = util.normalize_str(n)
+                if n not in self._roster:
+                    self._roster[n] = idx
+                else:
+                    logger.warning(f'priconne.chara.Roster: 出现重名{n}于id{idx}与id{self._roster[n]}')
+
+    def get_id(self, name):
+        name = util.normalize_str(name)
+        return self._roster[name] if name in self._roster else UNKNOWN
+
+
+
+roster = Roster()
+
+def name2id(name):
+    return roster.get_id(name)
+
+def fromid(id_, star=3, equip=0):
+    return Chara(id_, star, equip)
+
+def fromname(name, star=3, equip=0):
+    id_ = name2id(name)
+    return Chara(id_, star, equip)
+
+def gen_team_pic(team, size=64, star_slot_verbose=True):
+    num = len(team)
+    des = Image.new('RGBA', (num*size, size), (255, 255, 255, 255))
+    for i, chara in enumerate(team):
+        src = chara.render_icon(size, star_slot_verbose)
+        des.paste(src, (i * size, 0), src)
+    return des
+
 
 try:
     gadget_equip = R.img('priconne/gadget/equip.png').open()
@@ -19,49 +61,33 @@ except Exception as e:
     logger.exception(e)
 
 
-NAME2ID = {}
 
-def gen_name2id():
-    NAME2ID.clear()
-    for k, v in _PriconneData.CHARA.items():
-        for s in v:
-            if s not in NAME2ID:
-                NAME2ID[normname(s)] = k
-            else:
-                logger.warning(f'Chara.__gen_name2id: 出现重名{s}于id{k}与id{NAME2ID[s]}')
-
-
-def normname(name:str) -> str:
-    name = name.lower().replace('（', '(').replace('）', ')')
-    name = zhconv.convert(name, 'zh-hans')
-    return name
+UnavailableChara = (
+    1067,   # 穗希
+    1068,   # 晶
+    1069,   # 霸瞳
+    1072,   # 可萝爹
+    1073,   # 拉基拉基
+    1102,   # 泳装大眼
+)
 
 class Chara:
-    
-    UNKNOWN = 1000
-    
+
     def __init__(self, id_, star=3, equip=0):
         self.id = id_
         self.star = star
         self.equip = equip
 
-
-    @staticmethod
-    def fromid(id_, star=3, equip=0):
-        '''Create Chara from her id. The same as Chara()'''
-        return Chara(id_, star, equip)
-
-
-    @staticmethod
-    def fromname(name, star=3, equip=0):
-        '''Create Chara from her name.'''
-        id_ = Chara.name2id(name)
-        return Chara(id_, star, equip)
-
-
     @property
     def name(self):
-        return _PriconneData.CHARA[self.id][0] if self.id in _PriconneData.CHARA else _PriconneData.CHARA[Chara.UNKNOWN][0]
+        return _data.CHARA_NAME[self.id][0] if self.id in _data.CHARA_NAME else _data.CHARA_NAME[UNKNOWN][0]
+
+    @property
+    def is_npc(self) -> bool:
+        if self.id in UnavailableChara:
+            return True
+        else:
+            return ~(1000 < self.id < 1200 or 1800 < self.id < 1900)
 
 
     @property
@@ -73,11 +99,11 @@ class Chara:
         if not res.exist:
             res = R.img(f'priconne/unit/icon_unit_{self.id}11.png')
         if not res.exist:
-            res = R.img(f'priconne/unit/icon_unit_{Chara.UNKNOWN}31.png')
+            res = R.img(f'priconne/unit/icon_unit_{UNKNOWN}31.png')
         return res
 
 
-    def gen_icon_img(self, size, star_slot_verbose=True) -> Image:
+    def render_icon(self, size, star_slot_verbose=True) -> Image:
         try:
             pic = self.icon.open().convert('RGBA').resize((size, size), Image.LANCZOS)
         except FileNotFoundError:
@@ -110,19 +136,12 @@ class Chara:
         return pic
 
 
-    @staticmethod
-    def gen_team_pic(team, size=64, star_slot_verbose=True):
-        num = len(team)
-        des = Image.new('RGBA', (num*size, size), (255, 255, 255, 255))
-        for i, chara in enumerate(team):
-            src = chara.gen_icon_img(size, star_slot_verbose)
-            des.paste(src, (i * size, 0), src)
-        return des
 
-
-    @staticmethod
-    def name2id(name):
-        name = normname(name)
-        if not NAME2ID:
-            gen_name2id()
-        return NAME2ID[name] if name in NAME2ID else Chara.UNKNOWN
+@sucmd('reload-pcr-chara', aliases=('重载角色花名册'))
+async def reload_pcr_chara(session: CommandSession):
+    try:
+        roster.update()
+        await session.send('ok')
+    except Exception as e:
+        logger.exception(e)
+        await session.send(f'Error: {type(e)}')
