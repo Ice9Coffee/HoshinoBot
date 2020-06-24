@@ -55,7 +55,15 @@ async def gacha_info(session:CommandSession):
         up_chara = map(lambda x: str(
             Chara.fromname(x).icon.cqcode) + x, up_chara)
     up_chara = '\n'.join(up_chara)
-    await session.send(f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}")
+    
+    content = f"本期卡池主打的角色：\n{up_chara}\n"
+    if gacha.s3_up_prob > 0:
+        content = content + f"3星UP角色合计={(gacha.s3_up_prob/10):.1f}%\n"
+    if gacha.s2_up_prob > 0:
+        content = content + f"2星UP角色合计={(gacha.s2_up_prob/10):.1f}%\n"
+    if gacha.s1_up_prob > 0:
+        content = content + f"1星UP角色合计={(gacha.s1_up_prob/10):.1f}%\n"        
+    await session.send(f"{content}3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}")
 
 
 POOL_NAME_TIP = '请选择以下卡池\n> 选择卡池 jp\n> 选择卡池 tw\n> 选择卡池 bilibili\n> 选择卡池 mix'
@@ -106,7 +114,7 @@ async def gacha_1(session:CommandSession):
 
     gid = str(session.ctx['group_id'])
     gacha = Gacha(_group_pool[gid])
-    chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
+    chara, hiishi = gacha.gacha_one(gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
     res = f'{chara.name} {"★"*chara.star}'
