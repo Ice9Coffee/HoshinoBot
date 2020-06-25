@@ -72,7 +72,10 @@ class Service:
     """将一组功能包装为服务, 提供增强的触发条件与分群权限管理.
 
     支持的触发条件:
-    `on_message`, `on_keyword`, `on_rex`, `on_command`, `on_natural_language`
+    `on_message`,
+    `on_prefix`, `on_fullmatch`, `on_suffix`,
+    `on_keyword`, `on_rex`,
+    `on_command`, `on_natural_language`
 
     提供接口：
     `scheduled_job`, `broadcast`
@@ -182,12 +185,10 @@ class Service:
             async def wrapper(ctx):
                 if self._check_all(ctx):
                     try:
-                        await func(self.bot, ctx)
+                        return await func(self.bot, ctx)
                     except Exception as e:
+                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.')
                         self.logger.exception(e)
-                        self.logger.error(
-                            f'{type(e)} occured when {func.__name__} handling message {ctx["message_id"]}.'
-                        )
                     return
             return self.bot.on_message(event)(wrapper)
         return deco
@@ -211,12 +212,22 @@ class Service:
             @wraps(func)
             async def wrapper(bot: HoshinoBot, event: CQEvent):
                 if len(event.message) != 1 or event.message[0].data['text']:
+                    self.logger.info(f'Message {event.message_id} is ignored by fullmatch condition.')
                     return
                 return await func(bot, event)
             sf = ServiceFunc(self, wrapper, only_to_me)
             for w in word:
                 trigger.prefix.add(w, sf)
             return func
+            # func itself is still func, not wrapper. wrapper is a part of trigger.
+            # so that we could use multi-trigger freely, regardless of the order of decorators.
+            # ```
+            # """the order doesn't matter"""
+            # @on_keyword(...)
+            # @on_fullmatch(...)
+            # async def func(...):
+            #   ...
+            # ```
         return deco
 
 
@@ -269,18 +280,16 @@ class Service:
                     return
                 if self._check_all(session.ctx):
                     try:
-                        await func(session)
+                        ret = await func(session)
                         self.logger.info(
                             f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.'
                         )
+                        return ret
                     except (_PauseException, _FinishException, SwitchException) as e:
                         raise e
                     except Exception as e:
+                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                         self.logger.exception(e)
-                        self.logger.error(
-                            f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.'
-                        )
-                    return
             return nonebot.on_command(name, **kwargs)(wrapper)
         return deco
 
@@ -291,16 +300,14 @@ class Service:
             async def wrapper(session: nonebot.NLPSession):
                 if self._check_all(session.ctx):
                     try:
-                        await func(session)
+                        ret = await func(session)
                         self.logger.info(
                             f'Message {session.ctx["message_id"]} is handled as natural language by {func.__name__}.'
                         )
+                        return ret
                     except Exception as e:
+                        self.logger.error(f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                         self.logger.exception(e)
-                        self.logger.error(
-                            f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.'
-                        )
-                    return
             return nonebot.on_natural_language(keywords, **kwargs)(wrapper)
         return deco
 
@@ -314,12 +321,12 @@ class Service:
             async def wrapper():
                 try:
                     self.logger.info(f'Scheduled job {func.__name__} start.')
-                    await func()
-                    self.logger.info(
-                        f'Scheduled job {func.__name__} completed.')
+                    ret = await func()
+                    self.logger.info(f'Scheduled job {func.__name__} completed.')
+                    return ret
                 except Exception as e:
-                    self.logger.exception(e)
                     self.logger.error(f'{type(e)} occured when doing scheduled job {func.__name__}.')
+                    self.logger.exception(e)
             return nonebot.scheduler.scheduled_job(*args, **kwargs)(wrapper)
         return deco
 
@@ -339,8 +346,8 @@ class Service:
                 if l:
                     self.logger.info(f"群{gid} 投递{TAG}成功 共{l}条消息")
             except Exception as e:
-                self.logger.exception(e)
                 self.logger.error(f"群{gid} 投递{TAG}失败：{type(e)}")
+                self.logger.exception(e)
 
 
     def on_request(self, *events):
@@ -349,7 +356,7 @@ class Service:
             async def wrapper(session):
                 if not self.check_enabled(session.event.group_id):
                     return
-                await func(session)
+                return await func(session)
             return nonebot.on_request(*events)(wrapper)
         return deco
     
@@ -360,13 +367,13 @@ class Service:
             async def wrapper(session):
                 if not self.check_enabled(session.event.group_id):
                     return
-                await func(session)
+                return await func(session)
             return nonebot.on_notice(*events)(wrapper)
         return deco
 
 
 
-def sucmd(name, **kwargs) -> Callable:
+def sucmd(name, force_private=True, **kwargs) -> Callable:
     kwargs['privileged'] = True
     kwargs['only_to_me'] = False
     def deco(func) -> Callable:
@@ -374,16 +381,15 @@ def sucmd(name, **kwargs) -> Callable:
         async def wrapper(session: CommandSession):
             if session.event.user_id not in hoshino.config.SUPERUSERS:
                 return
-            if session.event.detail_type != 'private':
+            if force_private and session.event.detail_type != 'private':
                 await session.send('> This command should only use in private session.')
                 return
             try:
-                await func(session)
+                return await func(session)
             except (_PauseException, _FinishException, SwitchException):
                 raise
             except Exception as e:
                 sulogger.error(f'{type(e)} occured when {func.__name__} handling message {session.event.message_id}.')
                 sulogger.exception(e)
-            return
         return nonebot.on_command(name, **kwargs)(wrapper)
     return deco
