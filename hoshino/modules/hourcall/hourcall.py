@@ -1,21 +1,23 @@
 import pytz
 from datetime import datetime
-from hoshino import util
-from hoshino.service import Service
+import hoshino
+from hoshino import Service
 
 sv = Service('hourcall', enable_on_default=False)
+tz = pytz.timezone('Asia/Shanghai')
 
 def get_hour_call():
-    """从HOUR_CALLS中挑出一组时报，每日更换，一日之内保持相同"""
-    config = util.load_config(__file__)
-    now = datetime.now(pytz.timezone('Asia/Shanghai'))
-    hc_groups = config["HOUR_CALLS"]
+    """挑出一组时报，每日更换，一日之内保持相同"""
+    cfg = hoshino.config.hourcall
+    now = datetime.now(tz)
+    hc_groups = cfg.HOUR_CALLS_ON
     g = hc_groups[ now.day % len(hc_groups) ]
-    return config[g]
+    return cfg.HOUR_CALLS[g]
+
 
 @sv.scheduled_job('cron', hour='*')
 async def hour_call():
-    now = datetime.now(pytz.timezone('Asia/Shanghai'))
+    now = datetime.now(tz)
     if 2 <= now.hour <= 4:
         return  # 宵禁 免打扰
     msg = get_hour_call()[now.hour]

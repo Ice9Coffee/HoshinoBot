@@ -1,4 +1,5 @@
 increase_welcome = {
+    "default": "欢迎入群！",
     1000000: "欢迎新群员",
 }
 
