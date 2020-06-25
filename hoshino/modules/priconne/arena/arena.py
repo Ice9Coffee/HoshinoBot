@@ -3,9 +3,9 @@ import os
 import time
 from collections import defaultdict
 
-from hoshino import aiorequests, util, config
+from hoshino import aiorequests, config, util
 
-from ..chara import Chara
+from .. import chara
 from . import sv
 
 try:
@@ -136,7 +136,7 @@ async def do_query(id_list, user_id, region=1):
         dislikes = get_dislikes(eid)
         ret.append({
             'qkey': gen_quick_key(eid, user_id),
-            'atk': [ Chara(c['id'] // 100, c['star'], c['equip']) for c in entry['atk'] ],
+            'atk': [ chara.fromid(c['id'] // 100, c['star'], c['equip']) for c in entry['atk'] ],
             'up': entry['up'],
             'down': entry['down'],
             'my_up': len(likes),
