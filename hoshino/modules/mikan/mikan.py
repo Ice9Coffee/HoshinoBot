@@ -1,30 +1,29 @@
-import random
-import requests
 import asyncio
-from lxml import etree
+import random
 from datetime import datetime
 
-from hoshino import util
-from hoshino.service import Service
+from lxml import etree
+
+import hoshino
+from hoshino import Service, util, aiorequests
 
 sv = Service('bangumi', enable_on_default=False)
 
-class Mikan(object):
+class Mikan:
     link_cache = set()
     rss_cache = []
 
     @staticmethod
     def get_token():
-        config = util.load_config(__file__)
-        return config["MIKAN_TOKEN"]
+        return hoshino.config.mikan.MIKAN_TOKEN
 
 
     @staticmethod
-    def get_rss():
+    async def get_rss():
         res = []
         try:
-            resp = requests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=1)
-            rss = etree.XML(resp.content)
+            resp = await aiorequests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=10)
+            rss = etree.XML(await resp.content)
         except Exception as e:
             sv.logger.error(f'[get_rss] Error: {e}')
             return []
@@ -40,8 +39,8 @@ class Mikan(object):
 
 
     @staticmethod
-    def update_cache():
-        rss = Mikan.get_rss()
+    async def update_cache():
+        rss = await Mikan.get_rss()
         new_bangumi = []
         flag = False
         for item in rss:
@@ -84,10 +83,10 @@ DEVICES = [
 @sv.scheduled_job('cron', minute='*/3', second='15')
 async def mikan_poller():
     if not Mikan.rss_cache:
-        Mikan.update_cache()
+        await Mikan.update_cache()
         sv.logger.info(f'订阅缓存为空，已加载至最新')
         return
-    new_bangumi = Mikan.update_cache()
+    new_bangumi = await Mikan.update_cache()
     if not new_bangumi:
         sv.logger.info(f'未检索到番剧更新！')
     else:
@@ -102,7 +101,7 @@ DISABLE_NOTICE = '本群蜜柑番剧功能已禁用\n使用【启用 bangumi】�
 @sv.on_fullmatch(('来点新番', '來點新番'))
 async def send_bangumi(bot, ev):
     if not Mikan.rss_cache:
-        Mikan.update_cache()
+        await Mikan.update_cache()
 
     msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲链接 {i[0]}' for i in Mikan.rss_cache[:min(5, len(Mikan.rss_cache))] ]
     msg = '\n'.join(msg)
