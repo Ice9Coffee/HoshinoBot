@@ -1,11 +1,8 @@
 import random
-
-from hoshino import aiorequests, util
-from hoshino.service import Service, priv
+import hoshino
+from hoshino import Service, aiorequests, priv
 
 sv = Service('deepchat', manage_priv=priv.SUPERUSER, enable_on_default=False, visible=False)
-
-api = util.load_config(__file__)['deepchat_api']
 
 @sv.on_message('group')
 async def deepchat(bot, ctx):
@@ -17,9 +14,10 @@ async def deepchat(bot, ctx):
         "group": ctx['group_id'],
         "qq": ctx['user_id']
     }
-    sv.logger.info(payload)
-    rsp = await aiorequests.post(api, data=payload)
-    j = await rsp.json()
-    sv.logger.info(j)
-    if j['msg']:
-        await bot.send(ctx, j['msg'])
+    sv.logger.debug(payload)
+    api = hoshino.config.deepchat.deepchat_api
+    rsp = await aiorequests.post(api, data=payload, timeout=10)
+    rsp = await rsp.json()
+    sv.logger.debug(rsp)
+    if rsp['msg']:
+        await bot.send(ctx, rsp['msg'])
