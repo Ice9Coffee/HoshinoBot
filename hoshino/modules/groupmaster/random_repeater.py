@@ -1,10 +1,12 @@
 import random
-from nonebot import get_bot, CQHttpError
-from hoshino import logger
 
-bot = get_bot()
+import hoshino
+from hoshino import Service
+from hoshino.typing import CQEvent, CQHttpError
 
-PROB_A = 1.6
+sv = Service('random-repeater', visible=False)
+
+PROB_A = 1.4
 group_stat = {}     # group_id: (last_msg, is_repeated, p)
 
 '''
@@ -15,10 +17,10 @@ a 设为一个略大于1的小数，最好不要超过2，建议1.6
 复读概率计算式：p_n = 1 - 1/a^n
 递推式：p_n+1 = 1 - (1 - p_n) / a
 '''
-@bot.on_message('group')
-async def random_repeater(context):
-    group_id = context['group_id']
-    msg = str(context['message'])
+@sv.on_message()
+async def random_repeater(bot, ev: CQEvent):
+    group_id = ev.group_id
+    msg = str(ev.message)
 
     if group_id not in group_stat:
         group_stat[group_id] = (msg, False, 0)
@@ -30,9 +32,9 @@ async def random_repeater(context):
             if random.random() < p:    # 概率测试通过，复读并设flag
                 try:
                     group_stat[group_id] = (msg, True, 0)
-                    await bot.send(context, msg)
+                    await bot.send(ev, msg)
                 except CQHttpError as e:
-                    logger.error(f'复读失败: {type(e)}')
+                    hoshino.logger.error(f'复读失败: {type(e)}')
             else:                      # 概率测试失败，蓄力
                 p = 1 - (1 - p) / PROB_A
                 group_stat[group_id] = (msg, False, p)

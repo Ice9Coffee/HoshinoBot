@@ -3,7 +3,7 @@ import hoshino
 
 @on_request('group.add')
 async def join_approve(session: RequestSession):
-    cfg = hoshino.config.groupmaster.group_approve
+    cfg = hoshino.config.groupmaster.join_approve
     gid = session.event.group_id
     if gid not in cfg:
         return
