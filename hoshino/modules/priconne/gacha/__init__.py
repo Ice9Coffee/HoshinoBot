@@ -55,7 +55,7 @@ async def gacha_info(bot, ev: CQEvent):
     up_chara = gacha.up
     if sv.bot.config.USE_CQPRO:
         up_chara = map(lambda x: str(
-            chara.fromname(x).icon.cqcode) + x, up_chara)
+            chara.fromname(x, star=3).icon.cqcode) + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}")
 

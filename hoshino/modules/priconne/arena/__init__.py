@@ -50,20 +50,24 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     lmt.start_cd(uid)
 
     # 处理输入数据
-    argv = ev.message.extract_plain_text()
-    argv = re.sub(r'[?？，,_]', ' ', argv)
-    argv = argv.split()
-    if 0 >= len(argv):
-        await bot.finish(ev, '请输入防守方角色，用空格隔开', at_sender=True)
-    if 5 < len(argv):
-        await bot.finish(ev, '编队不能多于5名角色', at_sender=True)
+    defen = ev.message.extract_plain_text()
+    defen = re.sub(r'[?？，,_]', '', defen)
+    defen, unknown = chara.roster.parse_team(defen)
 
-    defen = [ chara.name2id(name) for name in argv ]
-    for i, id_ in enumerate(defen):
-        if chara.UNKNOWN == id_:
-            await bot.finish(ev, f'编队中含未知角色"{argv[i]}"，请尝试使用官方译名\n您可@bot来杯咖啡+反馈未收录别称\n或前往 github.com/Ice-Cirno/HoshinoBot/issues/5 回帖补充', at_sender=True)
+    if unknown:
+        _, name, score = chara.guess_id(unknown)
+        if score < 70 and not defen:
+            return  # 忽略无关对话
+        msg = f'无法识别"{unknown}"' if score < 70 else f'无法识别"{unknown}" 您说的有{score}%可能是{name}'
+        await bot.finish(ev, msg)
+    if not defen:
+        await bot.finish(ev, '查询请发送"怎么拆+防守队伍"，无需+号', at_sender=True)
+    if len(defen) > 5:
+        await bot.finish(ev, '编队不能多于5名角色', at_sender=True)
     if len(defen) != len(set(defen)):
-        await bot.finish(ev, '编队中出现重复角色', at_sender=True)
+        await bot.finish(ev, '编队中含重复角色', at_sender=True)
+    if any(chara.is_npc(i) for i in defen):
+        await bot.finish(ev, '编队中含未实装角色', at_sender=True)
     if 1004 in defen:
         await bot.send(ev, '\n⚠️您正在查询普通版炸弹人\n※万圣版可用万圣炸弹人/瓜炸等别称', at_sender=True)
 

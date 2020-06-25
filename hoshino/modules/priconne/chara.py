@@ -1,7 +1,11 @@
 import importlib
+import pygtrie
+from fuzzywuzzy import fuzz, process
 from PIL import Image
+
 from hoshino import R, log, sucmd, util
 from hoshino.typing import CommandSession
+
 from . import _data
 
 UNKNOWN = 1000
@@ -10,7 +14,7 @@ logger = log.new_logger('chara')
 class Roster:
 
     def __init__(self):
-        self._roster = {}
+        self._roster = pygtrie.CharTrie()
         self.update()
     
     def update(self):
@@ -23,11 +27,34 @@ class Roster:
                     self._roster[n] = idx
                 else:
                     logger.warning(f'priconne.chara.Roster: 出现重名{n}于id{idx}与id{self._roster[n]}')
+        self._all_name_list = self._roster.keys()
+
 
     def get_id(self, name):
         name = util.normalize_str(name)
         return self._roster[name] if name in self._roster else UNKNOWN
 
+
+    def guess_id(self, name):
+        """@return: id, name, score"""
+        name, score = process.extractOne(name, self._all_name_list)
+        return self._roster[name], name, score
+
+
+    def parse_team(self, namestr):
+        """@return: List[ids], unknown_namestr"""
+        namestr = util.normalize_str(namestr)
+        team = []
+        unknown = []
+        while namestr:
+            item = self._roster.longest_prefix(namestr)
+            if not item:
+                unknown.append(namestr[0])
+                namestr = namestr[1:].lstrip()
+            else:
+                team.append(item.value)
+                namestr = namestr[len(item.key):].lstrip()
+        return team, ''.join(unknown)
 
 
 roster = Roster()
@@ -35,12 +62,16 @@ roster = Roster()
 def name2id(name):
     return roster.get_id(name)
 
-def fromid(id_, star=3, equip=0):
+def fromid(id_, star=0, equip=0):
     return Chara(id_, star, equip)
 
-def fromname(name, star=3, equip=0):
+def fromname(name, star=0, equip=0):
     id_ = name2id(name)
     return Chara(id_, star, equip)
+
+def guess_id(name):
+    """@return: id, name, score"""
+    return roster.guess_id(name)
 
 def gen_team_pic(team, size=64, star_slot_verbose=True):
     num = len(team)
@@ -71,9 +102,16 @@ UnavailableChara = (
     1102,   # 泳装大眼
 )
 
+def is_npc(id_):
+    if id_ in UnavailableChara:
+        return True
+    else:
+        return not ((1000 < id_ < 1200) or (1800 < id_ < 1900))
+
+
 class Chara:
 
-    def __init__(self, id_, star=3, equip=0):
+    def __init__(self, id_, star=0, equip=0):
         self.id = id_
         self.star = star
         self.equip = equip
@@ -84,11 +122,7 @@ class Chara:
 
     @property
     def is_npc(self) -> bool:
-        if self.id in UnavailableChara:
-            return True
-        else:
-            return ~(1000 < self.id < 1200 or 1800 < self.id < 1900)
-
+        return is_npc(self.id)
 
     @property
     def icon(self):
