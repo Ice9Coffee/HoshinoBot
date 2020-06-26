@@ -1,11 +1,10 @@
-import asyncio
 import random
 from datetime import datetime
 
 from lxml import etree
 
 import hoshino
-from hoshino import Service, util, aiorequests
+from hoshino import Service, aiorequests
 
 sv = Service('bangumi', enable_on_default=False)
 
