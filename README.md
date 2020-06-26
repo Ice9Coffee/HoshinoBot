@@ -83,7 +83,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 2. 安装 酷Q 及 CQHTTP 插件
 
-    - 酷Q Air：https://cqp.cc/t/23253
+    - 酷Q Air：https://cqp.cc/t/23253 （如无法打开，使用此下载直链：https://dlsec.cqp.me/cqa-full）
     - CQHTTP 插件：https://github.com/richardchien/coolq-http-api/releases
 
     > 初次部署建议先在本地尝试，酷Q Air版即可，待部署成功后再尝试服务器搭建与酷Q Pro版
@@ -105,7 +105,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 4. 打开一个合适的文件夹，点击资源管理器左上角的 `文件 -> 打开Windows Powershell`
 
-5. 输入以下命令安装依赖
+5. 输入以下命令克隆本仓库并安装依赖
 
     ```powershell
     git clone https://github.com/Ice-Cirno/HoshinoBot.git
@@ -116,7 +116,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     >
     >若安装python依赖库时下载速度缓慢，可以尝试使用`py -3.8 -m pip install -i https://pypi.tuna.tsinghua.edu.cn/simple -r requirements.txt`
 
-6. 回到资源管理器，复制`config.example.py`至同目录下，重命名为`config.py`，右键使用Notepad++打开，按照其中的注释说明进行编辑。
+6. 回到资源管理器，进入`hoshino`文件夹，将`config_example`文件夹重命名为`config`，然后右键使用Notepad++打开其中的`__bot__.py`，按照其中的注释说明进行编辑。
 
     > 如果您不清楚某项设置的作用，请保持默认
     
@@ -182,8 +182,8 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 5. 编辑配置文件
     ```bash
-    cp config.example.py config.py
-    nano config.py
+    mv hoshino/config_example hoshino/config
+    nano hoshino/config/__bot__.py
     ```
     > 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
     >
