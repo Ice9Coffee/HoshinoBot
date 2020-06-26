@@ -22,8 +22,8 @@ subr_dic = {
     Service('kc-twitter', enable_on_default=False): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi'],
     Service('pcr-twitter', enable_on_default=True): ['priconne_redive', 'priconne_anime'],
     Service('pripri-twitter', enable_on_default=False, visible=False): ['pripri_anime'],
-    Service('shiratama-twitter', enable_on_default=False, visible=False): ['shiratamacaron'],
-    Service('kc-doujin-twitter', enable_on_default=False): ['suzukitoto0323', 'watanohara2'],
+    Service('coffee-favorite-twitter', manage_priv=priv.SUPERUSER, 
+            enable_on_default=False, visible=False): ['shiratamacaron', 'k_yuizaki', 'suzukitoto0323', 'watanohara2'],
 }
 
 latest_info = {}      # { account: {last_tweet_id: int, profile_image: str } }
@@ -31,7 +31,7 @@ for _, ids in subr_dic.items():     # initialize
     for account in ids:
         latest_info[account] = {'last_tweet_id': 0, 'profile_image': '', 'media_only': False}
 
-for account in ('shiratamacaron', 'suzukitoto0323', 'watanohara2'):
+for account in ('shiratamacaron', 'k_yuizaki', 'suzukitoto0323', 'watanohara2'):
     latest_info[account]['media_only'] = True
 
 
@@ -87,7 +87,7 @@ async def poll_new_tweets(account:str):
             'count': '10',
             'since_id': latest_info[account]['last_tweet_id'],
             'tweet_mode': 'extended',
-            'include_rts': False,            
+            'include_rts': False,
         }
         rsp = await twt_request(URL_TIMELINE, params)
         old_profile_image = latest_info[account]['profile_image']
