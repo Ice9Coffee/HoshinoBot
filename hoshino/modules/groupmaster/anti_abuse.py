@@ -49,7 +49,7 @@ async def hb_handler(ctx):
         if _check_hbtitle_is_cmd(ctx, title):
             hoshino.priv.set_block_group(group_id, timedelta(hours=1))
             hoshino.priv.set_block_user(user_id, timedelta(days=30))
-            util.silence(ctx, 7 * 24 * 60 * 60)
+            await util.silence(ctx, 7 * 24 * 60 * 60)
             msg_from = f"{ctx['user_id']}@[群:{ctx['group_id']}]"
             hoshino.logger.critical(f'Self: {ctx["self_id"]}, Message {ctx["message_id"]} from {msg_from} detected as abuse: {ctx["message"]}')
             await bot.send(ctx, "检测到滥用行为，您的操作已被记录并加入黑名单。\nbot拒绝响应本群消息1小时", at_sender=True)
