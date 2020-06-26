@@ -9,12 +9,12 @@ import pytz
 from nonebot import MessageSegment as ms
 from TwitterAPI import TwitterAPI, TwitterResponse
 
-from hoshino import util
+from hoshino import util, Service, priv
+from hoshino.typing import CQEvent
 from hoshino.config import twitter as cfg
-from hoshino.service import Service, priv
 
 api = TwitterAPI(cfg.consumer_key, cfg.consumer_secret, cfg.access_token_key, cfg.access_token_secret)
-sv = Service('twitter-poller', use_priv=priv.ADMIN, manage_priv=priv.SUPERUSER, visible=False)
+sv = Service('twitter-poller', use_priv=priv.SUPERUSER, manage_priv=priv.SUPERUSER, visible=False)
 
 URL_TIMELINE = 'statuses/user_timeline'
 
@@ -22,7 +22,7 @@ subr_dic = {
     Service('kc-twitter', enable_on_default=False): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi'],
     Service('pcr-twitter', enable_on_default=True): ['priconne_redive', 'priconne_anime'],
     Service('pripri-twitter', enable_on_default=False, visible=False): ['pripri_anime'],
-    Service('coffee-favorite-twitter', manage_priv=priv.SUPERUSER, 
+    Service('coffee-favorite-twitter', manage_priv=priv.SUPERUSER,
             enable_on_default=False, visible=False): ['shiratamacaron', 'k_yuizaki', 'suzukitoto0323', 'watanohara2'],
 }
 
@@ -129,9 +129,9 @@ async def twitter_poller():
             twts.extend(buf.get(account, []))
         await ssv.broadcast(twts, ssv.name, 0.5)
 
-@sv.on_command('看推', only_to_me=True)     # for test
-async def one_tweet(session):
-    args = session.current_arg_text.split()
+@sv.on_prefix('看推', only_to_me=True)     # for test
+async def one_tweet(bot, ev: CQEvent):
+    args = ev.message.extract_plain_text().split()
     try:
         account = args[0]
     except:
@@ -153,5 +153,5 @@ async def one_tweet(session):
         items = filter(has_media, items)
     twts = list(map(tweet_formatter, items))
     for t in twts:
-        await session.send(t)
+        await bot.send(ev, t)
         await asyncio.sleep(0.5)

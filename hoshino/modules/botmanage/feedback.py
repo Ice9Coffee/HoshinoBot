@@ -1,20 +1,24 @@
-from nonebot import on_command, CommandSession, permission as perm
+import hoshino
+from hoshino import Service, priv
+from hoshino.typing import CQEvent
 from hoshino.util import DailyNumberLimiter
 
+sv = Service('_feedback_', manage_priv=priv.SUPERUSER, visible=False)
+
 _max = 1
-_lmt = DailyNumberLimiter(_max)
+lmt = DailyNumberLimiter(_max)
 EXCEED_NOTICE = f'您今天已经喝过{_max}杯了，请明早5点后再来！'
 
-@on_command('来杯咖啡', permission=perm.GROUP)
-async def feedback(session:CommandSession):
-    uid = session.ctx['user_id']
-    if not _lmt.check(uid):
-        session.finish(EXCEED_NOTICE, at_sender=True)
-    coffee = session.bot.config.SUPERUSERS[0]
-    text = session.current_arg
+@sv.on_prefix('来杯咖啡')
+async def feedback(bot, ev: CQEvent):
+    uid = ev.user_id
+    if not lmt.check(uid):
+        await bot.finish(EXCEED_NOTICE, at_sender=True)
+    coffee = hoshino.config.SUPERUSERS[0]
+    text = ev.message
     if not text:
-        await session.send(f"来杯咖啡[空格]后输入您要反馈的内容~", at_sender=True)
+        await bot.send(ev, f"请发送来杯咖啡+您要反馈的内容~", at_sender=True)
     else:
-        await session.bot.send_private_msg(self_id=session.event.self_id, user_id=coffee, message=f'Q{uid}@群{session.ctx["group_id"]}\n{text}')
-        await session.send(f'您的反馈已发送！\n=======\n{text}', at_sender=True)
-        _lmt.increase(uid)
+        await bot.send_private_msg(self_id=ev.self_id, user_id=coffee, message=f'Q{uid}@群{ev.group_id}\n{text}')
+        await bot.send(ev, f'您的反馈已发送至维护组！\n======\n{text}', at_sender=True)
+        lmt.increase(uid)

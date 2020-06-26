@@ -1,8 +1,6 @@
-from nonebot import on_command, CommandSession
-from nonebot import permission as perm
 from nonebot.argparse import ArgumentParser
-from hoshino import sucmd
-from hoshino.service import Service
+from hoshino import CommandSession, Service, sucmd
+
 
 async def ls_group(session: CommandSession):
     bot = session.bot

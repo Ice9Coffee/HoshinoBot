@@ -10,11 +10,9 @@ from hoshino.util import FreqLimiter, concat_pic, pic2b64
 from .. import chara
 
 
-sv = Service('pcr-arena')
+sv = Service('pcr-arena', help_="")
 
 from . import arena
-
-DISABLE_NOTICE = '本群竞技场查询功能已禁用\n如欲开启，请与维护组联系'
 
 lmt = FreqLimiter(5)
 

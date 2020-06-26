@@ -6,7 +6,7 @@ from PIL import Image
 from hoshino import R, log, sucmd, util
 from hoshino.typing import CommandSession
 
-from . import _data
+from . import _pcr_data
 
 UNKNOWN = 1000
 logger = log.new_logger('chara')
@@ -18,9 +18,9 @@ class Roster:
         self.update()
     
     def update(self):
-        importlib.reload(_data)
+        importlib.reload(_pcr_data)
         self._roster.clear()
-        for idx, names in _data.CHARA_NAME.items():
+        for idx, names in _pcr_data.CHARA_NAME.items():
             for n in names:
                 n = util.normalize_str(n)
                 if n not in self._roster:
@@ -118,7 +118,7 @@ class Chara:
 
     @property
     def name(self):
-        return _data.CHARA_NAME[self.id][0] if self.id in _data.CHARA_NAME else _data.CHARA_NAME[UNKNOWN][0]
+        return _pcr_data.CHARA_NAME[self.id][0] if self.id in _pcr_data.CHARA_NAME else _pcr_data.CHARA_NAME[UNKNOWN][0]
 
     @property
     def is_npc(self) -> bool:
@@ -171,7 +171,7 @@ class Chara:
 
 
 
-@sucmd('reload-pcr-chara', aliases=('重载角色花名册'))
+@sucmd('reload-pcr-chara', force_private=False, aliases=('重载角色花名册', ))
 async def reload_pcr_chara(session: CommandSession):
     try:
         roster.update()

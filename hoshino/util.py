@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 from PIL import Image
 
 import hoshino
-from hoshino import get_bot
+from hoshino.typing import CQEvent
 
 try:
     import ujson as json
@@ -38,25 +38,21 @@ def load_config(inbuilt_file_var):
         return {}
 
 
-async def delete_msg(ctx):
+async def delete_msg(ev: CQEvent):
     try:
-        if get_bot().config.USE_CQPRO:
-            msg_id = ctx['message_id']
-            await get_bot().delete_msg(self_id=ctx['self_id'], message_id=msg_id)
+        if hoshino.config.USE_CQPRO:
+            await hoshino.get_bot().delete_msg(self_id=ev.self_id, message_id=ev.message_id)
     except ActionFailed as e:
         hoshino.logger.error(f'撤回失败 retcode={e.retcode}')
     except Exception as e:
         hoshino.logger.exception(e)
 
 
-async def silence(ctx, ban_time, ignore_super_user=False):
+async def silence(ev: CQEvent, ban_time, skip_su=True):
     try:
-        self_id = ctx['self_id']
-        group_id = ctx['group_id']
-        user_id = ctx['user_id']
-        bot = get_bot()
-        if ignore_super_user or user_id not in bot.config.SUPERUSERS:
-            await bot.set_group_ban(self_id=self_id, group_id=group_id, user_id=user_id, duration=ban_time)
+        if skip_su and ev.user_id in hoshino.config.SUPERUSERS:
+            return
+        await hoshino.get_bot().set_group_ban(self_id=ev.self_id, group_id=ev.group_id, user_id=ev.user_id, duration=ban_time)
     except ActionFailed as e:
         hoshino.logger.error(f'禁言失败 retcode={e.retcode}')
     except Exception as e:
