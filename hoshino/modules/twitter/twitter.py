@@ -19,8 +19,8 @@ sv = Service('twitter-poller', use_priv=priv.SUPERUSER, manage_priv=priv.SUPERUS
 URL_TIMELINE = 'statuses/user_timeline'
 
 subr_dic = {
-    Service('kc-twitter', enable_on_default=False): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi'],
-    Service('pcr-twitter', enable_on_default=True): ['priconne_redive', 'priconne_anime'],
+    Service('kc-twitter', enable_on_default=False, help_='艦これ官推转发', bundle='kancolle'): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi'],
+    Service('pcr-twitter', enable_on_default=True, help_='日服Twitter转发', bundle='pcr订阅'): ['priconne_redive', 'priconne_anime'],
     Service('pripri-twitter', enable_on_default=False, visible=False): ['pripri_anime'],
     Service('coffee-favorite-twitter', manage_priv=priv.SUPERUSER,
             enable_on_default=False, visible=False): ['shiratamacaron', 'k_yuizaki', 'suzukitoto0323', 'watanohara2'],

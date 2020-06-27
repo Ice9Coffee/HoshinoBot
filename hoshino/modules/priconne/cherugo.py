@@ -16,7 +16,10 @@ from nonebot.message import escape
 from hoshino import Service
 from hoshino.typing import CQEvent
 
-sv = Service('pcr-cherugo')
+sv = Service('pcr-cherugo', bundle='pcr娱乐', help_='''
+[切噜一下] 转换为切噜语
+[切噜～♪切啰巴切拉切蹦切蹦] 切噜语翻译
+'''.strip())
 
 CHERU_SET = '切卟叮咧哔唎啪啰啵嘭噜噼巴拉蹦铃'
 CHERU_DIC = {c: i for i, c in enumerate(CHERU_SET)}
