@@ -6,7 +6,7 @@ from datetime import datetime
 import nonebot
 from hoshino.service import Service
 
-sv = Service('kc-reminder', enable_on_default=False)
+sv = Service('kc-reminder', enable_on_default=False, help_='演习/月常远征提醒', bundle='kancolle')
 
 @sv.scheduled_job('cron', hour='13', minute='30')
 async def enshu_reminder():
