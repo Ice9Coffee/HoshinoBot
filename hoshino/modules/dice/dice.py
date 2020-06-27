@@ -4,7 +4,10 @@ import random
 from hoshino import Service
 from hoshino.typing import CQEvent
 
-sv = Service('dice')
+sv = Service('dice', help_='''
+[.r] 掷骰子
+[.r 3d12] 掷3次12面骰子
+'''.strip())
 
 async def do_dice(bot, ev, num, min_, max_, opr, offset, TIP="的掷骰结果是："):
     if num == 0:

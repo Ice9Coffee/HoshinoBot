@@ -16,6 +16,9 @@ async def whois(bot, ev: CQEvent):
     lmt.start_cd(uid)
 
     name = ev.message.extract_plain_text().strip()
+    if not name:
+        await bot.send(ev, '请发送"谁是"+别称，如"谁是霸瞳"')
+        return
     id_ = chara.name2id(name)
     confi = 100
     if id_ == chara.UNKNOWN:

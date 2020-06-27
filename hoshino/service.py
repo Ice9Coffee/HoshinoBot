@@ -20,10 +20,10 @@ except:
 
 # service management
 _loaded_services: Dict[str, "Service"] = {}  # {name: service}
+_service_bundle: Dict[str, List["Service"]] = defaultdict(list)
 _re_illegal_char = re.compile(r'[\\/:*?"<>|\.]')
 _service_config_dir = os.path.expanduser('~/.hoshino/service_config/')
 os.makedirs(_service_config_dir, exist_ok=True)
-sulogger = log.new_logger('sucmd')
 
 
 def _load_service_config(service_name):
@@ -94,13 +94,8 @@ class Service:
     储存位置：
     `~/.hoshino/service_config/{ServiceName}.json`
     """
-    def __init__(self,
-                 name,
-                 use_priv=None,
-                 manage_priv=None,
-                 enable_on_default=None,
-                 visible=None,
-                 help_=None):
+    def __init__(self, name, use_priv=None, manage_priv=None, enable_on_default=None, visible=None,
+                 help_=None, bundle=None):
         """
         定义一个服务
         配置的优先级别：配置文件 > 程序指定 > 缺省值
@@ -131,6 +126,7 @@ class Service:
 
         assert self.name not in _loaded_services, f'Service name "{self.name}" already exist!'
         _loaded_services[self.name] = self
+        _service_bundle[bundle or "通用"].append(self)
 
     @property
     def bot(self):
@@ -139,6 +135,10 @@ class Service:
     @staticmethod
     def get_loaded_services() -> Dict[str, "Service"]:
         return _loaded_services
+
+    @staticmethod
+    def get_bundles():
+        return _service_bundle
 
     def set_enable(self, group_id):
         self.enable_group.add(group_id)
@@ -372,6 +372,8 @@ class Service:
         return deco
 
 
+
+sulogger = log.new_logger('sucmd')
 
 def sucmd(name, force_private=True, **kwargs) -> Callable:
     kwargs['privileged'] = True
