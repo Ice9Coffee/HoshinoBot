@@ -33,5 +33,5 @@ async def whois(bot, ev: CQEvent):
         msg = f'\n您有{confi}%的可能在找{guess_name} '
 
     if confi > 60:
-        msg += f'{c.icon.cqcode} {c.name}'        
+        msg += f'{c.icon.cqcode} {c.name}'
         await bot.send(ev, msg, at_sender=True)
