@@ -15,8 +15,13 @@ except:
     import json
 
 
-
-sv = Service('gacha')
+sv_help = '''
+[星乃来发十连] 转蛋模拟
+[星乃来发单抽] 转蛋模拟
+[星乃来一井] 4w5钻！
+[查看卡池] 模拟卡池&出率
+'''.strip()
+sv = Service('gacha', help_=sv_help, bundle='pcr娱乐')
 jewel_limit = DailyNumberLimiter(6000)
 tenjo_limit = DailyNumberLimiter(1)
 
