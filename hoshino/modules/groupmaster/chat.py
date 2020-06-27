@@ -63,9 +63,9 @@ async def chat_queshi(bot, ctx):
         await bot.send(ctx, R.img('确实.jpg').cqcode)
 
 
-@sv.on_keyword(('会战', '刀'))
+@sv.on_keyword(('会战'))
 async def chat_clanba(bot, ctx):
-    if random.random() < 0.03:
+    if random.random() < 0.02:
         await bot.send(ctx, R.img('我的天啊你看看都几度了.jpg').cqcode)
 
 
@@ -73,3 +73,14 @@ async def chat_clanba(bot, ctx):
 async def chat_neigui(bot, ctx):
     if random.random() < 0.10:
         await bot.send(ctx, R.img('内鬼.png').cqcode)
+
+nyb_player = f'''{R.img('newyearburst.jpg').cqcode}
+正在播放：New Year Burst
+──●━━━━ 1:05/1:30
+⇆ ㅤ◁ ㅤㅤ❚❚ ㅤㅤ▷ ㅤ↻
+'''.strip()
+
+@sv.on_keyword(('春黑', '新黑'))
+async def new_year_burst(bot, ev):
+    if random.random() < 0.02:
+        await bot.send(ev, nyb_player)
