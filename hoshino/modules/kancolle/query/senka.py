@@ -1,6 +1,6 @@
 import os
 from nonebot import MessageSegment as ms
-from hoshino.res import R
+from hoshino import R
 
 from . import sv
 

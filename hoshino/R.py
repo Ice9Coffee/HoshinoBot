@@ -8,17 +8,6 @@ from PIL import Image
 import hoshino
 from hoshino import logger, util
 
-
-class R:
-    @staticmethod
-    def get(path, *paths):
-        return ResObj(os.path.join(path, *paths))
-
-    @staticmethod
-    def img(path, *paths):
-        return ResImg(os.path.join('img', path, *paths))
-
-
 class ResObj:
     def __init__(self, res_path):
         res_dir = os.path.expanduser(hoshino.config.RES_DIR)
@@ -53,7 +42,7 @@ class ResImg(ResObj):
             try:
                 return MessageSegment.image(util.pic2b64(self.open()))
             except Exception as e:
-                logger.exception(e)
+                hoshino.logger.exception(e)
                 return MessageSegment.text('[图片出错]')
 
     def open(self) -> Image:
@@ -61,3 +50,11 @@ class ResImg(ResObj):
             return Image.open(self.path)
         except FileNotFoundError:
             hoshino.logger.error(f'缺少图片资源：{self.path}')
+            raise
+
+
+def get(path, *paths):
+    return ResObj(os.path.join(path, *paths))
+
+def img(path, *paths):
+    return ResImg(os.path.join('img', path, *paths))

@@ -1,5 +1,6 @@
 from nonebot.argparse import ArgumentParser
-from hoshino import CommandSession, Service, sucmd
+from hoshino import Service, sucmd
+from hoshino.typing import CommandSession
 
 
 async def ls_group(session: CommandSession):

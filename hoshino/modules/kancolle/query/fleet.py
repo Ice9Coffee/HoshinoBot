@@ -2,8 +2,7 @@ import os
 import re
 import random
 
-from hoshino import util
-from hoshino.res import R
+from hoshino import util, R
 
 from . import sv
 
