@@ -2,14 +2,34 @@ import importlib
 import pygtrie
 from fuzzywuzzy import fuzz, process
 from PIL import Image
+from io import BytesIO
+import requests
 
 from hoshino import R, log, sucmd, util
 from hoshino.typing import CommandSession
 
 from . import _pcr_data
 
-UNKNOWN = 1000
 logger = log.new_logger('chara')
+UNKNOWN = 1000
+UnavailableChara = {
+    1067,   # 穗希
+    1068,   # 晶
+    1069,   # 霸瞳
+    1072,   # 可萝爹
+    1073,   # 拉基拉基
+    1102,   # 泳装大眼
+}
+
+try:
+    gadget_equip = R.img('priconne/gadget/equip.png').open()
+    gadget_star = R.img('priconne/gadget/star.png').open()
+    gadget_star_dis = R.img('priconne/gadget/star_disabled.png').open()
+    gadget_star_pink = R.img('priconne/gadget/star_pink.png').open()
+    unknown_chara_icon = R.img('priconne/unit/icon_unit_100031.png').open()
+except Exception as e:
+    logger.exception(e)
+
 
 class Roster:
 
@@ -73,6 +93,12 @@ def guess_id(name):
     """@return: id, name, score"""
     return roster.guess_id(name)
 
+def is_npc(id_):
+    if id_ in UnavailableChara:
+        return True
+    else:
+        return not ((1000 < id_ < 1200) or (1800 < id_ < 1900))
+
 def gen_team_pic(team, size=64, star_slot_verbose=True):
     num = len(team)
     des = Image.new('RGBA', (num*size, size), (255, 255, 255, 255))
@@ -82,31 +108,21 @@ def gen_team_pic(team, size=64, star_slot_verbose=True):
     return des
 
 
-try:
-    gadget_equip = R.img('priconne/gadget/equip.png').open()
-    gadget_star = R.img('priconne/gadget/star.png').open()
-    gadget_star_dis = R.img('priconne/gadget/star_disabled.png').open()
-    gadget_star_pink = R.img('priconne/gadget/star_pink.png').open()
-    unknown_chara_icon = R.img('priconne/unit/icon_unit_100031.png').open()
-except Exception as e:
-    logger.exception(e)
-
-
-
-UnavailableChara = (
-    1067,   # 穗希
-    1068,   # 晶
-    1069,   # 霸瞳
-    1072,   # 可萝爹
-    1073,   # 拉基拉基
-    1102,   # 泳装大眼
-)
-
-def is_npc(id_):
-    if id_ in UnavailableChara:
-        return True
+def download_chara_icon(id_, star):
+    url = f'https://redive.estertion.win/icon/unit/{id_}{star}1.webp'
+    save_path = R.img(f'priconne/unit/icon_unit_{id_}{star}1.png').path
+    logger.info(f'Downloading chara icon from {url}')
+    try:
+        rsp = requests.get(url, stream=True, timeout=5)
+    except Exception as e:
+        logger.error(f'Failed to download {url}. {type(e)}')
+        logger.exception(e)
+    if 200 == rsp.status_code:
+        img = Image.open(BytesIO(rsp.content))
+        img.save(save_path)
+        logger.info(f'Saved to {save_path}')
     else:
-        return not ((1000 < id_ < 1200) or (1800 < id_ < 1900))
+        logger.error(f'Failed to download {url}. HTTP {rsp.status_code}')
 
 
 class Chara:
@@ -128,6 +144,8 @@ class Chara:
     def icon(self):
         star = '3' if 1 <= self.star <= 5 else '6'
         res = R.img(f'priconne/unit/icon_unit_{self.id}{star}1.png')
+        if not res.exist:
+            download_chara_icon(self.id, star)  # FIXME: 不方便改成异步请求
         if not res.exist:
             res = R.img(f'priconne/unit/icon_unit_{self.id}31.png')
         if not res.exist:
