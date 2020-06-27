@@ -1,22 +1,18 @@
-"""
-无损音乐搜索 数据来自acgjc.com
-"""
-import requests
-
-from hoshino import Service, Privilege, CommandSession, logger
+"""无损音乐搜索 数据来自acgjc.com"""
+from hoshino import Service, priv, logger, aiorequests
+from hoshino.typing import CQEvent
 from urllib.parse import quote
 
-sv = Service('flac', manage_priv=Privilege.SUPERUSER, enable_on_default=True, visible=True)
+sv = Service('flac', help_='[搜无损] +日文关键词搜索')
 
-
-@sv.on_command('搜无损')
-async def search_flac(session: CommandSession):
-    keyword = session.current_arg_text
-    resp = requests.get('http://mtage.top:8099/acg-music/search', params={'title-keyword': keyword}, timeout=1)
-    res = resp.json()
+@sv.on_prefix('搜无损')
+async def search_flac(bot, ev: CQEvent):
+    keyword = ev.message.extract_plain_text()
+    resp = await aiorequests.get('http://mtage.top:8099/acg-music/search', params={'title-keyword': keyword}, timeout=1)
+    res = await resp.json()
     if res['success'] is False:
         logger.error(f"Flac query failed.\nerrorCode={res['errorCode']}\nerrorMsg={res['errorMsg']}")
-        session.finish(f'查询失败 请至acgjc官网查询 http://www.acgjc.com/?s={quote(keyword)}', at_sender=True)
+        await bot.finish(ev, f'查询失败 请至acgjc官网查询 http://www.acgjc.com/?s={quote(keyword)}', at_sender=True)
 
     music_list = res['result']['content']
     music_list = music_list[:min(5, len(music_list))]
@@ -34,4 +30,4 @@ async def search_flac(session: CommandSession):
         f'当前库内不包括acgjc的全部数据，更多结果可见 http://www.acgjc.com/?s={quote(keyword)}'
     ]
 
-    session.finish('\n'.join(msg), at_sender=True)
+    await bot.send(ev, '\n'.join(msg), at_sender=True)
