@@ -35,18 +35,13 @@ TOP_MANUAL = '''
 ※※调教时请注意使用频率，您的滥用可能会导致bot账号被封禁
 '''.strip()
 
-# @sv.on_fullmatch(('help', 'manual', '帮助', '说明', '使用说明', '幫助', '說明', '使用說明', '菜单', '菜單'))
-# async def send_help(bot, ev: CQEvent):
-#     await bot.send(ev, MANUAL)
-
-
 def gen_bundle_manual(bundle_name, service_list, gid):
     manual = [bundle_name]
     service_list = sorted(service_list, key=lambda s: s.name)
     for sv in service_list:
         if sv.visible:
             spit_line = '=' * max(0, 18 - len(sv.name))
-            manual.append(f"|{'o' if sv.check_enabled(gid) else 'x'}| {sv.name} {spit_line}")
+            manual.append(f"|{'○' if sv.check_enabled(gid) else '×'}| {sv.name} {spit_line}")
             if sv.help:
                 manual.append(sv.help)
     return '\n'.join(manual)
@@ -56,8 +51,9 @@ def gen_bundle_manual(bundle_name, service_list, gid):
 async def send_help(bot, ev: CQEvent):
     bundle_name = ev.message.extract_plain_text().strip()
     bundles = Service.get_bundles()
-    if bundle_name in bundles:
+    if not bundle_name:
+        await bot.send(ev, TOP_MANUAL)
+    elif bundle_name in bundles:
         msg = gen_bundle_manual(bundle_name, bundles[bundle_name], ev.group_id)
-    else:
-        msg = TOP_MANUAL
-    await bot.send(ev, msg)
+        await bot.send(ev, msg)
+    # else: ignore

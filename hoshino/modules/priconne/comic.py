@@ -12,7 +12,7 @@ from hoshino import aiorequests, R, Service
 from hoshino.typing import *
 
 sv_help = '''
-官方四格漫画更新（日文）
+官方四格漫画更新(日文)
 [官漫132] 阅览指定话
 '''.strip()
 sv = Service('pcr-comic', help_=sv_help, bundle='pcr订阅')

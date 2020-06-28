@@ -3,7 +3,7 @@ from hoshino import Service, priv
 from hoshino.typing import CQEvent
 from hoshino.util import DailyNumberLimiter
 
-sv = Service('_feedback_', manage_priv=priv.SUPERUSER, visible=True, help_='[来杯咖啡] 后接反馈内容，联系维护组')
+sv = Service('_feedback_', manage_priv=priv.SUPERUSER, help_='[来杯咖啡] 后接反馈内容 联系维护组')
 
 _max = 1
 lmt = DailyNumberLimiter(_max)

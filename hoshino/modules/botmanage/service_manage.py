@@ -4,7 +4,7 @@ from nonebot import CommandSession, CQHttpError, on_command
 from nonebot import permission as perm
 from nonebot.argparse import ArgumentParser
 
-from hoshino.service import Service, priv
+from hoshino import Service, priv
 
 PRIV_TIP = f'群主={priv.OWNER} 群管={priv.ADMIN} 群员={priv.NORMAL} bot维护组={priv.SUPERUSER}'
 
@@ -12,7 +12,7 @@ PRIV_TIP = f'群主={priv.OWNER} 群管={priv.ADMIN} 群员={priv.NORMAL} bot维
 async def lssv(session:CommandSession):
     parser = ArgumentParser(session=session)
     parser.add_argument('-a', '--all', action='store_true')
-    parser.add_argument('-h', '--hidden', action='store_true')
+    parser.add_argument('-H', '--hidden', action='store_true')
     parser.add_argument('-g', '--group', type=int, default=0)
     args = parser.parse_args(session.argv)
     
