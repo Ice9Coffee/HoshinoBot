@@ -46,6 +46,3 @@ class get_gacha(object):#检查更新数据
 		if os.path.exists('diy_gacha.json'):
 			diy_gacha = json.load(open('diy_gacha.json', 'r'))
 			_gd.diy = diy_gacha
-
-get_gacha()
-print(f'{_gd.jp}\n{_gd.cn}\n{_gd.tw}\n{_gd.all}\n{_gd.diy}')
