@@ -24,7 +24,7 @@ sv_help = '''
 '''.strip()
 sv = Service('gacha', help_=sv_help, bundle='pcr娱乐')
 jewel_limit = DailyNumberLimiter(6000)
-tenjo_limit = DailyNumberLimiter(1)
+tenjo_limit = DailyNumberLimiter(10)
 
 JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，欢迎明早5点后再来！'
 TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，欢迎明早5点后再来！'
@@ -215,7 +215,7 @@ async def gacha_300(bot, ev: CQEvent):
         msg.append("记忆碎片一大堆！您是托吧？")
 
     await bot.send(ev, '\n'.join(msg), at_sender=True)
-    silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
+    silence_time = 60*(up+s3)
     await silence(ev, silence_time)
 
 
