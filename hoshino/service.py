@@ -384,7 +384,7 @@ def sucmd(name, force_private=True, **kwargs) -> Callable:
             if session.event.user_id not in hoshino.config.SUPERUSERS:
                 return
             if force_private and session.event.detail_type != 'private':
-                await session.send('> This command should only use in private session.')
+                await session.send('> This command should only be used in private session.')
                 return
             try:
                 return await func(session)
