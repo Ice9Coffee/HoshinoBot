@@ -3,7 +3,7 @@ import os
 import logging
 import datetime
 from hoshino import logger
-from ..exception import DatabaseError
+from .exception import DatabaseError
 
 DB_PATH = os.path.expanduser('~/.hoshino/clanbattle.db')
 
