@@ -1,9 +1,10 @@
 import importlib
+from io import BytesIO
+
 import pygtrie
+import requests
 from fuzzywuzzy import fuzz, process
 from PIL import Image
-from io import BytesIO
-import requests
 
 from hoshino import R, log, sucmd, util
 from hoshino.typing import CommandSession
