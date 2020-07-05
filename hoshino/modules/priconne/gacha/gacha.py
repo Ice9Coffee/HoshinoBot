@@ -41,13 +41,13 @@ class Gacha(object):
         total_ = s3_prob + s2_prob + s1_prob
         pick = random.randint(1, total_)
         if pick <= up_prob:
-            return chara.fromname(random.choice(self.up), 3), 100
+            return chara.fromid(random.choice(self.up), 3), 100
         elif pick <= s3_prob:
-            return chara.fromname(random.choice(self.star3), 3), 50
+            return chara.fromid(random.choice(self.star3), 3), 50
         elif pick <= s2_prob + s3_prob:
-            return chara.fromname(random.choice(self.star2), 2), 10
+            return chara.fromid(random.choice(self.star2), 2), 10
         else:
-            return chara.fromname(random.choice(self.star1), 1), 1
+            return chara.fromid(random.choice(self.star1), 1), 1
 
 
     def gacha_ten(self):
