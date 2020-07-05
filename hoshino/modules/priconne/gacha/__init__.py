@@ -8,6 +8,7 @@ from hoshino.util import DailyNumberLimiter, concat_pic, pic2b64, silence
 
 from .. import chara
 from .gacha import Gacha
+from .gacha_data_get import check_up
 
 try:
     import ujson as json
@@ -233,3 +234,8 @@ async def kakin(bot, ev: CQEvent):
             count += 1
     if count:
         await bot.send(ev, f"已为{count}位用户充值完毕！谢谢惠顾～")
+
+@sv.scheduled_job('cron', hour='12,13,14,15,16,17,18', minute='*/30')#存放在gacha/__init__.py下使用的定时任务，作用于扒生成好的unit_id卡池
+async def _updata():
+    print('检查卡池更新')
+    check_up()
