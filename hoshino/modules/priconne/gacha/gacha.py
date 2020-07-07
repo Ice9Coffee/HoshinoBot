@@ -42,8 +42,7 @@ class Gacha(object):
         pick = random.randint(1, total_)
         if pick <= s3_prob:
             if pick <= up_prob:
-                if isinstance(self.up[0],int):
-                    return chara.fromid(random.choice(self.up), 3), 100
+                return chara.fromid(random.choice(self.up), 3), 100
             return chara.fromid(random.choice(self.star3), 3), 50
         elif pick <= s2_prob + s3_prob:
             return chara.fromid(random.choice(self.star2), 2), 10
