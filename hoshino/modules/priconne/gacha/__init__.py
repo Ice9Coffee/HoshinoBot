@@ -29,7 +29,7 @@ tenjo_limit = DailyNumberLimiter(1)
 JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，欢迎明早5点后再来！'
 TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，欢迎明早5点后再来！'
 SWITCH_POOL_TIP = ''
-POOL = ('MIX', 'JP', 'TW', 'BL')
+POOL = ('ALL', 'JP', 'TW', 'BL')
 DEFAULT_POOL = POOL[0]
 
 _pool_config_file = os.path.expanduser('~/.hoshino/group_pool_config.json')
@@ -59,14 +59,16 @@ async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
     gacha = Gacha(_group_pool[gid])
     up_chara = gacha.up
-    if sv.bot.config.USE_CQPRO:
-        up_chara = map(lambda x: str(
-            chara.fromname(x, star=3).icon.cqcode) + x, up_chara)
-    up_chara = '\n'.join(up_chara)
-    await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}")
+    try:
+        if sv.bot.config.USE_CQPRO:
+            c = chara.fromid(up_chara[0]) 
+        up_chara = f'{c.icon.cqcode} {c.name}'
+        await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}")
+    except:#处理掉all池子没有默认设定up的问题
+        await bot.send(ev, f"当前卡池没有设置up角色，3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}"
 
 
-POOL_NAME_TIP = '请选择以下卡池\n> 选择卡池 jp\n> 选择卡池 tw\n> 选择卡池 bilibili\n> 选择卡池 mix'
+POOL_NAME_TIP = '请选择以下卡池\n> 选择卡池 jp\n> 选择卡池 tw\n> 选择卡池 bilibili\n> 选择卡池 all'
 @sv.on_prefix(('切换卡池', '选择卡池', '切換卡池', '選擇卡池'))
 async def set_pool(bot, ev: CQEvent):
     if not priv.check_priv(ev, priv.ADMIN):
@@ -82,8 +84,8 @@ async def set_pool(bot, ev: CQEvent):
         name = 'TW'
     elif name in ('日', '日服', 'jp', 'cy', 'cygames'):
         name = 'JP'
-    elif name in ('混', '混合', 'mix'):
-        name = 'MIX'
+    elif name in ('混', '混合', 'all','ALL'):
+        name = 'ALL'
     else:
         await bot.finish(ev, f'未知服务器地区 {POOL_NAME_TIP}', at_sender=True)
     gid = str(ev.group_id)
