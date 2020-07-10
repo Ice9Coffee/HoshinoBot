@@ -1,16 +1,16 @@
-import sqlite3
 import os
-import logging
-import datetime
+import sqlite3
+
 from hoshino import logger
+
 from .exception import DatabaseError
+from .model import *
 
-DB_PATH = os.path.expanduser('~/.hoshino/clanbattle.db')
+DB_PATH = os.path.expanduser('~/.hoshino/clanbattlev3.db')
+os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
 
-class SqliteDao(object):
+class SqliteDao:
     def __init__(self, table, columns, fields):
-        os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
-        self._dbpath = DB_PATH
         self._table = table
         self._columns = columns
         self._fields = fields
@@ -18,49 +18,35 @@ class SqliteDao(object):
 
 
     def _create_table(self):
-        sql = "CREATE TABLE IF NOT EXISTS {0} ({1})".format(self._table, self._fields)
-        # logging.getLogger('SqliteDao._create_table').debug(sql)
+        sql = f"CREATE TABLE IF NOT EXISTS {self._table} ({self._fields})"
         with self._connect() as conn:
             conn.execute(sql)
 
 
     def _connect(self):
         # detect_types 中的两个参数用于处理datetime
-        return sqlite3.connect(self._dbpath, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
+        return sqlite3.connect(DB_PATH, detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES)
 
 
 
 class ClanDao(SqliteDao):
 
-    SERVER_JP = 0x00
-    SERVER_TW = 0x01
-    SERVER_CN = 0x02
-
     def __init__(self):
         super().__init__(
             table='clan',
-            columns='gid, cid, name, server',
-            fields='''
-            gid INT NOT NULL,
-            cid INT NOT NULL,
-            name TEXT NOT NULL,
-            server INT NOT NULL,
-            PRIMARY KEY (gid, cid)
-            ''')
+            columns='gid, name, server',
+            fields=
+                'gid INT PRIMARY KEY,'
+                'name TEXT NOT NULL,'
+                'server INT NOT NULL'
+            )
 
-
-    @staticmethod
-    def row2item(r):
-        return {'gid': r[0], 'cid': r[1], 'name': r[2], 'server': r[3]} if r else None
-
-
-    def add(self, clan):
+    def add(self, clan: Clan):
         with self._connect() as conn:
             try:
-                conn.execute('''
-                    INSERT INTO {0} ({1}) VALUES (?, ?, ?, ?)
-                    '''.format(self._table, self._columns),
-                    (clan['gid'], clan['cid'], clan['name'], clan['server']) )
+                conn.execute(
+                    f'INSERT INTO {self._table} ({self._columns}) VALUES (?, ?, ?)',
+                    (clan.gid, clan.name, clan.server) )
             except (sqlite3.DatabaseError) as e:
                 logger.error(f'[ClanDao.add] {e}')
                 raise DatabaseError('添加公会失败')
@@ -134,15 +120,13 @@ class MemberDao(SqliteDao):
     def __init__(self):
         super().__init__(
             table='member',
-            columns='uid, alt, name, gid, cid',
-            fields='''
-            uid INT NOT NULL,
-            alt INT NOT NULL,
-            name TEXT NOT NULL,
-            gid INT NOT NULL,
-            cid INT NOT NULL,
-            PRIMARY KEY (uid, alt)
-            ''')
+            columns='uid, gid, name',
+            fields=
+                'uid INT NOT NULL,'
+                'gid INT NOT NULL,'
+                'name TEXT NOT NULL,'
+                'PRIMARY KEY (gid, uid)'
+            )
 
 
     @staticmethod
@@ -273,25 +257,21 @@ class MemberDao(SqliteDao):
 
 
 class BattleDao(SqliteDao):
-    NORM    = 0x00
-    LAST    = 0x01
-    EXT     = 0x02
-    TIMEOUT = 0x04
 
     def __init__(self, gid, cid, yyyy, mm):
         super().__init__(
             table=self.get_table_name(gid, cid, yyyy, mm),
             columns='eid, uid, alt, time, round, boss, dmg, flag',
-            fields='''
-            eid INTEGER PRIMARY KEY AUTOINCREMENT,
-            uid INT NOT NULL,
-            alt INT NOT NULL,
-            time TIMESTAMP NOT NULL,
-            round INT NOT NULL,
-            boss  INT NOT NULL,
-            dmg   INT NOT NULL,
-            flag  INT NOT NULL
-            ''')
+            fields=
+                'eid INTEGER PRIMARY KEY AUTOINCREMENT,'
+                'uid INT NOT NULL,'
+                'alt INT NOT NULL,'
+                'time TIMESTAMP NOT NULL,'
+                'round INT NOT NULL,'
+                'boss  INT NOT NULL,'
+                'dmg   INT NOT NULL,'
+                'flag  INT NOT NULL'
+            )
 
 
     @staticmethod
@@ -395,5 +375,3 @@ class BattleDao(SqliteDao):
             except (sqlite3.DatabaseError) as e:
                 logger.error(f'[BattleDao.find_by] {e}')
                 raise DatabaseError('查找记录失败')
-
-
