@@ -15,7 +15,7 @@ async def rank_sheet(bot, ev):
     match = ev['match']
     is_jp = match.group(2) == '日'
     is_tw = match.group(2) == '台'
-    is_cn = match.group(2) in '国陆b'
+    is_cn = match.group(2) and match.group(2) in '国陆b'
     if not is_jp and not is_tw and not is_cn:
         await bot.send(ev, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*B服rank表\n※B服：当前仅开放至金装，r10前无需考虑卡rank，装备强化消耗较多mana，如非前排建议不强化', at_sender=True)
         return
