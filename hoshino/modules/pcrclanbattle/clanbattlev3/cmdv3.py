@@ -59,17 +59,17 @@ async def add_clan(bot, ev: CQEvent, server):
     await bot.send(ev, msg)
 
 
-@sv.on_prefix('建会日服')
+@sv.on_prefix(('建会日服', '建立日服公会'))
 async def _(bot, ev: CQEvent):
     await add_clan(bot, ev, SERVER.JP)
 
-@sv.on_prefix('建会台服')
+@sv.on_prefix(('建会台服', '建立台服公会'))
 async def _(bot, ev):
-    await add_clan(bot, ev, SERVER.JP)
+    await add_clan(bot, ev, SERVER.TW)
 
-@sv.on_prefix(('建会B服', '建会陆服'))
+@sv.on_prefix(('建会B服', '建会b服', '建会陆服', '建立B服公会', '建立b服公会', '建立陆服公会'))
 async def _(bot, ev):
-    await add_clan(bot, ev, SERVER.JP)
+    await add_clan(bot, ev, SERVER.CN)
 
 
 @sv.on_prefix(('入会', '加入公会'))
@@ -80,8 +80,11 @@ async def add_member(bot, ev: CQEvent):
     uid = _get_at(ev) or ev.user_id
     if uid != ev.user_id:
         await _check_admin(bot, ev)
+        minfo = await bot.get_group_member_info(self_id=ev.self_id, group_id=gid, user_id=uid)
+    else:
+        minfo = ev.sender
     name = one_line_str(ev.message.extract_plain_text()) or \
-            ev.sender['card'] or ev.sender['nickname'] or '祐樹'
+           one_line_str(minfo['card']) or one_line_str(minfo['nickname']) or '祐樹'
     member = Member(uid, gid, name)
     bm.add_member(member)
     msg = f"欢迎{MessageSegment.at(uid)}加入{clan.name}！\n骑士名：{name}"
@@ -230,7 +233,7 @@ async def stat(bot, ev):
 async def list_remain(bot, ev):
     pass
 
-@sv.on_fullmatch('查刀')
+@sv.on_fullmatch('催刀')
 async def urge_remain(bot, ev):
     pass
 

@@ -55,10 +55,10 @@ class BattleMaster:
         
         with self._connect_battle_db() as conn:
             sql = f"CREATE TABLE IF NOT EXISTS challenge_{self.gid}" \
-                   "(eid INT PRIMARY KEY AUTOINCREMENT, uid INT NOT NULL, time DATETIME NOT NULL, round INT NOT NULL, boss INT NOT NULL, dmg INT NOT NULL, flag INT NOT NULL)"
+                   "(eid INTEGER PRIMARY KEY AUTOINCREMENT, uid INT NOT NULL, time DATETIME NOT NULL, round INT NOT NULL, boss INT NOT NULL, dmg INT NOT NULL, flag INT NOT NULL)"
             conn.execute(sql)
             sql = "CREATE TABLE IF NOT EXISTS progress" \
-                  "(gid INT PRIMARY KEY NOT NULL, round INT NOT NULL, boss INT NOT NULL, dmg INT NOT NULL"
+                  "(gid INT PRIMARY KEY NOT NULL, round INT NOT NULL, boss INT NOT NULL, hp INT NOT NULL)"
             conn.execute(sql)
             sql = "CREATE TABLE IF NOT EXISTS pause" \
                   "(gid INT NOT NULL, uid INT NOT NULL, dmg INT NOT NULL, second_left INT NOT NULL)"
@@ -77,7 +77,7 @@ class BattleMaster:
     def get_clan(self):
         with self._connect_clan_db() as conn:
             clan = conn.execute("SELECT gid, name, server FROM clan WHERE gid=?", 
-                                (self.gid)).fetchone()
+                                (self.gid, )).fetchone()
             return Clan(*clan) if clan else None
     
     
