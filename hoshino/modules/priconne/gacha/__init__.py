@@ -69,7 +69,8 @@ async def gacha_info(bot, ev: CQEvent):
         await bot.send(ev, f"当前卡池没有设置up角色，3★出率={(gacha.s3_prob)/10:.1f}%")
 
 
-POOL_NAME_TIP = '请选择以下卡池\n> 切换卡池jp\n> 切换卡池tw\n> 切换卡池b\n> 切换卡池mix'
+
+POOL_NAME_TIP = '请选择以下卡池\n> 切换卡池jp\n> 切换卡池tw\n> 切换卡池b\n> 切换卡池all'
 @sv.on_prefix(('切换卡池', '选择卡池', '切換卡池', '選擇卡池'))
 async def set_pool(bot, ev: CQEvent):
     if not priv.check_priv(ev, priv.ADMIN):

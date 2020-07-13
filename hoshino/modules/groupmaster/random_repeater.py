@@ -4,7 +4,7 @@ import hoshino
 from hoshino import Service
 from hoshino.typing import CQEvent, CQHttpError
 
-sv = Service('random-repeater', visible=False)
+sv = Service('random-repeater', help_='随机复读机')
 
 PROB_A = 1.4
 group_stat = {}     # group_id: (last_msg, is_repeated, p)

@@ -10,5 +10,6 @@ TwitterAPI>=2.5.10
 matplotlib>=3.2.0
 numpy>=1.18.0
 beautifulsoup4>=4.9.0
-pygtrie == 2.*
-tinydb == 4.*
+pygtrie>=2.0
+tinydb>=4.0
+aiohttp>=3.6
