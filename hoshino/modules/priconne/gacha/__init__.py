@@ -8,7 +8,6 @@ from hoshino.util import DailyNumberLimiter, concat_pic, pic2b64, silence
 
 from .. import chara
 from .gacha import Gacha
-from .gacha_data_get import check_up
 
 try:
     import ujson as json
@@ -21,6 +20,7 @@ sv_help = '''
 [星乃来发单抽] 转蛋模拟
 [星乃来一井] 4w5钻！
 [查看卡池] 模拟卡池&出率
+[切换卡池] 更换模拟卡池
 '''.strip()
 sv = Service('gacha', help_=sv_help, bundle='pcr娱乐')
 jewel_limit = DailyNumberLimiter(6000)
@@ -28,7 +28,6 @@ tenjo_limit = DailyNumberLimiter(1)
 
 JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，欢迎明早5点后再来！'
 TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，欢迎明早5点后再来！'
-SWITCH_POOL_TIP = ''
 POOL = ('ALL', 'JP', 'TW', 'BL')
 DEFAULT_POOL = POOL[0]
 
@@ -59,16 +58,18 @@ async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
     gacha = Gacha(_group_pool[gid])
     up_chara = gacha.up
-    try:
-        if sv.bot.config.USE_CQPRO:
-            c = chara.fromid(up_chara[0]) 
-        up_chara = f'{c.icon.cqcode} {c.name}'
-        await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}")
-    except:#处理掉all池子没有默认设定up的问题
-        await bot.send(ev, f"当前卡池没有设置up角色，3★出率={(gacha.s3_prob)/10:.1f}%\n{SWITCH_POOL_TIP}"
+    up_chara_msg = ''
+    if sv.bot.config.USE_CQPRO:
+        for u in up_chara:
+            c = chara.fromid(u)
+            up_chara_msg += f'\n{c.icon.cqcode} {c.name}'
+    if up_chara_msg != '':
+        await bot.send(ev, f"本期卡池主打的角色：{up_chara_msg}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%")
+    else :
+        await bot.send(ev, f"当前卡池没有设置up角色，3★出率={(gacha.s3_prob)/10:.1f}%")
 
 
-POOL_NAME_TIP = '请选择以下卡池\n> 选择卡池 jp\n> 选择卡池 tw\n> 选择卡池 bilibili\n> 选择卡池 all'
+POOL_NAME_TIP = '请选择以下卡池\n> 切换卡池jp\n> 切换卡池tw\n> 切换卡池b\n> 切换卡池mix'
 @sv.on_prefix(('切换卡池', '选择卡池', '切換卡池', '選擇卡池'))
 async def set_pool(bot, ev: CQEvent):
     if not priv.check_priv(ev, priv.ADMIN):
@@ -121,7 +122,7 @@ async def gacha_1(bot, ev: CQEvent):
         res = f'{chara.icon.cqcode} {res}'
 
     await silence(ev, silence_time)
-    await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}\n{SWITCH_POOL_TIP}', at_sender=True)
+    await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)
 
 
 @sv.on_prefix(gacha_10_aliases, only_to_me=True)
@@ -154,7 +155,7 @@ async def gacha_10(bot, ev: CQEvent):
 
     if hiishi >= SUPER_LUCKY_LINE:
         await bot.send(ev, '恭喜海豹！おめでとうございます！')
-    await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}\n{SWITCH_POOL_TIP}', at_sender=True)
+    await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}\n', at_sender=True)
     await silence(ev, silence_time)
 
 
@@ -216,7 +217,6 @@ async def gacha_300(bot, ev: CQEvent):
         msg.append("抽井母五一气呵成！多出30等专武～")
     elif up >= 4:
         msg.append("记忆碎片一大堆！您是托吧？")
-    msg.append(SWITCH_POOL_TIP)
 
     await bot.send(ev, '\n'.join(msg), at_sender=True)
     silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
