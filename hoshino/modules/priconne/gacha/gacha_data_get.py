@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-  #声明编码
 import os, json, requests
-#=====================================================================
-#diy_gacha.json用于自定义卡池
-#=====================================================================
+'''
 class gacha_data(object):
 
     def __init__(self):
@@ -28,7 +26,7 @@ class gacha_data(object):
         return self.__all
     def get_diy(self):
         return self.__diy
-
+'''
 def check_up():
     if os.path.exists(os.path.join(os.path.dirname(__file__),'gacha_ver.json')):
         with open(os.path.join(os.path.dirname(__file__),'gacha_ver.json'),'r') as lv:
