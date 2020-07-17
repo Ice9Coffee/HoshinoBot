@@ -1,3 +1,6 @@
+jieba-fast
+ujson
+brotli
 python-levenshtein
 nonebot[scheduler]~=1.6.0
 aiocqhttp~=1.3.0
@@ -26,6 +29,3 @@ opencc-python-reimplemented~=0.1.5
 feedparser~=5.2
 beautifulsoup4~=4.8
 msgpack
-ujson
-brotli
-python-levenshtein
