@@ -24,10 +24,26 @@ Windows服务器部署本修改过的版本的难度在Linux服务器之上，�
 您可以尝试Windows部署本项目。
 
 #### Linux 部署
+我建议您在最开始就安装好Python 3.8
 
-由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/)找到详细的说明。下面将带领您进行部署：
+    ```bash
+    # Ubuntu or Debian
+    sudo apt install python3.8
+    ```
+    > 若您的包管理工具（如`yum`）尚不支持`python3.8`，你可以尝试我写的一键编译安装Python的指令。  
+    >
+    > 剩下的，Google will help you greatly : )
 
-1. 安装 docker：若您的服务器是CentOS7，Debian或者Ubuntu，您可参考一下命令:
+    ```bash
+    #境外CentOS/RHEL:
+    yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc libffi-devel make git screen&&wget https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tgz&&tar -zxvf Python-3.8.3.tgz&&cd Python-3.8.3&&./configure&&make&&make install&&pip3 install --upgrade pip
+    #境内CentOS/RHEL:
+    yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc libffi-devel make git screen&&wget http://npm.taobao.org/mirrors/python/3.8.3/Python-3.8.3.tgz&&tar -zxvf Python-3.8.3.tgz&&cd Python-3.8.3&&./configure&&make&&make install&&pip3 install --upgrade pip
+    ```
+
+##### 酷Q部署：由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/)找到详细的说明。下面将带领您进行部署：
+
+1. 安装 docker：若您的服务器是CentOS7，Debian或者Ubuntu，您可参考以下命令:
 
 ```bash
 curl -sSL https://get.docker.com/ | sh
@@ -59,28 +75,47 @@ systemctl enable docker
     > 
     > 注：如果你希望先使用酷Q Air进行尝试，请将COOLQ_URL设置为`https://dlsec.cqp.me/cqa-xiaoi`；之后可以用CQP.exe替换CQA.exe以升级，或删除容器重新创建。
 
-3. 回到我们熟悉的命令行，安装 Python 3.8
-
-    ```bash
-    # Ubuntu or Debian
-    sudo apt install python3.8
-    ```
-    > 若您的包管理工具（如`yum`）尚不支持`python3.8`，你可以尝试我写的一键编译安装Python的指令。  
-    >
-    > 剩下的，Google will help you greatly : )
-
-    ```bash
-    #境外CentOS:
-yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc libffi-devel make&&wget https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tgz&&tar -zxvf Python-3.8.3.tgz&&cd Python-3.8.3&&./configure&&make&&make install&&pip3 install --upgrade pip
-#境内CentOS:
-yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc libffi-devel make&&wget http://npm.taobao.org/mirrors/python/3.8.3/Python-3.8.3.tgz&&tar -zxvf Python-3.8.3.tgz&&cd Python-3.8.3&&./configure&&make&&make install&&pip3 install --upgrade pip
-    ```
+##### Mirai部署：mirai对Linux系统的支持非常好，若您希望通过mirai部署Hoshino，您可使用这些指令：
+```bash
+#若您的服务器是amd64构架
+mkdir mirai&&cd mirai&&wget -c http://t.imlxy.net:64724/mirai/MiraiOK/miraiOK_linux_amd64 && chmod +x miraiOK* && ./miraiOK*
+#若您的服务器不是amd64构架
+mkdir mirai&&cd mirai&&wget -c http://t.imlxy.net:64724/mirai/MiraiOK/miraiOK_linux_arm64 && chmod +x miraiOK* && ./miraiOK*
+```
+Ctrl+C退出MiraiOK后当前目录下应该生成了plugins文件夹和mirai的一些文件，接下来我们使用以下指令：
+```bash
+#您需要了解vim编辑器的用法
+cd plugins&&mkdir CQHTTPMirai&&vim setting.yml
+```
+然后在setting.yml里，填入以下配置
+```bash
+"1234567890":
+  ws_reverse:
+    enable: true
+    postMessageFormat: string
+    reverseHost: 127.0.0.1
+    reversePort: 8080
+    reversePath: /ws/
+    accessToken: null
+    reconnectInterval: 3000
+```
+1234567890改成您用来当bot的QQ账号
+详细说明请参考 https://github.com/yyuueexxiinngg/cqhttp-mirai
+然后，
+```bash
+#使用screen创建一个窗口
+screen -S mirai
+cd ~/mirai&&./miraiOK*
+# （mirai-console内）
+login 123456789 ppaasswwdd
+#最后使用Ctrl+a,d挂起这个shell
+```
 
 4. 克隆本仓库并安装依赖包
     ```bash
-    git clone https://github.com/Ice-Cirno/HoshinoBot.git
+    git clone https://github.com/Chendihe4975/HoshinoBot.git
     cd HoshinoBot
-    python3.8 -m pip install -r requirements.txt
+    python3 -m pip install -r requirements.txt
     ```
 
 5. 编辑配置文件
@@ -93,7 +128,14 @@ yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib
     > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
 6. 运行bot
     ```bash
-    python3.8 run.py
+    #使用screen新建一个会话
+    screen -S hoshino
+    python3 run.py
+    #然后，您可用Ctrl+a,d挂起这个窗口
+    ```
+    若您按照正确的步骤部署，控制台应该会产生类似于这样的一条日志：
+    ```bash
+    [2020-07-17 15:50:26,435] 127.0.0.1:56363 GET /ws/ 1.1 101 - 7982
     ```
     
     私聊机器人发送`在？`，若机器人有回复，恭喜您！您已经成功搭建起HoshinoBot了。之后您可以尝试在群内发送`!帮助`以查看会战管理的相关说明，发送`help`查看其他一般功能的相关说明，发送`pcr速查`查看常用网址等。
@@ -202,6 +244,8 @@ access_token_secret = "your_access_token_secret"
 
 
 ## 友情链接
+
+**pcrbot公主连结群聊bot**: https://pcrbot.com/
 
 **干炸里脊资源站**: https://redive.estertion.win/
 
