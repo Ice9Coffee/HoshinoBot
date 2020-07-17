@@ -81,7 +81,9 @@ systemctl enable docker
     -e CQHTTP_USE_WS=yes \
 ```
 
-##### Mirai部署：mirai对Linux系统的支持非常好，若您希望通过mirai部署Hoshino，您可使用这些指令：
+##### Mirai部署：
+
+mirai对Linux系统的支持非常好，若您希望通过mirai部署Hoshino，您可使用这些指令：
 ```bash
 #若您的服务器是amd64构架
 mkdir mirai&&cd mirai&&wget -c http://t.imlxy.net:64724/mirai/MiraiOK/miraiOK_linux_amd64 && chmod +x miraiOK* && ./miraiOK*
