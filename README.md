@@ -12,62 +12,7 @@ Windows服务器部署本修改过的版本的难度在Linux服务器之上，�
 
 ## 功能介绍
 
-HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-redive.jp) 玩家为核心，主要功能有：
-
-- **转蛋模拟**：单抽、十连、抽一井
-- **竞技场解法查询**：支持按服务器过滤，支持反馈点赞点踩
-- **竞技场结算提醒**
-- **公会战管理**：详细说明见[此文档](hoshino/modules/pcrclanbattle/clanbattle/README.md)
-- **Rank推荐表搬运**
-- **常用网址速查**
-- **官方推特转发**
-- **官方四格推送**
-- **角色别称转换**
-- **切噜语编解码**：切噜～♪
-- **竞技场余矿查询**
-
-> 由于bot的功能会快速迭代开发，使用方式这里不进行具体的说明，请向bot发送"help"或移步[此文件](hoshino/modules/botmanage/help.py)查看详细。会战管理功能的详细说明，请[点击这里](hoshino/modules/pcrclanbattle/clanbattle/README.md)
-
-HoshinoBot 还具有以下通用功能：
-
-- **[蜜柑计划](http://mikanani.me)番剧更新订阅**
-- **入群欢迎**&**退群提醒**
-- **复读**
-- **掷骰子**
-- **精致睡眠套餐**
-- **机器翻译**
-- **反馈发送**：反馈内容将由bot私聊发送给维护组
-
-此外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能：
-
-- **官推转发**：「艦これ」開発/運営 & C2機関
-- **时报**
-- **演习时间提醒**
-- **月度远征提醒**
-- **舰娘信息查询**：`*晓改二`
-- **装备信息查询**：`*震电改`
-- **战果人事表查询**：`人事表191201`
-
-> 艦これ相关功能由于个人精力实在有限，无法进行更多功能（如海图攻略）的开发/维护。
->
-> 如果您有新的想法，欢迎联系我！即便您不会编程，您也可以在内容更新上帮到我们！
-
--------------
-
-### 功能模块控制
-
-HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，群管理发送 `lssv` 即可查看功能模块的启用状态，使用以下命令进行控制：
-
-```
-启用 service-name
-禁用 service-name
-```
-
-
-
-
-
-
+请参照原版HoshinoBot。
 
 ## 部署指南
 
@@ -82,7 +27,14 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/)找到详细的说明。下面将带领您进行部署：
 
-1. 安装 docker：参考https://docs.docker.com/engine/install/debian/
+1. 安装 docker：若您的服务器是CentOS7，Debian或者Ubuntu，您可参考一下命令:
+
+```bash
+curl -sSL https://get.docker.com/ | sh
+systemctl start docker
+systemctl enable docker
+```
+如果您的系统是CentOS8，您可自行Google如何安装Docker :-D
 
 2. 部署 docker：下面一条命令仅供参考，请根据实际情况修改参数；详细说明可见 [CQHTTP 文档 -> Docker](https://cqhttp.cc/docs/#/Docker)
 
@@ -113,9 +65,17 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     # Ubuntu or Debian
     sudo apt install python3.8
     ```
-    > 若您的包管理工具（如`yum`）尚不支持`python3.8`，你可以尝试从源码安装。  
+    > 若您的包管理工具（如`yum`）尚不支持`python3.8`，你可以尝试我写的一键编译安装Python的指令。  
     >
-    > Google will help you greatly : )
+    > 剩下的，Google will help you greatly : )
+
+    ```bash
+    #境外CentOS:
+yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc libffi-devel make&&wget https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tgz&&tar -zxvf Python-3.8.3.tgz&&cd Python-3.8.3&&./configure&&make&&make install&&pip3 install --upgrade pip
+
+   #境内CentOS:
+yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc libffi-devel make&&wget http://npm.taobao.org/mirrors/python/3.8.3/Python-3.8.3.tgz&&tar -zxvf Python-3.8.3.tgz&&cd Python-3.8.3&&./configure&&make&&make install&&pip3 install --upgrade pip
+    ```
 
 4. 克隆本仓库并安装依赖包
     ```bash
