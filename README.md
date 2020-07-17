@@ -26,20 +26,18 @@ Windows服务器部署本修改过的版本的难度在Linux服务器之上，�
 #### Linux 部署
 我建议您在最开始就安装好Python 3.8
 
-    ```bash
-    # Ubuntu or Debian
-    sudo apt install python3.8
-    ```
+```bash
+        # Ubuntu or Debian
+        sudo apt install python3.8
+```
 若您的包管理工具（如`yum`）尚不支持`python3.8`，你可以尝试我写的一键编译安装Python的指令。  
->
-> 剩下的，Google will help you greatly : )
 
-    ```bash
+```bash
     #境外CentOS/RHEL:
     yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc libffi-devel make git screen&&wget https://www.python.org/ftp/python/3.8.3/Python-3.8.3.tgz&&tar -zxvf Python-3.8.3.tgz&&cd Python-3.8.3&&./configure&&make&&make install&&pip3 install --upgrade pip
     #境内CentOS/RHEL:
     yum -y update&&yum -y groupinstall "Development tools"&&yum -y install wget zlib-devel bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gcc libffi-devel make git screen&&wget http://npm.taobao.org/mirrors/python/3.8.3/Python-3.8.3.tgz&&tar -zxvf Python-3.8.3.tgz&&cd Python-3.8.3&&./configure&&make&&make install&&pip3 install --upgrade pip
-    ```
+```
 
 ##### 酷Q部署：由于 酷Q 仅支持 Windows 环境，我们需要使用 docker 镜像来部署 酷Q 及 CQHTTP 插件。但别担心，相信我，这比 Windows 下部署更简单！您可以在[这个文档](https://cqhttp.cc/docs/)找到详细的说明。下面将带领您进行部署：
 
