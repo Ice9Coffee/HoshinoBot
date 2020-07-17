@@ -55,7 +55,7 @@ systemctl enable docker
     ```bash
     sudo docker run -d --name=hoshino \
     -v $(pwd)/coolq:/home/user/coolq \
-    -p 9000:9000 \
+    -p 9000:9000 --restart=always \
     -e VNC_PASSWD=MAXchar8 \
     -e COOLQ_ACCOUNT=10000 \
     -e COOLQ_URL=https://dlsec.cqp.me/cqp-full \
@@ -72,6 +72,12 @@ systemctl enable docker
     > 然后访问 `http://<你的IP>:9000/` 进入 noVNC（默认密码 `MAXchar8`），登录 酷Q
     > 
     > 注：如果你希望先使用酷Q Air进行尝试，请将COOLQ_URL设置为`https://dlsec.cqp.me/cqa-xiaoi`；之后可以用CQP.exe替换CQA.exe以升级，或删除容器重新创建。
+    >
+    >如果您希望这个httpapi插件以反向ws的方式接上cqpf的话，您可在上述命令加上一条:
+
+```bash
+    -e CQHTTP_USE_WS=yes \
+```
 
 ##### Mirai部署：mirai对Linux系统的支持非常好，若您希望通过mirai部署Hoshino，您可使用这些指令：
 ```bash
