@@ -179,7 +179,7 @@ login 123456789 ppaasswwdd
 
 #### pcrdfans授权key
 
-竞技场查询功能的数据来自 [公主连结Re: Dive Fan Club - 硬核的竞技场数据分析站](https://pcrdfans.com/) ，查询需要授权key。您可以向pcrdfans的作者索要。（注：由于最近机器人搭建者较多，pcrdfans的作者最近常被打扰，我们**不建议**您因本项目而去联系他，推荐您前往网站[pcrdfans.com](https://pcrdfans.com)进行查询）
+竞技场查询功能的数据来自 [公主连结Re: Dive Fan Club - 硬核的竞技场数据分析站](https://pcrdfans.com/) ，查询需要授权key。您可以向pcrdfans的作者索要。（注：由于最近机器人搭建者较多，pcrdfans的作者最近常被打扰，我们**不建议**您因本项目而去联系他，推荐您前往网站[pcrdfans.com](https://pcrdfans.com/bot/)进行apikey的申请）
 
 若您已有授权key，在文件`hoshino/config/priconne.py`中填写您的key：
 
@@ -226,7 +226,9 @@ MIKAN_TOKEN = "abcdfegABCFEFG+123=="
 
 #### 推特转发
 
-推特转发功能需要推特开发者账号，具体申请方法请自行[Google](http://google.com)。注：现在推特官方大概率拒绝来自中国大陆的新申请，自备海外手机号及大学邮箱可能会帮到您。
+推特转发功能需要推特开发者账号，具体申请方法请自行[Google](http://google.com)。注：现在推特官方大概率拒绝来自中国大陆的新申请，如果您没有境外手机号，您可尝试:
+1，账号绑定Gmail或者163邮箱，理论上126也行，注册推特的时间在一周以上，申请时，浏览器语言改成英文、系统时区和居住国家及申请开发者账号时的ip地址保持一致。
+2，认真填写申请理由。
 
 若您已有推特开发者账号，在文件`hoshino/config/twitter.py`中填写您的key：
 
