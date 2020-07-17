@@ -6,7 +6,8 @@ A qqbot for Princess Connect Re:Dive (and other usage :)
 ## 简介
 
 **HoshinoBot:** 基于 [nonebot](http://nonebot.cqp.moe) 框架，开源、无公害、非转基因的QQ机器人。
-
+此项目基于[Ice-Cirno](https://github.com/Ice-Cirno)的[HoshinoBot](https://github.com/Ice-Cirno/HoshinoBot)，若您想搭建原版请从上面链接跳转，您也可以搭建这个版本。
+Windows服务器可以直接看原版了，你搭不来的。
 
 
 ## 功能介绍
