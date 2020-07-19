@@ -3,11 +3,11 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-p1 = R.img('priconne/quick/r16-4-tw-0.png').cqcode
-p2 = R.img('priconne/quick/r16-4-tw-1.png').cqcode
-p4 = R.img('priconne/quick/r17-3-jp-1.png').cqcode
-p5 = R.img('priconne/quick/r17-3-jp-2.png').cqcode
-p6 = R.img('priconne/quick/r17-3-jp-3.png').cqcode
+p1 = R.img('priconne/quick/r16-5-tw-0.png').cqcode
+p2 = R.img('priconne/quick/r16-5-tw-1.png').cqcode
+p4 = R.img('priconne/quick/r17-5-jp-1.png').cqcode
+p5 = R.img('priconne/quick/r17-5-jp-2.png').cqcode
+p6 = R.img('priconne/quick/r17-5-jp-3.png').cqcode
 p7 = R.img('priconne/quick/r8-3.jpg').cqcode
 
 @sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
@@ -23,7 +23,7 @@ async def rank_sheet(bot, ev):
         '\n※表格仅供参考，升r有风险，强化需谨慎',
     ]
     if is_jp:
-        msg.append('※不定期搬运自图中群号\n※图中广告为原作者推广，与本bot无关\nR17-3 rank表：')
+        msg.append('※不定期搬运自图中群号\n※图中广告为原作者推广，与本bot无关\nR17-5 rank表：')
         pos = match.group(3)
         if not pos or '前' in pos:
             msg.append(str(p4))
@@ -34,7 +34,7 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\n※油管有介绍视频及原文档\nR16-4 rank表：\n{p1}{p2}')
+        msg.append(f'※不定期搬运自漪夢奈特\n※油管有介绍视频及原文档\nR16-5 rank表：\n{p1}{p2}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
     elif is_cn:
