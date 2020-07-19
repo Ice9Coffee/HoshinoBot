@@ -21,10 +21,8 @@ aiohttp>=3.6.1
 arrow~=0.14
 peewee~=3.13
 expiringdict>=1.2.0
-aiocqhttp>=0.6.8
 quart>=0.6.15
 jinja2~=2.10
 opencc-python-reimplemented~=0.1.5
 feedparser~=5.2
-beautifulsoup4~=4.8
 msgpack
