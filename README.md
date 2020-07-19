@@ -121,7 +121,7 @@ login 123456789 ppaasswwdd
 
 4. 克隆本仓库并安装依赖包
     ```bash
-    git clone https://github.com/Chendihe4975/HoshinoBot.git
+    cd&&git clone https://github.com/Chendihe4975/HoshinoBot.git
     cd HoshinoBot
     python3 -m pip install -r requirements.txt
     #安装扩展（可选）
