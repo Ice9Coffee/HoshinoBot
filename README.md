@@ -93,7 +93,7 @@ mkdir mirai&&cd mirai&&wget -c http://t.imlxy.net:64724/mirai/MiraiOK/miraiOK_li
 Ctrl+C退出MiraiOK后当前目录下应该生成了plugins文件夹和mirai的一些文件，接下来我们使用以下指令：
 ```bash
 #您需要了解vim编辑器的用法
-cd plugins&&wget https://github.com/yyuueexxiinngg/cqhttp-mirai/releases/download/0.1.4/cqhttp-mirai-0.1.4-all.jar&&mkdir CQHTTPMirai&&cdCQHTTPMirai&&vim setting.yml
+cd plugins&&wget https://github.com/yyuueexxiinngg/cqhttp-mirai/releases/download/0.1.4/cqhttp-mirai-0.1.4-all.jar&&mkdir CQHTTPMirai&&cd CQHTTPMirai&&vim setting.yml
 ```
 然后在setting.yml里，填入以下配置
 ```bash
