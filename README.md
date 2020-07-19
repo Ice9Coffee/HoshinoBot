@@ -124,20 +124,30 @@ login 123456789 ppaasswwdd
     git clone https://github.com/Chendihe4975/HoshinoBot.git
     cd HoshinoBot
     python3 -m pip install -r requirements.txt
+    #安装扩展（可选）
+    cd ~/HoshinoBot/hoshino/modules&&mkdir yobot&&cd yobot&&git init&&git clone https://github.com/yuudi/yobot.git&&cd ~/HoshinoBot/hoshino/modules&&mkdir custom&&cd custom&&git init&&git clone https://github.com/Lancercmd/Reloader.git&&git clone https://github.com/Lancercmd/Landsol-Distrust.git&&cd ~/HoshinoBot
     ```
 
 5. 编辑配置文件
     ```bash
     mv hoshino/config_example hoshino/config
-    nano hoshino/config/__bot__.py
+    vim hoshino/config/__bot__.py
+    #按照注释填好，若您安装了扩展，您需要在_bot_.py取消custom和yobot的注释。
+    #若您想开启yobot的web版公会战管理，您还需要将HOST改为0.0.0.0（默认是127.0.0.1）
+    #若您没有安装扩展，您无需取消注释。
     ```
     > 配置文件内有相应注释，请根据您的实际配置填写，HoshinoBot仅支持反向ws通信
     >
-    > 您也可以使用`vim`编辑器，若您从未使用过，我推荐您使用 `nano` : )
+    > 您需要了解Vim编辑器的用法
 6. 运行bot
     ```bash
     #使用screen新建一个会话
     screen -S hoshino
+    python3 run.py
+    #若您安装了扩展，请在看到successed import yobot之后Ctrl+C先停止Hoshino
+    vim ~/HoshinoBot/hoshino/modules/yobot/yobot/src/client/yobot_data/yobot_config.json
+    #您需要把public_address中的9222改为8080
+    #您完成以上修改之后，重新启动Hoshino
     python3 run.py
     #然后，您可用Ctrl+a,d挂起这个窗口
     ```
