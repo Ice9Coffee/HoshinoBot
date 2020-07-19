@@ -1,4 +1,4 @@
-jieba-fast
+msgpack
 ujson
 brotli
 python-levenshtein
@@ -25,4 +25,4 @@ quart>=0.6.15
 jinja2~=2.10
 opencc-python-reimplemented~=0.1.5
 feedparser~=5.2
-msgpack
+jieba-fast
