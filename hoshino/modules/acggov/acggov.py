@@ -1,4 +1,3 @@
-
 import os
 import re
 import time
@@ -200,6 +199,8 @@ async def look_ranking_r18(bot, ev):
             page = (int(number) - (int(number) % per_page)) / per_page
             number = int(number) % per_page
 
+        if page == 0:
+            page = 1
         headers = {'token': AcgGov.get_token()}
         nowtime = (datetime.datetime.now() + datetime.timedelta(days=-2)).strftime("%Y-%m-%d")
 
