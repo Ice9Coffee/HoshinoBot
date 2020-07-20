@@ -63,7 +63,8 @@ async def send_Amazing_Pic(bot, ev):
 
         if AcgGov.get_origin():
             # 略微缩略图
-            r = urllib.request.urlopen(res['data']['large'])
+            req = urllib.request.Request(res['data']['large'], None, {"referer": "https://www.acg-gov.com/"})
+            r = urllib.request.urlopen(req)
             byte_stream = io.BytesIO(r.read())
             roiImg = Image.open(byte_stream)
             imgByteArr = io.BytesIO()
@@ -81,7 +82,8 @@ async def send_Amazing_Pic(bot, ev):
             # 高清图
             # 如果只有一页
             if pageCount == 1:
-                file = urllib.request.urlopen(originals[0]['url'])
+                req = urllib.request.Request(originals[0]['url'], None, {"referer": "https://www.acg-gov.com/"})
+                file = urllib.request.urlopen(req)
                 tmpIm = io.BytesIO(file.read())
                 img = Image.open(tmpIm)
                 suffix = img.format
@@ -89,7 +91,8 @@ async def send_Amazing_Pic(bot, ev):
             else:
                 # 多页随机
                 num = random.randint(1, int(pageCount))
-                file = urllib.request.urlopen(originals[num - 1]['url'])
+                req = urllib.request.Request(originals[num - 1]['url'], None, {"referer": "https://www.acg-gov.com/"})
+                file = urllib.request.urlopen(req)
                 tmpIm = io.BytesIO(file.read())
                 img = Image.open(tmpIm)
                 suffix = img.format
