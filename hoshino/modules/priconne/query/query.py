@@ -47,8 +47,13 @@ async def rank_sheet(bot, ev):
 async def say_arina_database(bot, ev):
     await bot.send(ev, '公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
 
-
-
+GUERZHUANG = f'''
+{R.img('priconne/quick/孤儿装.png').cqcode}'''
+@sv.on_fullmatch(('孤儿', '孤儿装'))
+async def guerzhuang(bot, ev):
+    await bot.send(ev, GUERZHUANG, at_sender=True)
+    await util.silence(ev, 60)
+    
 OTHER_KEYWORDS = '【日rank】【台rank】【b服rank】【jjc作业网】【黄骑充电表】【一个顶俩】'
 PCR_SITES = f'''
 【繁中wiki/兰德索尔图书馆】pcredivewiki.tw
