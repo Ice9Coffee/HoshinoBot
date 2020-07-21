@@ -157,7 +157,7 @@ async def ranking_r18(bot, ev):
         headers = {'token': AcgGov.get_token()}
         nowtime = (datetime.datetime.now() + datetime.timedelta(days=-2)).strftime("%Y-%m-%d")
 
-        resp = await aiorequests.get('https://api.pixiv.hcyacg.com/public/ranking?ranking_type=illust&mode=daily_r18'
+        resp = await aiorequests.get('https://api.acg-gov.com/public/ranking?ranking_type=illust&mode=daily_r18'
                                      '&date=' + nowtime + '&per_page=' + str(per_page) + '&page=' + page,
                                      headers=headers, timeout=10, stream=True)
         # 判断调用次数已超标
@@ -207,7 +207,7 @@ async def look_ranking_r18(bot, ev):
         headers = {'token': AcgGov.get_token()}
         nowtime = (datetime.datetime.now() + datetime.timedelta(days=-2)).strftime("%Y-%m-%d")
 
-        resp = await aiorequests.get('https://api.pixiv.hcyacg.com/public/ranking?ranking_type=illust&mode=daily_r18'
+        resp = await aiorequests.get('https://api.acg-gov.com/public/ranking?ranking_type=illust&mode=daily_r18'
                                      '&date=' + nowtime + '&per_page=' + str(per_page) + '&page=' + str(page),
                                      headers=headers, timeout=10, stream=True)
         # 判断调用次数已超标
@@ -219,7 +219,7 @@ async def look_ranking_r18(bot, ev):
         # 访问详细接口
         illust = res['response'][0]['works'][int(number)]['work']['id']
         title = res['response'][0]['works'][int(number)]['work']['title']
-        resp = await aiorequests.get(f'https://api.pixiv.hcyacg.com/illusts/detail?illustId={illust}&reduction=true',
+        resp = await aiorequests.get(f'https://api.acg-gov.com/illusts/detail?illustId={illust}&reduction=true',
                                      headers=headers, timeout=10, stream=True)
 
         if resp.status_code != 201:
