@@ -82,21 +82,23 @@ async def send_Amazing_Pic(bot, ev):
             # 高清图
             # 如果只有一页
             if pageCount == 1:
+                print(originals[0]['url'])
                 req = urllib.request.Request(originals[0]['url'], None, {"referer": "https://www.acg-gov.com/"})
                 file = urllib.request.urlopen(req)
                 tmpIm = io.BytesIO(file.read())
                 img = Image.open(tmpIm)
                 suffix = img.format
-                r = await aiorequests.get(originals[0]['url'], stream=True)
+                r = await aiorequests.get(originals[0]['url'], headers={"referer": "https://www.acg-gov.com/"}, timeout=10, stream=True)
             else:
                 # 多页随机
                 num = random.randint(1, int(pageCount))
+                print(originals[num - 1]['url'])
                 req = urllib.request.Request(originals[num - 1]['url'], None, {"referer": "https://www.acg-gov.com/"})
                 file = urllib.request.urlopen(req)
                 tmpIm = io.BytesIO(file.read())
                 img = Image.open(tmpIm)
                 suffix = img.format
-                r = await aiorequests.get(originals[num - 1]['url'], stream=True)
+                r = await aiorequests.get(originals[num - 1]['url'], headers={"referer": "https://www.acg-gov.com/"}, timeout=10, stream=True)
 
             # 拼接图片路径
             path = AcgGov.get_path() + "/" + illust + "." + suffix
@@ -106,8 +108,8 @@ async def send_Amazing_Pic(bot, ev):
                 open(path, 'wb+').write(await r.content + bytes("jneth", encoding="utf8"))
                 print("done")
                 del r
-                await bot.send(ev, f'[CQ:at,qq={userId}][CQ:image,file={illust + "." + suffix}]')
-                os.remove(path)
+            await bot.send(ev, f'[CQ:at,qq={userId}][CQ:image,file={illust + "." + suffix}]')
+            os.remove(path)
 
     except Exception as e:
         sv.logger.error(f'Error: {e}')
