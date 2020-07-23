@@ -6,12 +6,13 @@ import requests
 from fuzzywuzzy import fuzz, process
 from PIL import Image
 
+import hoshino
 from hoshino import R, log, sucmd, util
 from hoshino.typing import CommandSession
 
 from . import _pcr_data
 
-logger = log.new_logger('chara')
+logger = log.new_logger('chara', hoshino.config.DEBUG)
 UNKNOWN = 1000
 UnavailableChara = {
     1067,   # 穗希

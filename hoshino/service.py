@@ -122,7 +122,7 @@ class Service:
         self.enable_group = set(config.get('enable_group', []))
         self.disable_group = set(config.get('disable_group', []))
 
-        self.logger = log.new_logger(name)
+        self.logger = log.new_logger(name, hoshino.config.DEBUG)
 
         assert self.name not in _loaded_services, f'Service name "{self.name}" already exist!'
         _loaded_services[self.name] = self
@@ -373,7 +373,7 @@ class Service:
 
 
 
-sulogger = log.new_logger('sucmd')
+sulogger = log.new_logger('sucmd', hoshino.config.DEBUG)
 
 def sucmd(name, force_private=True, **kwargs) -> Callable:
     kwargs['privileged'] = True

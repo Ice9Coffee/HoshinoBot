@@ -9,7 +9,7 @@ RES_DIR = os.path.expanduser(RES_DIR)
 assert RES_PROTOCOL in ('http', 'file', 'base64')
 
 # load module configs
-logger = log.new_logger('config')
+logger = log.new_logger('config', DEBUG)
 for module in MODULES_ON:
     try:
         importlib.import_module('hoshino.config.' + module)
