@@ -66,6 +66,8 @@ async def _arena_query(bot, ev: CQEvent, region: int):
         await bot.finish(ev, '查询请发送"怎么拆+防守队伍"，无需+号', at_sender=True)
     if len(defen) > 5:
         await bot.finish(ev, '编队不能多于5名角色', at_sender=True)
+    if len(defen) < 5:
+        await bot.finish(ev, '由于数据库限制，少于5名角色的检索条件请移步pcrdfans.com进行查询', at_sender=True)
     if len(defen) != len(set(defen)):
         await bot.finish(ev, '编队中含重复角色', at_sender=True)
     if any(chara.is_npc(i) for i in defen):
