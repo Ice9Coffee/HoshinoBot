@@ -63,6 +63,8 @@ def get_user_priv(ev: CQEvent):
                 return ADMIN
             elif role == 'owner':
                 return OWNER
+            elif role == 'administrator':
+            	return Privilege.ADMIN
         return NORMAL
     if ev['message_type'] == 'private':
         return PRIVATE
