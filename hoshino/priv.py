@@ -61,10 +61,11 @@ def get_user_priv(ev: CQEvent):
                 return NORMAL
             elif role == 'admin':
                 return ADMIN
+            #for cqhttpmirai
+            elif role == 'administrator':
+            	return ADMIN
             elif role == 'owner':
                 return OWNER
-            elif role == 'administrator':
-            	return Privilege.ADMIN
         return NORMAL
     if ev['message_type'] == 'private':
         return PRIVATE
@@ -76,4 +77,3 @@ def check_priv(ev: CQEvent, require: int) -> bool:
         return bool(get_user_priv(ev) >= require)
     else:
         return False  # 不允许私聊
-
