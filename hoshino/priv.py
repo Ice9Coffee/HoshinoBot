@@ -76,3 +76,4 @@ def check_priv(ev: CQEvent, require: int) -> bool:
         return bool(get_user_priv(ev) >= require)
     else:
         return False  # 不允许私聊
+
