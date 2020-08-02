@@ -7,7 +7,7 @@ from .const import *
 from .model import *
 from .dtype import *
 
-sv = Service('clanbattlev3', bundle='pcr会战', help_='Hoshino会战管理v3（建设中）')
+sv = Service('clanbattlev3', bundle='pcr会战', help_='Hoshino会战管理v3（还没写完酷Q就没了 悲）')
 
 ERROR_CLAN_NOTFOUND = f'公会未初始化：请群管理发送"建会日/台/B服+公会名"'
 ERROR_ZERO_MEMBER = f'公会内无成员：请使用"入会"或"批量入会"以添加'
