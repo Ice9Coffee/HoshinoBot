@@ -4,7 +4,7 @@ from hoshino import R, Service, util
 sv = Service('antiqks', help_='识破骑空士的阴谋')
 
 qks_url = ["granbluefantasy.jp"]
-qksimg = R.img('anti.jpg').cqcode
+qksimg = R.img('antiqks.jpg').cqcode
 
 @sv.on_keyword(qks_url)
 async def qks_keyword(bot, ev):

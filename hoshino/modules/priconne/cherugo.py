@@ -77,6 +77,8 @@ async def cherulize(bot, ev: CQEvent):
 
 @sv.on_prefix('切噜～♪')
 async def decherulize(bot, ev: CQEvent):
+    await bot.send(ev, '由于安全问题切噜语解码暂时关闭\n请移步 https://tools.yobot.win/cherugo 自助解码\n网页版加解码工具由@yuudi开发')
+    return
     s = ev.message.extract_plain_text()
     if len(s) > 1501:
         await bot.send(ev, '切、切噜太长切不动勒切噜噜...', at_sender=True)

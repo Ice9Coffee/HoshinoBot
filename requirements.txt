@@ -1,5 +1,5 @@
 nonebot[scheduler]~=1.6.0
-aiocqhttp~=1.3.0
+aiocqhttp>=1.2
 lxml>=4.4.1
 pytz>=2019.3
 requests>=2.22.0
