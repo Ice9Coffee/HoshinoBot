@@ -2,6 +2,8 @@
 
 A qqbot for Princess Connect Re:Dive (and other usage :)
 
+**2020年8月2日0点，qq机器人框架相继停止维护。Hoshino仅维持游戏数据更新至2020年10月，感谢一直以来的陪伴！**
+
 
 ## 简介
 
