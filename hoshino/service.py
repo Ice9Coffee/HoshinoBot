@@ -122,7 +122,7 @@ class Service:
         self.enable_group = set(config.get('enable_group', []))
         self.disable_group = set(config.get('disable_group', []))
 
-        self.logger = log.new_logger(name)
+        self.logger = log.new_logger(name, hoshino.config.DEBUG)
 
         assert self.name not in _loaded_services, f'Service name "{self.name}" already exist!'
         _loaded_services[self.name] = self
@@ -373,7 +373,7 @@ class Service:
 
 
 
-sulogger = log.new_logger('sucmd')
+sulogger = log.new_logger('sucmd', hoshino.config.DEBUG)
 
 def sucmd(name, force_private=True, **kwargs) -> Callable:
     kwargs['privileged'] = True
@@ -384,7 +384,7 @@ def sucmd(name, force_private=True, **kwargs) -> Callable:
             if session.event.user_id not in hoshino.config.SUPERUSERS:
                 return
             if force_private and session.event.detail_type != 'private':
-                await session.send('> This command should only use in private session.')
+                await session.send('> This command should only be used in private session.')
                 return
             try:
                 return await func(session)

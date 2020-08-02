@@ -3,27 +3,27 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-p1 = R.img('priconne/quick/r16-4-tw-0.png').cqcode
-p2 = R.img('priconne/quick/r16-4-tw-1.png').cqcode
-p4 = R.img('priconne/quick/r17-3-jp-1.png').cqcode
-p5 = R.img('priconne/quick/r17-3-jp-2.png').cqcode
-p6 = R.img('priconne/quick/r17-3-jp-3.png').cqcode
-p7 = R.img('priconne/quick/r8-3.jpg').cqcode
+p1 = R.img('priconne/quick/r16-5-tw-0.png').cqcode
+p2 = R.img('priconne/quick/r16-5-tw-1.png').cqcode
+p4 = R.img('priconne/quick/r17-5-jp-1.png').cqcode
+p5 = R.img('priconne/quick/r17-5-jp-2.png').cqcode
+p6 = R.img('priconne/quick/r17-5-jp-3.png').cqcode
+p7 = R.img('priconne/quick/r9-5-cn.png').cqcode
 
 @sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
 async def rank_sheet(bot, ev):
     match = ev['match']
     is_jp = match.group(2) == '日'
     is_tw = match.group(2) == '台'
-    is_cn = match.group(2) in '国陆b'
+    is_cn = match.group(2) and match.group(2) in '国陆b'
     if not is_jp and not is_tw and not is_cn:
-        await bot.send(ev, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*B服rank表\n※B服：当前仅开放至金装，r10前无需考虑卡rank，装备强化消耗较多mana，如非前排建议不强化', at_sender=True)
+        await bot.send(ev, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*陆rank表', at_sender=True)
         return
     msg = [
-        '\n※表格仅供参考，升r有风险，强化需谨慎',
+        '\n※表格仅供参考，升r有风险，强化需谨慎\n※一切以会长要求为准——',
     ]
     if is_jp:
-        msg.append('※不定期搬运自图中群号\n※图中广告为原作者推广，与本bot无关\nR17-3 rank表：')
+        msg.append('※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR17-5 rank表：')
         pos = match.group(3)
         if not pos or '前' in pos:
             msg.append(str(p4))
@@ -34,13 +34,13 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\n※油管有介绍视频及原文档\nR16-4 rank表：\n{p1}{p2}')
+        msg.append(f'※不定期搬运自漪夢奈特\n※油管频道有介绍视频及原文档\nR16-5 rank表：\n{p1} {p2}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
     elif is_cn:
-        await bot.send(ev, '\n※B服当前仅开放至金装，r10前无需考虑卡rank\n※暂未发现公开的靠谱rank推荐表\n※装备强化消耗较多mana，如非前排建议不强化\n※关于卡r的原因可发送"bcr速查"研读【为何卡R卡星】一帖', at_sender=True)
-        # await bot.send(ev, str(p7))
-        # await util.silence(ev, 60)
+        msg.append(f'※不定期搬运自NGA\n※制作by艾琳娜 代发by@黑漫飒麻\nR9-5 rank表：\n{p7}')
+        await bot.send(ev, '\n'.join(msg), at_sender=True)
+        await util.silence(ev, 60)
 
 
 @sv.on_fullmatch(('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库', 'JJC作業', 'JJC作業網', 'JJC數據庫', 'jjc作業', 'jjc作業網', 'jjc數據庫'))
