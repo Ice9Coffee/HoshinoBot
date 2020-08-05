@@ -51,3 +51,8 @@ def get_self_ids():
 
 from . import R
 from .service import Service, sucmd
+
+from .textfilter.filter import DFAFilter
+
+gfw = DFAFilter()
+gfw.parse(os.path.join(os.path.dirname(__file__), 'textfilter/sensitive_words.txt'))
