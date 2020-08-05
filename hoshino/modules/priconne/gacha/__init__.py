@@ -58,9 +58,7 @@ async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
     gacha = Gacha(_group_pool[gid])
     up_chara = gacha.up
-    if sv.bot.config.USE_CQPRO:
-        up_chara = map(lambda x: str(
-            chara.fromname(x, star=3).icon.cqcode) + x, up_chara)
+    up_chara = map(lambda x: str(chara.fromname(x, star=3).icon.cqcode) + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%")
 
@@ -113,9 +111,7 @@ async def gacha_1(bot, ev: CQEvent):
     chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
-    res = f'{chara.name} {"★"*chara.star}'
-    if sv.bot.config.USE_CQPRO:
-        res = f'{chara.icon.cqcode} {res}'
+    res = f'{chara.icon.cqcode} {chara.name} {"★"*chara.star}'
 
     await silence(ev, silence_time)
     await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)
@@ -133,21 +129,20 @@ async def gacha_10(bot, ev: CQEvent):
     result, hiishi = gacha.gacha_ten()
     silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
-    if sv.bot.config.USE_CQPRO:
-        res1 = chara.gen_team_pic(result[:5], star_slot_verbose=False)
-        res2 = chara.gen_team_pic(result[5:], star_slot_verbose=False)
-        res = concat_pic([res1, res2])
-        res = pic2b64(res)
-        res = MessageSegment.image(res)
-        result = [f'{c.name}{"★"*c.star}' for c in result]
-        res1 = ' '.join(result[0:5])
-        res2 = ' '.join(result[5:])
-        res = f'{res}\n{res1}\n{res2}'
-    else:
-        result = [f'{c.name}{"★"*c.star}' for c in result]
-        res1 = ' '.join(result[0:5])
-        res2 = ' '.join(result[5:])
-        res = f'{res1}\n{res2}'
+    res1 = chara.gen_team_pic(result[:5], star_slot_verbose=False)
+    res2 = chara.gen_team_pic(result[5:], star_slot_verbose=False)
+    res = concat_pic([res1, res2])
+    res = pic2b64(res)
+    res = MessageSegment.image(res)
+    result = [f'{c.name}{"★"*c.star}' for c in result]
+    res1 = ' '.join(result[0:5])
+    res2 = ' '.join(result[5:])
+    res = f'{res}\n{res1}\n{res2}'
+    # 纯文字版
+    # result = [f'{c.name}{"★"*c.star}' for c in result]
+    # res1 = ' '.join(result[0:5])
+    # res2 = ' '.join(result[5:])
+    # res = f'{res1}\n{res2}'
 
     if hiishi >= SUPER_LUCKY_LINE:
         await bot.send(ev, '恭喜海豹！おめでとうございます！')
