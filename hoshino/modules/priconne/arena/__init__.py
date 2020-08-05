@@ -88,15 +88,14 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果
 
     # 发送回复
-    if hoshino.config.USE_CQPRO:
-        sv.logger.info('Arena generating picture...')
-        atk_team = [ chara.gen_team_pic(entry['atk']) for entry in res ]
-        atk_team = concat_pic(atk_team)
-        atk_team = pic2b64(atk_team)
-        atk_team = str(MessageSegment.image(atk_team))
-        sv.logger.info('Arena picture ready!')
-    else:
-        atk_team = '\n'.join(map(lambda entry: ' '.join(map(lambda x: f"{x.name}{x.star if x.star else ''}{'专' if x.equip else ''}" , entry['atk'])) , res))
+    sv.logger.info('Arena generating picture...')
+    atk_team = [ chara.gen_team_pic(entry['atk']) for entry in res ]
+    atk_team = concat_pic(atk_team)
+    atk_team = pic2b64(atk_team)
+    atk_team = str(MessageSegment.image(atk_team))
+    sv.logger.info('Arena picture ready!')
+    # 纯文字版
+    # atk_team = '\n'.join(map(lambda entry: ' '.join(map(lambda x: f"{x.name}{x.star if x.star else ''}{'专' if x.equip else ''}" , entry['atk'])) , res))
 
     details = [ " ".join([
         f"赞{e['up']}+{e['my_up']}" if e['my_up'] else f"赞{e['up']}",
