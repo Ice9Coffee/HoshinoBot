@@ -27,7 +27,7 @@ class NaiveFilter():
         self.keywords = set([])
 
     def parse(self, path):
-        for keyword in open(path):
+        for keyword in open(path, encoding='utf8'):
             self.keywords.add(keyword.strip().decode('utf-8').lower())
 
     def filter(self, message, repl="*"):
@@ -71,7 +71,7 @@ class BSFilter:
                         self.bsdict[char].add(index)
 
     def parse(self, path):
-        with open(path, "r") as f:
+        with open(path, 'r', encoding='utf8') as f:
             for keyword in f:
                 self.add(keyword.strip())
 
@@ -130,7 +130,7 @@ class DFAFilter():
             level[self.delimit] = 0
 
     def parse(self, path):
-        with open(path) as f:
+        with open(path, 'r', encoding='utf8') as f:
             for keyword in f:
                 self.add(keyword.strip())
 
