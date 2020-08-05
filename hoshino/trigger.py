@@ -94,7 +94,8 @@ class KeywordTrigger(BaseTrigger):
 
 
     def add(self, keyword: str, sf: "ServiceFunc"):
-        keyword = util.normalize_str(keyword)
+        if sf.normalize_text:
+            keyword = util.normalize_str(keyword)
         if keyword in self.allkw:
             other = self.allkw[keyword]
             hoshino.logger.warning(f'Failed to add keyword trigger `{keyword}`: Conflicts between {sf.__name__} and {other.__name__}')
@@ -104,10 +105,10 @@ class KeywordTrigger(BaseTrigger):
 
 
     def find_handler(self, event: CQEvent) -> "ServiceFunc":
-        text = event.norm_text
-        for kw in self.allkw:
+        for kw, sf in self.allkw.items():
+            text = event.norm_text if sf.normalize_text else event.plain_text
             if kw in text:
-                return self.allkw[kw]
+                return sf
         return None
 
 
@@ -125,12 +126,12 @@ class RexTrigger(BaseTrigger):
 
 
     def find_handler(self, event: CQEvent) -> "ServiceFunc":
-        text = event.norm_text
-        for rex in self.allrex:
+        for rex, sf in self.allrex.items():
+            text = event.norm_text if sf.normalize_text else event.plain_text
             match = rex.search(text)
             if match:
                 event['match'] = match
-                return self.allrex[rex]
+                return sf
         return None
 
 

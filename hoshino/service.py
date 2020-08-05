@@ -58,10 +58,11 @@ def _save_service_config(service):
 
 
 class ServiceFunc:
-    def __init__(self, sv: "Service", func: Callable, only_to_me: bool):
+    def __init__(self, sv: "Service", func: Callable, only_to_me: bool, normalize_text: bool=False):
         self.sv = sv
         self.func = func
         self.only_to_me = only_to_me
+        self.normalize_text = normalize_text
         self.__name__ = func.__name__
 
     def __call__(self, *args, **kwargs):
@@ -242,22 +243,22 @@ class Service:
         return deco
 
 
-    def on_keyword(self, keywords, only_to_me=False) -> Callable:
+    def on_keyword(self, keywords, only_to_me=False, normalize=True) -> Callable:
         if isinstance(keywords, str):
             keywords = (keywords, )
         def deco(func) -> Callable:
-            sf = ServiceFunc(self, func, only_to_me)
+            sf = ServiceFunc(self, func, only_to_me, normalize)
             for kw in keywords:
                 trigger.keyword.add(kw, sf)
             return func
         return deco
 
 
-    def on_rex(self, rex: Union[str, re.Pattern], only_to_me=False) -> Callable:
+    def on_rex(self, rex: Union[str, re.Pattern], only_to_me=False, normalize=True) -> Callable:
         if isinstance(rex, str):
             rex = re.compile(rex)
         def deco(func) -> Callable:
-            sf = ServiceFunc(self, func, only_to_me)
+            sf = ServiceFunc(self, func, only_to_me, normalize)
             trigger.rex.add(rex, sf)
             return func
         return deco
