@@ -107,8 +107,8 @@ class DFAFilter():
         self.delimit = '\x00'
 
     def add(self, keyword):
-        if not isinstance(keyword, unicode):
-            keyword = keyword.decode('utf-8')
+        # if not isinstance(keyword, unicode):
+        #     keyword = keyword.decode('utf-8')
         keyword = keyword.lower()
         chars = keyword.strip()
         if not chars:
