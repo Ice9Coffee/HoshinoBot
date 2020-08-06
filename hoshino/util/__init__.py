@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 from PIL import Image
 
 import hoshino
-from hoshino.typing import CQEvent
+from hoshino.typing import CQEvent, Message, Union
 
 try:
     import ujson as json
@@ -160,3 +160,21 @@ class DailyNumberLimiter:
 
     def reset(self, key):
         self.count[key] = 0
+
+
+from .textfilter.filter import DFAFilter
+
+gfw = DFAFilter()
+gfw.parse(os.path.join(os.path.dirname(__file__), 'textfilter/sensitive_words.txt'))
+
+
+def filt_message(message: Union[Message, str]):
+    if isinstance(message, str):
+        return gfw.filter(message)
+    elif isinstance(message, Message):
+        for seg in message:
+            if seg.type == 'text':
+                seg.data['text'] = gfw.filter(seg.data.get('text', ''))
+        return message
+    else:
+        raise TypeError
