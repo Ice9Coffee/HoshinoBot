@@ -8,6 +8,8 @@ from nonebot.message import CanceledException
 from .log import new_logger
 from . import config
 
+__version__ = '2.1.0'
+
 _bot = None
 HoshinoBot = nonebot.NoneBot
 os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
