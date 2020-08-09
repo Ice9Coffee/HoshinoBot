@@ -13,7 +13,7 @@ from matplotlib import pyplot as plt
 from PIL import Image
 
 import hoshino
-from hoshino.typing import CQEvent
+from hoshino.typing import CQEvent, Message, Union
 
 try:
     import ujson as json
@@ -40,8 +40,7 @@ def load_config(inbuilt_file_var):
 
 async def delete_msg(ev: CQEvent):
     try:
-        if hoshino.config.USE_CQPRO:
-            await hoshino.get_bot().delete_msg(self_id=ev.self_id, message_id=ev.message_id)
+        await hoshino.get_bot().delete_msg(self_id=ev.self_id, message_id=ev.message_id)
     except ActionFailed as e:
         hoshino.logger.error(f'撤回失败 retcode={e.retcode}')
     except Exception as e:
@@ -161,3 +160,21 @@ class DailyNumberLimiter:
 
     def reset(self, key):
         self.count[key] = 0
+
+
+from .textfilter.filter import DFAFilter
+
+gfw = DFAFilter()
+gfw.parse(os.path.join(os.path.dirname(__file__), 'textfilter/sensitive_words.txt'))
+
+
+def filt_message(message: Union[Message, str]):
+    if isinstance(message, str):
+        return gfw.filter(message)
+    elif isinstance(message, Message):
+        for seg in message:
+            if seg.type == 'text':
+                seg.data['text'] = gfw.filter(seg.data.get('text', ''))
+        return message
+    else:
+        raise TypeError
