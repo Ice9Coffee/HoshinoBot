@@ -13,7 +13,7 @@ async def say_hello(session):
 
 sv = Service('chat', visible=False)
 
-@sv.on_fullmatch(('沙雕机器人', '沙雕機器人'))
+@sv.on_fullmatch('沙雕机器人')
 async def say_sorry(bot, ev):
     await bot.send(ev, 'ごめんなさい！嘤嘤嘤(〒︿〒)')
 

@@ -47,7 +47,7 @@ def gen_bundle_manual(bundle_name, service_list, gid):
     return '\n'.join(manual)
 
 
-@sv.on_prefix(('help', '帮助', '幫助'))
+@sv.on_prefix(('help', '帮助'))
 async def send_help(bot, ev: CQEvent):
     bundle_name = ev.message.extract_plain_text().strip()
     bundles = Service.get_bundles()

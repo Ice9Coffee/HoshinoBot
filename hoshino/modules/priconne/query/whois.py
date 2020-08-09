@@ -6,8 +6,8 @@ from . import sv
 
 lmt = FreqLimiter(5)
 
-@sv.on_suffix(('是谁', '是誰'))
-@sv.on_prefix(('谁是', '誰是'))
+@sv.on_suffix('是谁')
+@sv.on_prefix('谁是')
 async def whois(bot, ev: CQEvent):
     uid = ev.user_id
     if not lmt.check(uid):
