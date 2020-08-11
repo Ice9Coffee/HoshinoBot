@@ -9,15 +9,8 @@ lmt = FreqLimiter(5)
 @sv.on_suffix('是谁')
 @sv.on_prefix('谁是')
 async def whois(bot, ev: CQEvent):
-    uid = ev.user_id
-    if not lmt.check(uid):
-        await bot.send(ev, f'兰德索尔花名册冷却中(剩余 {int(lmt.left_time(uid)) + 1}秒)', at_sender=True)
-        return
-    lmt.start_cd(uid)
-
     name = ev.message.extract_plain_text().strip()
     if not name:
-        await bot.send(ev, '请发送"谁是"+别称，如"谁是霸瞳"')
         return
     id_ = chara.name2id(name)
     confi = 100
@@ -26,14 +19,20 @@ async def whois(bot, ev: CQEvent):
         id_, guess_name, confi = chara.guess_id(name)
         guess = True
     c = chara.fromid(id_)
-    
-    msg = ''
+
+    if confi < 60:
+        return
+
+    uid = ev.user_id
+    if not lmt.check(uid):
+        await bot.finish(ev, f'兰德索尔花名册冷却中(剩余 {int(lmt.left_time(uid)) + 1}秒)', at_sender=True)
+
+    lmt.start_cd(uid, 120 if guess else 0)
     if guess:
-        lmt.start_cd(uid, 120)
         msg = f'兰德索尔似乎没有叫"{name}"的人...\n角色别称补全计划: github.com/Ice-Cirno/HoshinoBot/issues/5'
         await bot.send(ev, msg)
-        msg = f'\n您有{confi}%的可能在找{guess_name} '
-
-    if confi > 60:
-        msg += f'{c.icon.cqcode} {c.name}'
+        msg = f'您有{confi}%的可能在找{guess_name} {c.icon.cqcode} {c.name}'
+        await bot.send(ev, msg)
+    else:
+        msg = f'{c.icon.cqcode} {c.name}'
         await bot.send(ev, msg, at_sender=True)

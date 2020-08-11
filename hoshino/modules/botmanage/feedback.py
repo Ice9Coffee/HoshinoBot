@@ -17,7 +17,7 @@ async def feedback(bot, ev: CQEvent):
     coffee = hoshino.config.SUPERUSERS[0]
     text = str(ev.message).strip()
     if not text:
-        await bot.send(ev, f"请发送来杯咖啡+您要反馈的内容~", at_sender=True)
+        await bot.send(ev, "请发送来杯咖啡+您要反馈的内容~", at_sender=True)
     else:
         await bot.send_private_msg(self_id=ev.self_id, user_id=coffee, message=f'Q{uid}@群{ev.group_id}\n{text}')
         await bot.send(ev, f'您的反馈已发送至维护组！\n======\n{text}', at_sender=True)
