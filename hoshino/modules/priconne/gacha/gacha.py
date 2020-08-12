@@ -2,7 +2,9 @@ import random
 
 from hoshino import util
 from .. import chara
+from . import gacha_data_get 
 
+gd = gacha_data_get.gacha_data()
 
 class Gacha(object):
 
@@ -12,8 +14,18 @@ class Gacha(object):
 
 
     def load_pool(self, pool_name:str):
-        config = util.load_config(__file__)
-        pool = config[pool_name]
+        if pool_name == 'JP':
+            pool = gd.get_jp()
+        elif pool_name == 'BL':
+            pool = gd.get_bl()
+        elif pool_name == 'TW':
+            pool = gd.get_tw()
+        elif pool_name == 'ALL':
+            pool = gd.get_all()
+        else:
+            pool = gd.get_diy().get(pool_name)
+            #没自定义卡池时基本不会用上也用不上
+
         self.up_prob = pool["up_prob"]
         self.s3_prob = pool["s3_prob"]
         self.s2_prob = pool["s2_prob"]
