@@ -6,8 +6,8 @@ from . import sv
 
 lmt = FreqLimiter(5)
 
-@sv.on_suffix(('是谁', '是誰'))
-@sv.on_prefix(('谁是', '誰是'))
+@sv.on_suffix('是谁')
+@sv.on_prefix('谁是')
 async def whois(bot, ev: CQEvent):
     uid = ev.user_id
     if not lmt.check(uid):
@@ -21,12 +21,14 @@ async def whois(bot, ev: CQEvent):
         return
     id_ = chara.name2id(name)
     confi = 100
+    guess = False
     if id_ == chara.UNKNOWN:
         id_, guess_name, confi = chara.guess_id(name)
+        guess = True
     c = chara.fromid(id_)
     
     msg = ''
-    if confi < 100:
+    if guess:
         lmt.start_cd(uid, 120)
         msg = f'兰德索尔似乎没有叫"{name}"的人...\n角色别称补全计划: github.com/Ice-Cirno/HoshinoBot/issues/5'
         await bot.send(ev, msg)

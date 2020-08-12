@@ -2,6 +2,10 @@
 
 A qqbot for Princess Connect Re:Dive (and other usage :)
 
+**2020年8月2日0点，qq机器人框架相继停止维护。**
+**感谢 酷Q项目 和 CQHTTP插件 的开发者们！感谢他们让Hoshino得以诞生！**
+**Hoshino不再对酷Q进行支持**
+
 
 ## 简介
 
@@ -68,7 +72,9 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 
 
 
-## 部署指南
+## ~~部署指南~~
+
+**由于酷Q已停止维护，本指南已失效。您可以使用[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)或[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)作为替代。由于当前mirai仍不稳定（甚至删库跑路），请自行参考相应的文档进行部署，本项目组不解答部署问题。**
 
 本bot功能繁多，部分功能需要静态图片资源和带有认证的api key，恕不能公开。本指南将首先带领您搭建具有**模拟抽卡(纯文字版)**、**会战管理**功能的HoshinoBot。其他功能需额外配置，请参考本章**更进一步**的对应小节。
 
@@ -210,9 +216,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 #### 静态图片资源
 
 > 发送图片的条件：  
-> 1. 酷Q Pro版  
-> 2. 将`hoshino/config/__bot__.py`中的`USE_CQPRO`设为`True`  
-> 3. 静态图片资源
+> 1. 静态图片资源
 
 您可能希望看到更为精致的图片版结果，若希望机器人能够发送图片，首先需要您购买酷Q Pro版，其次需要准备静态图片资源，其中包括：
 
@@ -264,7 +268,7 @@ MIKAN_TOKEN = "abcdfegABCFEFG+123=="
 
 #### 时报文本
 
-> 请先在`hoshino/config/__bot__.py`的`MODULES_ON`中取消`mikan`的注释  
+> 请先在`hoshino/config/__bot__.py`的`MODULES_ON`中取消`hourcall`的注释  
 > 本功能默认关闭，在群内发送 "启用 hourcall" 即可开启
 
 报时功能使用/魔改了艦これ中各个艦娘的报时语音，您可以在[舰娘百科](https://zh.kcwiki.org/wiki/舰娘百科)或[艦これ 攻略 Wiki](https://wikiwiki.jp/kancolle/)找到相应的文本/翻译，当然您也可以自行编写台词。在此，我们向原台词作者[田中](https://bbs.nga.cn/read.php?tid=9143913)[谦介](http://nga.178.com/read.php?tid=14045507)先生和他杰出的游戏作品表达诚挚的感谢！

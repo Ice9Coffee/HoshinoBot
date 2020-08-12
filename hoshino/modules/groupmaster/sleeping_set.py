@@ -12,7 +12,7 @@ sv = Service('sleeping-set', help_='''
 [给我来一份精致昏睡下午茶套餐] 叫一杯先辈特调红茶(bot需具有群管理权限)
 '''.strip())
 
-@sv.on_fullmatch(('睡眠套餐', '休眠套餐', '精致睡眠', '来一份精致睡眠套餐', '精緻睡眠', '來一份精緻睡眠套餐'))
+@sv.on_fullmatch(('睡眠套餐', '休眠套餐', '精致睡眠', '来一份精致睡眠套餐'))
 async def sleep_8h(bot, ev):
     await util.silence(ev, 8*60*60, skip_su=False)
 

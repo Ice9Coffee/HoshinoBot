@@ -22,5 +22,5 @@ async def increace_welcome(session: NoticeSession):
     gid = session.event.group_id
     if gid in welcomes:
         await session.send(welcomes[gid], at_sender=True)
-    elif 'default' in welcomes:
-        await session.send(welcomes['default'], at_sender=True)
+    # elif 'default' in welcomes:
+    #     await session.send(welcomes['default'], at_sender=True)

@@ -13,7 +13,7 @@ async def say_hello(session):
 
 sv = Service('chat', visible=False)
 
-@sv.on_fullmatch(('沙雕机器人', '沙雕機器人'))
+@sv.on_fullmatch('沙雕机器人')
 async def say_sorry(bot, ev):
     await bot.send(ev, 'ごめんなさい！嘤嘤嘤(〒︿〒)')
 
@@ -73,7 +73,7 @@ async def chat_neigui(bot, ctx):
     if random.random() < 0.10:
         await bot.send(ctx, R.img('内鬼.png').cqcode)
 
-nyb_player = f'''{R.img('newyearburst.jpg').cqcode}
+nyb_player = f'''{R.img('newyearburst.gif').cqcode}
 正在播放：New Year Burst
 ──●━━━━ 1:05/1:30
 ⇆ ㅤ◁ ㅤㅤ❚❚ ㅤㅤ▷ ㅤ↻
