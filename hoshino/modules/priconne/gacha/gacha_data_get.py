@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-  #声明编码
-import os, json, requests, asyncio, re
+import os, json, requests, re
 
 class gacha_data(object):
 
