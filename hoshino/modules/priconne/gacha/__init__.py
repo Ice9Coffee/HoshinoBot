@@ -26,10 +26,10 @@ sv_help = '''
 '''.strip()
 sv = Service('gacha', help_=sv_help, bundle='pcr娱乐')
 jewel_limit = DailyNumberLimiter(6000)
-tenjo_limit = DailyNumberLimiter(5)
+tenjo_limit = DailyNumberLimiter(1)
 
-JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，没石头买体力你们会长血压会爆炸的！'
-TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，再抽下去也不会改命的早点睡吧！'
+JEWEL_EXCEED_NOTICE = f'您今天已经抽过{jewel_limit.max}钻了，欢迎明早5点后再来！'
+TENJO_EXCEED_NOTICE = f'您今天已经抽过{tenjo_limit.max}张天井券了，欢迎明早5点后再来！'
 POOL = ('ALL', 'JP', 'TW', 'BL')
 DEFAULT_POOL = POOL[0]
 
@@ -122,7 +122,7 @@ async def gacha_1(bot, ev: CQEvent):
     if sv.bot.config.USE_CQPRO:
         res = f'{chara.icon.cqcode} {res}'
 
-    #await silence(ev, silence_time)
+    await silence(ev, silence_time)
     await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)
 
 
@@ -157,7 +157,7 @@ async def gacha_10(bot, ev: CQEvent):
     if hiishi >= SUPER_LUCKY_LINE:
         await bot.send(ev, '恭喜海豹！おめでとうございます！')
     await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)
-    #await silence(ev, silence_time)
+    await silence(ev, silence_time)
 
 
 @sv.on_prefix(gacha_300_aliases, only_to_me=True)
@@ -196,32 +196,32 @@ async def gacha_300(bot, ev: CQEvent):
     ]
 
     if up == 0 and s3 == 0:
-        msg.append("太惨了，换个牌子的洗面奶和洗手液吧...")
+        msg.append("太惨了，咱们还是退款删游吧...")
     elif up == 0 and s3 > 7:
         msg.append("up呢？我的up呢？")
     elif up == 0 and s3 <= 3:
         msg.append("这位酋长，梦幻包考虑一下？")
     elif up == 0:
-        msg.append("据说天井的概率只有...唔...这位朋友起码你还有母猪石。")
+        msg.append("据说天井的概率只有12.16%")
     elif up <= 2:
         if result['first_up_pos'] < 50:
             msg.append("你的喜悦我收到了，滚去喂鲨鱼吧！")
         elif result['first_up_pos'] < 100:
-            msg.append("已经可以了，你看看你群的非洲人。")
+            msg.append("已经可以了，您已经很欧了。")
         elif result['first_up_pos'] > 290:
-            msg.append("正 常 操 作")
+            msg.append("标 准 结 局")
         elif result['first_up_pos'] > 250:
-            msg.append("别想那么多，赶紧把井补上吧...")
+            msg.append("补井还是不补井，这是一个问题...")
         else:
             msg.append("期望之内，亚洲水平")
     elif up == 3:
-        msg.append("欧洲细作赶紧出海吧，非洲不是你该来的地方。")
+        msg.append("抽井母五一气呵成！多出30等专武～")
     elif up >= 4:
-        msg.append("kui觉得你应该考虑一下非洲同胞的感受。")
+        msg.append("记忆碎片一大堆！您是托吧？")
 
     await bot.send(ev, '\n'.join(msg), at_sender=True)
-    #silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
-    #await silence(ev, silence_time)
+    silence_time = (100*up + 50*(up+s3) + 10*s2 + s1) * 1
+    await silence(ev, silence_time)
 
 
 @sv.on_prefix('氪金')
