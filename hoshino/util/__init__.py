@@ -1,3 +1,4 @@
+from .textfilter.filter import DFAFilter
 import base64
 import os
 import time
@@ -15,12 +16,7 @@ from PIL import Image
 import hoshino
 from hoshino.typing import CQEvent, Message, Union
 
-try:
-    import ujson as json
-except:
-    import json
-
-
+import json
 
 
 def load_config(inbuilt_file_var):
@@ -40,9 +36,21 @@ def load_config(inbuilt_file_var):
 
 async def delete_msg(ev: CQEvent):
     try:
-        await hoshino.get_bot().delete_msg(self_id=ev.self_id, message_id=ev.message_id)
+        await hoshino.get_bot().delete_msg(
+            self_id=ev.self_id, message_id=ev.message_id)
     except ActionFailed as e:
         hoshino.logger.error(f'撤回失败 retcode={e.retcode}')
+    except Exception as e:
+        hoshino.logger.exception(e)
+
+
+async def kick(ev: CQEvent, user_id: int, reject_add_request: bool = False):
+    try:
+        await hoshino.get_bot().set_group_kick(
+            self_id=ev.self_id, group_id=ev.group_id,
+            user_id=user_id, reject_add_request=reject_add_request)
+    except ActionFailed as e:
+        hoshino.logger.error(f'移除失败 retcode={e.retcode}')
     except Exception as e:
         hoshino.logger.exception(e)
 
@@ -51,21 +59,40 @@ async def silence(ev: CQEvent, ban_time, skip_su=True):
     try:
         if skip_su and ev.user_id in hoshino.config.SUPERUSERS:
             return
-        await hoshino.get_bot().set_group_ban(self_id=ev.self_id, group_id=ev.group_id, user_id=ev.user_id, duration=ban_time)
+        await hoshino.get_bot().set_group_ban(
+            self_id=ev.self_id, group_id=ev.group_id,
+            user_id=ev.user_id, duration=ban_time)
     except ActionFailed as e:
         hoshino.logger.error(f'禁言失败 retcode={e.retcode}')
     except Exception as e:
         hoshino.logger.exception(e)
 
 
-def pic2b64(pic:Image) -> str:
+async def set_group_special_title(
+        ev: CQEvent, special_title: str, user_id: int = None):
+    try:
+        await hoshino.get_bot().set_group_special_title(
+            self_id=ev.self_id, group_id=ev.group_id,
+            user_id=ev.user_id if user_id is None else user_id,
+            special_title=special_title, duration=-1)
+        hoshino.logger.info(f'已设置头衔{special_title}')
+        await hoshino.get_bot().send(ev, f'头衔"{special_title}"已经设置好啦!', at_sender=True)
+    except ActionFailed as e:
+        hoshino.logger.error(f'头衔设置失败 retcode={e.retcode}')
+        await hoshino.get_bot().send(ev, '好像出了什么问题, 对不起~ T^T', at_sender=True)
+    except Exception as e:
+        hoshino.logger.exception(e)
+        await hoshino.get_bot().send(ev, '好像出了什么问题, 对不起~ T^T', at_sender=True)
+
+
+def pic2b64(pic: Image) -> str:
     buf = BytesIO()
     pic.save(buf, format='PNG')
     base64_str = base64.b64encode(buf.getvalue()).decode()
     return 'base64://' + base64_str
 
 
-def fig2b64(plt:plt) -> str:
+def fig2b64(plt: plt) -> str:
     buf = BytesIO()
     plt.savefig(buf, format='PNG', dpi=100)
     base64_str = base64.b64encode(buf.getvalue()).decode()
@@ -75,7 +102,8 @@ def fig2b64(plt:plt) -> str:
 def concat_pic(pics, border=5):
     num = len(pics)
     w, h = pics[0].size
-    des = Image.new('RGBA', (w, num * h + (num-1) * border), (255, 255, 255, 255))
+    des = Image.new('RGBA', (w, num * h + (num-1) * border),
+                    (255, 255, 255, 255))
     for i, pic in enumerate(pics):
         des.paste(pic, (0, i * (h + border)), pic)
     return des
@@ -93,8 +121,11 @@ def normalize_str(string) -> str:
 
 MONTH_NAME = ('睦月', '如月', '弥生', '卯月', '皐月', '水無月',
               '文月', '葉月', '長月', '神無月', '霜月', '師走')
-def month_name(x:int) -> str:
+
+
+def month_name(x: int) -> str:
     return MONTH_NAME[x - 1]
+
 
 DATE_NAME = (
     '初一', '初二', '初三', '初四', '初五', '初六', '初七', '初八', '初九', '初十',
@@ -102,8 +133,11 @@ DATE_NAME = (
     '廿一', '廿二', '廿三', '廿四', '廿五', '廿六', '廿七', '廿八', '廿九', '三十',
     '卅一'
 )
-def date_name(x:int) -> str:
+
+
+def date_name(x: int) -> str:
     return DATE_NAME[x - 1]
+
 
 NUM_NAME = (
     '〇〇', '〇一', '〇二', '〇三', '〇四', '〇五', '〇六', '〇七', '〇八', '〇九',
@@ -117,7 +151,9 @@ NUM_NAME = (
     '八〇', '八一', '八二', '八三', '八四', '八五', '八六', '八七', '八八', '八九',
     '九〇', '九一', '九二', '九三', '九四', '九五', '九六', '九七', '九八', '九九',
 )
-def time_name(hh:int, mm:int) -> str:
+
+
+def time_name(hh: int, mm: int) -> str:
     return NUM_NAME[hh] + NUM_NAME[mm]
 
 
@@ -130,7 +166,8 @@ class FreqLimiter:
         return bool(time.time() >= self.next_time[key])
 
     def start_cd(self, key, cd_time=0):
-        self.next_time[key] = time.time() + (cd_time if cd_time > 0 else self.default_cd)
+        self.next_time[key] = time.time() + (cd_time if cd_time >
+                                             0 else self.default_cd)
 
     def left_time(self, key) -> float:
         return self.next_time[key] - time.time()
@@ -138,7 +175,7 @@ class FreqLimiter:
 
 class DailyNumberLimiter:
     tz = pytz.timezone('Asia/Shanghai')
-    
+
     def __init__(self, max_num):
         self.today = -1
         self.count = defaultdict(int)
@@ -162,10 +199,9 @@ class DailyNumberLimiter:
         self.count[key] = 0
 
 
-from .textfilter.filter import DFAFilter
-
 gfw = DFAFilter()
-gfw.parse(os.path.join(os.path.dirname(__file__), 'textfilter/sensitive_words.txt'))
+gfw.parse(os.path.join(os.path.dirname(__file__),
+                       'textfilter/sensitive_words.txt'))
 
 
 def filt_message(message: Union[Message, str]):
