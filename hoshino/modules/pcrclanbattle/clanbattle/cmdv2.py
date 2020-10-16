@@ -790,10 +790,14 @@ async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:
     rlist = bm.list_challenge_remain(1, datetime.now() - timedelta(days=args.get('D', 0)))
     rlist.sort(key=lambda x: x[3] + x[4], reverse=True)
     msg = [ f"\n{clan['name']}今日余刀：" ]
-    for uid, _, name, r_n, r_e in rlist:
-        if r_n or r_e:
-            msg.append(f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}")
-    if len(msg) == 1:
+    n = len(rlist)
+    for i in range(0, n, 10):
+        for uid, _, name, r_n, r_e in rlist[i:min(i+10, n)]:
+            if r_n or r_e:
+                msg.append(f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}")
+        await bot.send(ctx, '\n'.join(msg))
+        msg.clear()
+    if not n:
         await bot.send(ctx, f"今日{clan['name']}所有成员均已下班！各位辛苦了！", at_sender=True)
     else:
         msg.append('若有负数说明报刀有误 请注意核对\n使用“!出刀记录 @qq”可查看详细记录')
@@ -826,12 +830,18 @@ async def list_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
     else:
         challen = bm.list_challenge_of_day(clan['cid'], now, zone)
 
+    n = len(challen)
+    if not n:
+        await bot.send(ctx, "未检索到出刀记录")
+        return
     msg = [ f'{clan["name"]}出刀记录：\n编号|出刀者|周目|Boss|伤害|标记' ]
-    challenstr = 'E{eid:0>3d}|{name}|r{round}|b{boss}|{dmg: >7,d}{flag_str}'
-    for c in challen:
-        mem = bm.get_member(c['uid'], c['alt'])
-        c['name'] = mem['name'] if mem else c['uid']
-        flag = c['flag']
-        c['flag_str'] = '|补时' if flag & bm.EXT else '|尾刀' if flag & bm.LAST else '|掉线' if flag & bm.TIMEOUT else '|通常'
-        msg.append(challenstr.format_map(c))
-    await bot.send(ctx, '\n'.join(msg))
+    for i in range(0, n, 10):
+        challenstr = 'E{eid:0>3d}|{name}|r{round}|b{boss}|{dmg: >7,d}{flag_str}'
+        for c in challen[i:min(n, i+10)]:
+            mem = bm.get_member(c['uid'], c['alt'])
+            c['name'] = mem['name'] if mem else c['uid']
+            flag = c['flag']
+            c['flag_str'] = '|补时' if flag & bm.EXT else '|尾刀' if flag & bm.LAST else '|掉线' if flag & bm.TIMEOUT else '|通常'
+            msg.append(challenstr.format_map(c))
+        await bot.send(ctx, '\n'.join(msg))
+        msg.clear()
