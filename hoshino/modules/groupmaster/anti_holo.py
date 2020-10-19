@@ -47,6 +47,7 @@
 # (全文完)
 
 SB_HOLO = '''
+Holo ホロ 木口 术口
 时乃空 ときのそら Tokino Sora
 萝卜子 ロボ子さん Roboko-san
 樱巫女 さくらみこ Sakura Miko
@@ -57,7 +58,7 @@ SB_HOLO = '''
 亚绮 罗森塔尔 アキ ローゼンタール Aki Rosenthal
 白上吹雪 白上フブキ Shirakami Fubuki 🌽 fbk 小狐狸 
 人见酷丽丝 人見クリス Hitomi Kurisu
-凑阿库娅 湊あくあ Minato Aqua 阿库娅 洋葱
+凑阿库娅 湊あくあ Minato Aqua 阿库娅 洋葱 阿夸 夸哥
 紫咲诗音 紫咲シオン Murasaki Shion
 百鬼绫目 百鬼あやめ Nakiri Ayame
 愈月巧可 癒月ちょこ Yuzuki Choco
@@ -71,7 +72,7 @@ SB_HOLO = '''
 白银诺艾尔 白銀ノエル Shirogane Noel
 宝钟玛琳 宝鐘マリン Houshou Marine
 天音彼方 天音かなた Amane Kanata
-桐生 可可 ココ Kiryū Kiryuu Coco 🐉 蝗 虫皇
+桐生 可可 ココ Kiryū Kiryuu Coco 🐉 蝗 虫皇 龙皇
 角卷绵芽 角巻わため Tsunomaki Watame
 常暗永远 常闇トワ Tokoyami Towa
 姬森璐娜 姫森ルーナ Himemori Luna
@@ -100,16 +101,16 @@ Airani Iofifteen
 '''.split()
 # 复制完了 快吐了
 
-from hoshino import Service, priv, util, R
+from datetime import timedelta
+from hoshino import Service, priv, util, R, HoshinoBot
 from hoshino.typing import CQEvent
 
 HAHAHA_VTB_TIANGOU = R.img('hahaha_vtb_tiangou.jpg')
-
-
 sv = Service('anti-holo', manage_priv=priv.SUPERUSER)
 
 @sv.on_keyword(SB_HOLO)
-async def anti_holo(bot, ev: CQEvent):
+async def anti_holo(bot: HoshinoBot, ev: CQEvent):
+    priv.set_block_user(ev.user_id, timedelta(minutes=5))
     await util.silence(ev, 5 * 60, skip_su=False)
-    await priv.set_block_user(ev.user_id, 5 * 60)
     await bot.send(ev, HAHAHA_VTB_TIANGOU.cqcode)
+    await bot.delete_msg(self_id=ev.self_id, message_id=ev.message_id)
