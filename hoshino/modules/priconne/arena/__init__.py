@@ -1,5 +1,6 @@
 import re
 import time
+import asyncio
 from collections import defaultdict
 from PIL import Image, ImageDraw, ImageFont
 
@@ -194,8 +195,8 @@ async def _arena_feedback(bot, ev: CQEvent, action: int):
 
 @sv.on_command('arena-upload', aliases=('上传作业', '作业上传', '上傳作業', '作業上傳'))
 async def upload(ss: CommandSession):
-    atk_team = ss.get('atk_team', prompt='请输入进攻队+星级(1-6)+专武(0/1) 无需空格')
-    def_team = ss.get('def_team', prompt='请输入防守队+星级(1-6)+专武(0/1) 无需空格')
+    atk_team = ss.get('atk_team', prompt='请输入进攻队+5个表示星级的数字+5个表示专武的0/1 无需空格')
+    def_team = ss.get('def_team', prompt='请输入防守队+5个表示星级的数字+5个表示专武的0/1 无需空格')
     if 'pic' not in ss.state:
         ss.state['pic'] = MessageSegment.image(pic2b64(concat_pic([
             chara.gen_team_pic(atk_team),
@@ -210,6 +211,7 @@ async def upload(ss: CommandSession):
 async def _(ss: CommandSession):
     if ss.is_first_run:
         await ss.send('我将帮您上传作业至pcrdfans，作业将注明您的昵称及qq。您可以随时发送"算了"或"取消"终止上传。')
+        await asyncio.sleep(0.5)
         return
     arg = ss.current_arg_text.strip()
     if arg == '算了' or arg == '取消':
