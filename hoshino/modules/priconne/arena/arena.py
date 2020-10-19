@@ -148,8 +148,11 @@ async def do_query(id_list, user_id, region=1):
         logger.error(f"Arena query failed.\nResponse={res}\nPayload={payload}")
         raise aiorequests.HTTPError(response=res)
 
+    result = res.get("data", {}).get("result")
+    if result is None:
+        return None
     ret = []
-    for entry in res["data"]["result"]:
+    for entry in result:
         eid = entry["id"]
         likes = get_likes(eid)
         dislikes = get_dislikes(eid)
