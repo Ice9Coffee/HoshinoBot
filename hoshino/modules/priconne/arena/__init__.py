@@ -154,7 +154,7 @@ async def _arena_query(bot, ev: CQEvent, region: int):
         str(teams),
         # '作业评价：',
         # *details,
-        '※发送"点赞/点踩"可进行评价'
+        # '※发送"点赞/点踩"可进行评价'
     ]
     if region == 1:
         msg.append('※使用"b怎么拆"或"台怎么拆"可按服过滤')

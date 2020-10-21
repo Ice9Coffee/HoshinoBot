@@ -70,7 +70,7 @@ class BattleMaster(object):
                 if m < 9:
                     return 5 if round_ == 1 else 6
                 elif m < 12:
-                    return 7 if round_ <= 3 else 8
+                    return 7 if round_ <= 1 else 8
         # All other situation
         return 4 if round_ >= 35 else 3 if round_ >= 11 else 2 if round_ >= 4 else 1
 
