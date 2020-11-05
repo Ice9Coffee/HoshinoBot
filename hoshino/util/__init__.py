@@ -58,9 +58,13 @@ async def silence(ev: CQEvent, ban_time, skip_su=True):
         hoshino.logger.exception(e)
 
 
-def pic2b64(pic:Image) -> str:
+def pic2b64(pic:Image, jpeg=False) -> str:
     buf = BytesIO()
-    pic.save(buf, format='PNG')
+    if not jpeg:
+        pic.save(buf, format='PNG')
+    else:
+        pic = pic.convert('RGB')
+        pic.save(buf, format='JPEG')
     base64_str = base64.b64encode(buf.getvalue()).decode()
     return 'base64://' + base64_str
 
