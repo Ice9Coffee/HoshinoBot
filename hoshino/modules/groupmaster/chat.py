@@ -1,15 +1,26 @@
+
 import random
 
 from nonebot import on_command
 
 from hoshino import R, Service, priv, util
-
+from hoshino.config import SUPERUSERS
 
 # basic function for debug, not included in Service('chat')
 @on_command('zai?', aliases=('在?', '在？', '在吗', '在么？', '在嘛', '在嘛？'), only_to_me=True)
 async def say_hello(session):
     await session.send('はい！私はいつも貴方の側にいますよ！')
 
+@on_command('echo', only_to_me=False)
+async def echo(session):
+    msg = session.current_arg.strip()
+    uid = session.event.user_id
+    if uid not in SUPERUSERS or msg == '':
+        return
+    msg = msg.replace('&amp;','&')
+    msg = msg.replace('&#91;','[')
+    msg = msg.replace('&#93;',']')
+    await session.finish(msg)
 
 sv = Service('chat', visible=False)
 
