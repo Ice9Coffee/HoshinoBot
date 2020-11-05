@@ -38,6 +38,19 @@ def load_config(inbuilt_file_var):
         return {}
 
 
+async def reply_msg(ev:CQEvent, message:str) -> str:
+    msgid = ev.message_id
+    replyCQ = f'[CQ:reply,id={msgid}]'
+    msg = replyCQ + message
+    bot = hoshino.get_bot()
+    try:
+        await bot.send(ev, msg)
+    except ActionFailed as e:
+        hoshino.logger.error(f'回复失败 retcode={e.retcode}')
+    except Exception as e:
+        hoshino.logger.exception(e)
+
+
 async def delete_msg(ev: CQEvent):
     try:
         await hoshino.get_bot().delete_msg(self_id=ev.self_id, message_id=ev.message_id)
