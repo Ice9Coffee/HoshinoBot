@@ -195,6 +195,17 @@ class Service:
         return deco
 
 
+    def on_image(self, image, only_to_me=False) -> Callable:
+        if isinstance(image, str):
+            image = (image, )
+        def deco(func) -> Callable:
+            sf = ServiceFunc(self, func, only_to_me)
+            for i in image:
+                trigger.image.add(i, sf)
+            return func
+        return deco
+
+
     def on_prefix(self, prefix, only_to_me=False) -> Callable:
         if isinstance(prefix, str):
             prefix = (prefix, )

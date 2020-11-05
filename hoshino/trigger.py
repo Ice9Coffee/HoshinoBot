@@ -129,6 +129,33 @@ class RexTrigger(BaseTrigger):
         return None
 
 
+class ImageTrigger(BaseTrigger):
+    def __init__(self):
+        super().__init__()
+        self.allmd5 = pygtrie.CharTrie()
+
+    def add(self, image: str, sf: "ServiceFunc"):
+        if image in self.allmd5:
+            other = self.allmd5[image]
+            hoshino.logger.warning(
+                f"Failed to add image trigger `{image}`: Conflicts between {sf.__name__} and {other.__name__}"
+            )
+            return
+        self.allmd5[image] = sf
+        hoshino.logger.debug(f"Succeed to add image trigger `{image}`")
+
+    def find_handler(self, event: CQEvent):
+        first_msg_seg = event.message[0]
+        if first_msg_seg.type != "image":
+            return None
+        first_text = first_msg_seg.data["file"]
+        print(first_text)
+        for md5, sf in self.allmd5.items():
+            if md5 in first_text:
+                return sf
+        return None
+
+
 class _PlainTextExtractor(BaseTrigger):
     def find_handler(self, event: CQEvent):
         event.plain_text = event.message.extract_plain_text().strip()
@@ -144,8 +171,10 @@ prefix = PrefixTrigger()
 suffix = SuffixTrigger()
 keyword = KeywordTrigger()
 rex = RexTrigger()
+image = ImageTrigger()
 
 chain = [
+    image,
     prefix,
     suffix,
     _TextNormalizer(),
