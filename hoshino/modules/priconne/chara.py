@@ -98,7 +98,7 @@ def is_npc(id_):
     if id_ in UnavailableChara:
         return True
     else:
-        return not ((1000 < id_ < 1200) or (1700 < id_ < 1900))
+        return not ((1000 < id_ < 1200) or (1700 < id_ < 1900) or id_ == 1701)
 
 def gen_team_pic(team, size=64, star_slot_verbose=True):
     num = len(team)
