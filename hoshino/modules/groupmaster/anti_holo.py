@@ -71,8 +71,8 @@ Hololive ホロ 木口 术口
 不知火芙蕾雅 不知火フレア Shiranui Flare 芙蕾雅 芙碳 阿火 ぬいぬい nuinui フーたん
 白银诺艾尔 白銀ノエル Shirogane Noel 
 宝钟 玛琳 宝鐘マリン Houshou Marine 无船承运人 山贼
-天音彼方 天音かなた Amane Kanata 彼方碳 かなたん PP天使 天妈 音妹 天音 汤达人 天音腾格尔
-桐生可可 桐生 ココ Kiryū Kiryuu Coco 🐉 蝗 虫皇 龙皇 憨憨龙 ass龙 宝批龙 西成女王
+天音彼方 天音かなた Amane Kanata 彼方碳 かなたん PP天使 天妈 音妹 天音 天音腾格尔
+桐生可可 桐生 ココ Kiryū Kiryuu Coco 🐉 虫皇 龙皇 憨憨龙 ass龙 宝批龙 西成女王
 角卷绵芽 角巻わため Tsunomaki Watame wtm 毛球 顶顶羊 咚咚羊 畜生羊 木口锤石
 常暗永远 常闇トワ Tokoyami Towa 永远大人 トワ様
 姬森璐娜 姫森 ルーナ Himemori Luuna 璐娜 英语教师
@@ -82,12 +82,6 @@ Hololive ホロ 木口 术口
 魔乃阿萝耶 魔乃アロエ Mano Aloe 魔乃 阿萝耶
 尾丸波尔卡 尾丸ポルカ Omaru Polka 特质系西索 虚拟关羽
 AZKi AZiK
-夜雾 Yogiri 夜哥 夜老大 饿霸 带饿人 夜妈妈
-希薇娅 Civia 小话唠 希希 cici
-黑桃影 黒桃影 Spade Echo 小影 蜜桃壁 回音铲 涩桃
-朵莉丝 Doris
-阿媂娅 Artia
-罗莎琳 Rosalyn
 Ayunda Risu 栗鼠 印尼面包狗 猫狗的女儿
 Moona Hoshinova
 Airani Iofifteen

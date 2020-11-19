@@ -117,13 +117,16 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     try:
         res = await arena.do_query(defen, uid, region)
     except hoshino.aiorequests.HTTPError as e:
-        if e.response["code"] == 117:
+        code = e.response["code"]
+        if code == 117:
             await bot.finish(ev, "高峰期服务器限流！请前往pcrdfans.com/battle")
+        else:
+            await bot.finish(ev, f'code{code} 查询出错，请联系维护组调教\n请先前往pcrdfans.com进行查询', at_sender=True)
     sv.logger.info('Got response!')
 
     # 处理查询结果
     if res is None:
-        await bot.finish(ev, '查询出错，请联系维护组调教\n请先移步pcrdfans.com进行查询', at_sender=True)
+        await bot.finish(ev, '数据库未返回数据，请再次尝试查询或前往pcrdfans.com', at_sender=True)
     if not len(res):
         await bot.finish(ev, '抱歉没有查询到解法\n※没有作业说明随便拆 发挥你的想象力～★\n作业上传请前往pcrdfans.com', at_sender=True)
     res = res[:min(6, len(res))]    # 限制显示数量，截断结果

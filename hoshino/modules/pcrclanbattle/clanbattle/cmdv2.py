@@ -10,6 +10,7 @@ PCR会战管理命令 v2
 """
 
 import os
+import asyncio
 from datetime import datetime, timedelta
 from typing import List
 from matplotlib import pyplot as plt
@@ -835,9 +836,9 @@ async def list_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
         await bot.send(ctx, "未检索到出刀记录")
         return
     msg = [ f'{clan["name"]}出刀记录：\n编号|出刀者|周目|Boss|伤害|标记' ]
-    for i in range(0, n, 10):
+    for i in range(0, n, 8):
         challenstr = 'E{eid:0>3d}|{name}|r{round}|b{boss}|{dmg: >7,d}{flag_str}'
-        for c in challen[i:min(n, i+10)]:
+        for c in challen[i:min(n, i+8)]:
             mem = bm.get_member(c['uid'], c['alt'])
             c['name'] = mem['name'] if mem else c['uid']
             flag = c['flag']
@@ -845,3 +846,4 @@ async def list_challenge(bot:NoneBot, ctx:Context_T, args:ParseResult):
             msg.append(challenstr.format_map(c))
         await bot.send(ctx, '\n'.join(msg))
         msg.clear()
+        await asyncio.sleep(0.5)
