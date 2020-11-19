@@ -17,4 +17,4 @@ async def anti_msg_recall(session: NoticeSession):
         msg = data.get('message')
         sv.logger.info(f"{data=}")
         if msg:
-            await session.send(f'{name}({uid})撤回了：{msg}')
+            await session.send(f'{name}({uid})撤回了：\n{msg}')
