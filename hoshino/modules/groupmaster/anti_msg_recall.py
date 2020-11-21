@@ -1,4 +1,4 @@
-from hoshino import Service
+from hoshino import Service, util
 from hoshino.typing import NoticeSession
 
 sv = Service('anti-msg-recall', help_='防撤回', enable_on_default=False)
@@ -15,6 +15,7 @@ async def anti_msg_recall(session: NoticeSession):
         nickname = data.get('sender', {}).get('nickname')
         name = cardname or nickname or uid
         msg = data.get('message')
+        msg = util.filt_message(msg)
         sv.logger.info(f"{data=}")
         if msg:
             await session.send(f'{name}({uid})撤回了：\n{msg}')
