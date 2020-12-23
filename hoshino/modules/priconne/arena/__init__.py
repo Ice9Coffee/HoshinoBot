@@ -153,14 +153,15 @@ async def _arena_query(bot, ev: CQEvent, region: int):
 
     msg = [
         # defen,
-        f'已为骑士{at}查询到以下进攻方案：',
+        at,
+        # f'已为骑士{at}查询到以下进攻方案：',
         str(teams),
         # '作业评价：',
         # *details,
         # '※发送"点赞/点踩"可进行评价'
     ]
-    if region == 1:
-        msg.append('※使用"b怎么拆"或"台怎么拆"可按服过滤')
+    # if region == 1:
+    #     msg.append('※使用"b怎么拆"或"台怎么拆"可按服过滤')
     msg.append('Support by pcrdfans_com')
 
     sv.logger.debug('Arena sending result...')
