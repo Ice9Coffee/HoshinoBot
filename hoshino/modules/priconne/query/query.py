@@ -3,13 +3,16 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-p1 = R.img('priconne/quick/r17-5-tw-0.png').cqcode
-p2 = R.img('priconne/quick/r17-5-tw-1.png').cqcode
-p4 = R.img('priconne/quick/r18-5-jp-1.png').cqcode
-p5 = R.img('priconne/quick/r18-5-jp-2.png').cqcode
-p6 = R.img('priconne/quick/r18-5-jp-3.png').cqcode
-p7 = R.img('priconne/quick/r11-3-cn-1.png').cqcode
-p8 = R.img('priconne/quick/r11-3-cn-2.png').cqcode
+rank_jp = '19-3'
+rank_tw = '18-3'
+rank_cn = '11-4'
+p1 = R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode
+p2 = R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode
+p4 = R.img(f'priconne/quick/r{rank_jp}-jp-1.png').cqcode
+p5 = R.img(f'priconne/quick/r{rank_jp}-jp-2.png').cqcode
+p6 = R.img(f'priconne/quick/r{rank_jp}-jp-3.png').cqcode
+p7 = R.img(f'priconne/quick/r{rank_cn}-cn-1.png').cqcode
+p8 = R.img(f'priconne/quick/r{rank_cn}-cn-2.png').cqcode
 
 @sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
 async def rank_sheet(bot, ev):
@@ -21,10 +24,11 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*陆rank表', at_sender=True)
         return
     msg = [
-        '\n※表格仅供参考，升r有风险，强化需谨慎\n※一切以会长要求为准——',
+        '\n表格仅供参考',
+        # '\n※rank表仅供参考，升r有风险，强化需谨慎\n※请以会长要求为准',
     ]
     if is_jp:
-        msg.append('※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR18-5 rank表：')
+        msg.append(f'※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR{rank_jp} rank表：')
         pos = match.group(3)
         if not pos or '前' in pos:
             msg.append(str(p4))
@@ -35,11 +39,11 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\n※油管频道有介绍视频及原文档\nR17-5 rank表：\n{p1} {p2}')
+        msg.append(f'※不定期搬运自漪夢奈特\n※详见油管频道\nR{rank_tw} rank表：\n{p1} {p2}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
     elif is_cn:
-        msg.append(f'※不定期搬运自B站专栏\n※制作by席巴鸽\nR11-3 rank表：\n{p7} {p8}')
+        msg.append(f'※不定期搬运自B站专栏\n※制作by席巴鸽\nR{rank_cn} rank表：\n{p7} {p8}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
 
