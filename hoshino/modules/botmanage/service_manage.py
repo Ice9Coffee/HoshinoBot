@@ -1,10 +1,10 @@
 from functools import cmp_to_key
 
-from nonebot import CommandSession, CQHttpError, on_command
+from nonebot import CommandSession, on_command
 from nonebot import permission as perm
 from nonebot.argparse import ArgumentParser
 
-from hoshino import Service, priv
+from hoshino import Service, priv, util
 
 PRIV_TIP = f'群主={priv.OWNER} 群管={priv.ADMIN} 群员={priv.NORMAL} bot维护组={priv.SUPERUSER}'
 
@@ -67,7 +67,7 @@ async def switch_service(session:CommandSession, turn_on:bool):
                     except:
                         pass
             else:
-                notfound.append(name)
+                notfound.append(util.escape(name))
         msg = []
         if succ:
             msg.append(f'已{action_tip}服务：' + ', '.join(succ))

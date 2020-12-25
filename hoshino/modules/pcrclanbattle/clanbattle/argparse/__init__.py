@@ -1,6 +1,6 @@
 from typing import List, Dict
 from nonebot import Message
-from aiocqhttp.message import escape
+from hoshino.util import escape
 
 from ..exception import *
 
