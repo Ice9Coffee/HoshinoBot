@@ -1,5 +1,5 @@
-from hoshino.typing import CQEvent, MessageSegment
-from hoshino.util import FreqLimiter
+from hoshino.typing import CQEvent
+from hoshino.util import FreqLimiter, escape
 
 from .. import chara
 from . import sv
@@ -9,7 +9,7 @@ lmt = FreqLimiter(5)
 @sv.on_suffix('是谁')
 @sv.on_prefix('谁是')
 async def whois(bot, ev: CQEvent):
-    name = ev.message.extract_plain_text().strip()
+    name = escape(ev.message.extract_plain_text().strip())
     if not name:
         return
     id_ = chara.name2id(name)
