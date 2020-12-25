@@ -9,6 +9,7 @@ from io import BytesIO
 import pytz
 import zhconv
 from aiocqhttp.exceptions import ActionFailed
+from aiocqhttp.message import escape
 from matplotlib import pyplot as plt
 from PIL import Image
 
