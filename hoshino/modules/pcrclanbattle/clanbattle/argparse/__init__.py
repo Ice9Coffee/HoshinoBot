@@ -1,5 +1,6 @@
 from typing import List, Dict
 from nonebot import Message
+from aiocqhttp.message import escape
 
 from ..exception import *
 
@@ -44,7 +45,10 @@ class ArgParser:
                 raise ParseError(f'命令含有未知参数', self.usage)
             
             try:
-                result.setdefault(name, holder.type(x))     # 多个参数只取第1个
+                if holder.type == str:
+                    result.setdefault(name, escape(holder.type(x)))
+                else:
+                    result.setdefault(name, holder.type(x))     # 多个参数只取第1个
             except ParseError as e:
                 e.append(self.usage)
                 raise e

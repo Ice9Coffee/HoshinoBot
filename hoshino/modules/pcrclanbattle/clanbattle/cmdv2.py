@@ -19,6 +19,7 @@ try:
 except:
     import json
 
+from aiocqhttp.message import escape
 from aiocqhttp.exceptions import ActionFailed
 from nonebot import NoneBot
 from nonebot import MessageSegment as ms
@@ -105,7 +106,7 @@ async def add_member(bot:NoneBot, ctx:Context_T, args:ParseResult):
             raise NotFoundError(f'Error: 无法获取群员信息，请检查{uid}是否属于本群')
     if not name:
         m = await bot.get_group_member_info(self_id=ctx['self_id'], group_id=bm.group, user_id=uid)
-        name = m['card'] or m['nickname'] or str(m['user_id'])
+        name = escape(m['card']) or escape(m['nickname']) or str(m['user_id'])
 
     mem = bm.get_member(uid, bm.group) or bm.get_member(uid, 0)     # 兼容cmdv1
     if mem:

@@ -31,7 +31,7 @@ for _, ids in subr_dic.items():     # initialize
     for account in ids:
         latest_info[account] = {'last_tweet_id': 0, 'profile_image': '', 'media_only': False}
 
-for account in ('shiratamacaron', 'k_yuizaki', 'suzukitoto0323', 'watanohara2'):
+for account in ('shiratamacaron', 'k_yuizaki', 'suzukitoto0323'):
     latest_info[account]['media_only'] = True
 
 

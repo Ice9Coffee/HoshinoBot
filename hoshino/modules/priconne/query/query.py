@@ -3,7 +3,7 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-rank_jp = '19-3'
+rank_jp = '19-4'
 rank_tw = '18-3'
 rank_cn = '11-4'
 p1 = R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode
