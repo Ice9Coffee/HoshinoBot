@@ -41,37 +41,15 @@ async def seina(bot, ev):
     await bot.send(ev, R.img('星奏.png').cqcode)
 
 
-@sv.on_fullmatch(('我有个朋友说他好了', '我朋友说他好了', ))
-async def ddhaole(bot, ev):
-    await bot.send(ev, '那个朋友是不是你弟弟？')
-    await util.silence(ev, 30)
-
-
-@sv.on_fullmatch('我好了')
-async def nihaole(bot, ev):
-    await bot.send(ev, '不许好，憋回去！')
-    await util.silence(ev, 30)
+@sv.on_fullmatch('auto轴')
+async def auto(bot, ev):
+    await bot.send(ev, auto)
+auto = f'''[CQ:xml,data=<?xml version="1.0" encoding="utf-8" ?><msg templateID="123" action="web" brief="腾讯文档 的分享" serviceID="1" url="https://docs.qq.com/sheet/DSlhtb0NQZUVQU2xt?tab=BB08J2"><item layout="2"><picture cover="http://pub.idqqimg.com/pc/misc/files/20190529/32e36b5d6f1b71fd3ddd129346c8f9c9.png" /><title>Auto作业...</title><summary>腾讯文档</summary></item><source url="" icon="https://pub.idqqimg.com/pc/misc/files/20180522/e84554865e704ee4a1da332568335bec.png" name="腾讯文档" appid="101458937" action="app" actionData="" a_actionData="com.tencent.docs" i_actionData="docs" /></msg>,resid=60]'''
 
 
 # ============================================ #
 
 
-@sv.on_keyword(('确实', '有一说一', 'u1s1', 'yysy'))
-async def chat_queshi(bot, ctx):
-    if random.random() < 0.05:
-        await bot.send(ctx, R.img('确实.jpg').cqcode)
-
-
-@sv.on_keyword(('会战'))
-async def chat_clanba(bot, ctx):
-    if random.random() < 0.02:
-        await bot.send(ctx, R.img('我的天啊你看看都几度了.jpg').cqcode)
-
-
-@sv.on_keyword(('内鬼'))
-async def chat_neigui(bot, ctx):
-    if random.random() < 0.10:
-        await bot.send(ctx, R.img('内鬼.png').cqcode)
 
 nyb_player = f'''{R.img('newyearburst.gif').cqcode}
 正在播放：New Year Burst
