@@ -8,7 +8,7 @@ import asyncio
 import os
 import random
 
-from hoshino import Service
+from hoshino import Service, util
 from hoshino.modules.priconne import chara
 from hoshino.typing import CQEvent, MessageSegment as Seg
 
@@ -36,7 +36,7 @@ async def description_guess_group_ranking(bot, ev: CQEvent):
     for i, item in enumerate(ranking):
         uid, count = item
         m = await bot.get_group_member_info(self_id=ev.self_id, group_id=ev.group_id, user_id=uid)
-        name = m["card"] or m["nickname"] or str(uid)
+        name = util.escape(m["card"]) or util.escape(m["nickname"]) or str(uid)
         msg.append(f"第{i + 1}名：{name} 猜对{count}次")
     await bot.send(ev, "\n".join(msg))
 
