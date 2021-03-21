@@ -792,12 +792,12 @@ async def _do_show_remain(bot:NoneBot, ctx:Context_T, args:ParseResult, at_user:
     rlist.sort(key=lambda x: x[3] + x[4], reverse=True)
     msg = [ f"\n{clan['name']}今日余刀：" ]
     n = len(rlist)
-    for i in range(0, n, 10):
-        for uid, _, name, r_n, r_e in rlist[i:min(i+10, n)]:
-            if r_n or r_e:
-                msg.append(f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}")
-        await bot.send(ctx, '\n'.join(msg))
-        msg.clear()
+    # for i in range(0, n, 10):
+    for uid, _, name, r_n, r_e in rlist:
+        if r_n or r_e:
+            msg.append(f"剩{r_n}刀 补时{r_e}刀 | {ms.at(uid) if at_user else name}")
+        # await bot.send(ctx, '\n'.join(msg))
+        # msg.clear()
     if not n:
         await bot.send(ctx, f"今日{clan['name']}所有成员均已下班！各位辛苦了！", at_sender=True)
     else:
