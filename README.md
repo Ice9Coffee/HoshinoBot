@@ -9,7 +9,7 @@ A qqbot for Princess Connect Re:Dive (and other usage :)
 
 ## 简介
 
-**HoshinoBot:** 基于 [nonebot](http://nonebot.cqp.moe) 框架，开源、无公害、非转基因的QQ机器人。
+**HoshinoBot:** 基于 [nonebot](https://docs.nonebot.dev/) 框架，开源、无公害、非转基因的QQ机器人。
 
 
 
@@ -75,6 +75,15 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 ## ~~部署指南~~
 
 **由于酷Q已停止维护，本指南已失效。您可以使用[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)或[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)作为替代。由于当前mirai仍不稳定（甚至删库跑路），请自行参考相应的文档进行部署，本项目组不解答部署问题。**
+
+您也可以参考由 [pcrbot 社区](https://github.com/pcrbot)提供的部署指南：
+
+- 《[Linux 下部署一个公主连结 qq 群聊机器人](https://cn.pcrbot.com/deploy-a-priconne-bot-on-linux/)》作者：[地河君_official](https://github.com/Chendihe4975)
+- 《[Windows 给新人的简易部署指南](https://github.com/Soung2279/Mirai-Bot-Setup)》作者：[SYoung](https://github.com/Soung2279)
+- 《[使用 Docker 部署 HoshinoBot 与 yobot](https://cn.pcrbot.com/depoly-with-docker/)》作者：[yuudi](https://github.com/yuudi)
+
+<details>
+  <summary>（点击查看旧文档）</summary>
 
 本bot功能繁多，部分功能需要静态图片资源和带有认证的api key，恕不能公开。本指南将首先带领您搭建具有**模拟抽卡(纯文字版)**、**会战管理**功能的HoshinoBot。其他功能需额外配置，请参考本章**更进一步**的对应小节。
 
@@ -204,6 +213,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     注意，此时您的机器人功能还不完全，部分功能可能无法正常工作。若希望您的机器人可以发送图片，或使用其他进阶功能，请参考本章**更进一步**的对应小节。
 
 
+</details>
 
 ### 更进一步
 
