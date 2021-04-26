@@ -24,6 +24,7 @@ subr_dic = {
     Service('pripri-twitter', enable_on_default=False, visible=False): ['pripri_anime'],
     Service('coffee-favorite-twitter', manage_priv=priv.SUPERUSER,
             enable_on_default=False, visible=False): ['shiratamacaron', 'k_yuizaki', 'suzukitoto0323'],
+    Service('uma-twitter', enable_on_default=False, help_="ウマ娘推特转发", bundle='umamusume'): ['uma_musu', 'uma_musu_anime'],
 }
 
 latest_info = {}      # { account: {last_tweet_id: int, profile_image: str } }
