@@ -76,7 +76,7 @@ class BiliSpider(BaseSpider):
         content = await resp.json()
         items = [
             Item(idx=n["id"],
-                 content="{title}\n▲game.bilibili.com/pcr/news.html#news_detail_id={id}".format_map(n)
+                 content="{title}\n▲game.bilibili.com/pcr/news.html#detail={id}".format_map(n)
             ) for n in content["data"]
         ]
         return items
