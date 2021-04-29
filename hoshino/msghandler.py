@@ -8,10 +8,10 @@ async def handle_message(bot, event: CQEvent, _):
     if event.detail_type != 'group':
         return
 
-    for trigger in trigger.chain:
-        service_func = trigger.find_handler(event)
+    for t in trigger.chain:
+        service_func = t.find_handler(event)
         if service_func:
-            trigger_name = trigger.__class__.__name__
+            trigger_name = t.__class__.__name__
             break
 
     if not service_func:
