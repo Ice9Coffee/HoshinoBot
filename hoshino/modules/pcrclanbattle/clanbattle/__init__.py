@@ -27,6 +27,8 @@ async def _clanbattle_bus(bot, ctx):
 
     # find cmd
     plain_text = ctx['message'].extract_plain_text()
+    if len(plain_text) <= 1:
+        return
     cmd, *args = plain_text[1:].split()
     cmd = util.normalize_str(cmd)
     if cmd in _registry:
