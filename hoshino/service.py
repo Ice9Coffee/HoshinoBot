@@ -101,8 +101,7 @@ class Service:
         定义一个服务
         配置的优先级别：配置文件 > 程序指定 > 缺省值
         """
-        assert not _re_illegal_char.search(
-            name), r'Service name cannot contain character in `\/:*?"<>|.`'
+        assert not _re_illegal_char.search(name), r'Service name cannot contain character in `\/:*?"<>|.`'
 
         config = _load_service_config(name)
         self.name = name
@@ -169,8 +168,7 @@ class Service:
         """
         gl = defaultdict(list)
         for sid in hoshino.get_self_ids():
-            sgl = set(g['group_id']
-                      for g in await self.bot.get_group_list(self_id=sid))
+            sgl = set(g['group_id'] for g in await self.bot.get_group_list(self_id=sid))
             if self.enable_on_default:
                 sgl = sgl - self.disable_group
             else:
@@ -336,8 +334,8 @@ class Service:
         bot = self.bot
         if isinstance(msgs, (str, MessageSegment, Message)):
             msgs = (msgs, )
-        glist = await self.get_enable_groups()
-        for gid, selfids in glist.items():
+        groups = await self.get_enable_groups()
+        for gid, selfids in groups.items():
             try:
                 for msg in msgs:
                     await asyncio.sleep(interval_time)
