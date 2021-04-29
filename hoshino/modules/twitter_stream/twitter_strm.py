@@ -54,10 +54,10 @@ sv = Service("twitter-poller", use_priv=priv.SUPERUSER, manage_priv=priv.SUPERUS
 sv_kc = Service("kc-twitter", help_="艦これ推特转发", enable_on_default=False, bundle="kancolle")
 sv_pcr = Service("pcr-twitter", help_="日服Twitter转发", enable_on_default=True, bundle="pcr订阅")
 sv_uma = Service("uma-twitter", help_="ウマ娘推特转发", enable_on_default=False, bundle="umamusume")
-sv_pripri = Service("pripri-twitter", help_="番剧公主代理人官推转发", enable_on_default=False, visible=False)
-sv_coffee_fav = Service("coffee-favorite-twitter", help_="咖啡精选画师推特转发", manage_priv=priv.SUPERUSER, enable_on_default=False, visible=False)
-sv_moe_artist = Service("moe-artist-twitter", help_="萌系画师推特转发", manage_priv=priv.SUPERUSER, enable_on_default=False, visible=False)
-sv_depress_artist = Service("depress-artist-twitter", help_="致郁系画师推特转发", manage_priv=priv.SUPERUSER, enable_on_default=False, visible=False)
+sv_pripri = Service("pripri-twitter", help_="番剧《公主代理人》官推转发", enable_on_default=False)
+sv_coffee_fav = Service("coffee-favorite-twitter", help_="咖啡精选画师推特转发", enable_on_default=False, bundle="artist")
+sv_moe_artist = Service("moe-artist-twitter", help_="萌系画师推特转发", enable_on_default=False, bundle="artist")
+sv_depress_artist = Service("depress-artist-twitter", help_="致郁系画师推特转发", enable_on_default=False, bundle="artist")
 sv_test = Service("twitter-stream-test", enable_on_default=False, manage_priv=priv.SUPERUSER, visible=False)
 
 router = TweetRouter()
@@ -67,8 +67,8 @@ router.add(sv_pripri, ["pripri_anime"])
 router.add(sv_uma, ["uma_musu", "uma_musu_anime"])
 router.add(sv_test, ["Ice9Coffee"])
 
-coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku", "Setmen_uU"]
-moe_artist = ["koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon", "kazukiadumi"]
+coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
+moe_artist = ["koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon", "kazukiadumi", "Setmen_uU"]
 depress_artist = ["tkmiz"]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
