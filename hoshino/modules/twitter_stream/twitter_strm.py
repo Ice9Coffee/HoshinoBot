@@ -68,7 +68,7 @@ router.add(sv_uma, ["uma_musu", "uma_musu_anime"])
 router.add(sv_test, ["Ice9Coffee"])
 
 coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
-moe_artist = ["koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon", "kazukiadumi", "Setmen_uU"]
+moe_artist = ["koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon", "kazukiadumi", "Setmen_uU", "bakuPA"]
 depress_artist = ["tkmiz"]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
@@ -98,47 +98,40 @@ async def twitter_stream_daemon():
                 return
             except Exception as e:
                 sv.logger.exception(e)
-                sv.logger.error(f"Error {type(e)} Occurred in twitter stream. Restarting stream.")
+                sv.logger.error(f"Error {type(e)} Occurred in twitter stream. Restarting stream in 5s.")
+                await asyncio.sleep(5)
 
 
 async def open_stream(client):
-    sv.logger.debug("Opening twitter stream...")
     follow_ids = [(await client.api.users.show.get(screen_name=i)).id for i in router.follows]
-    sv.logger.debug(f"{follow_ids=}")
+    sv.logger.info(f"订阅推主={router.follows.keys()}, {follow_ids=}")
     stream = client.stream.statuses.filter.post(follow=follow_ids)
-    sv.logger.debug("stream created.")
     async with stream:
-        sv.logger.debug("stream opened.")
         async for tweet in stream:
-            sv.logger.debug("Got twitter event.")
             if peony.events.tweet(tweet):
-                screen_name = tweet.user.screen_name
-                media = tweet.get('extended_entities', {}).get('media', [])
-                msg = format_tweet(tweet)
 
+                screen_name = tweet.user.screen_name
+                if screen_name not in router.follows:
+                    continue    # 推主不在订阅列表
                 if peony.events.retweet(tweet):
-                    sv.logger.debug(f"获得转推：\n{msg}")
-                    continue
+                    continue    # 忽略纯转推
+                if 'in_reply_to_status_id' in tweet and tweet.in_reply_to_status_id:
+                    continue    # 忽略评论
+
+                media = tweet.get('extended_entities', {}).get('media', [])
+                if router.follows[screen_name].media_only and not media:
+                    continue    # 无附带媒体，订阅选项media_only=True时忽略
+
+                msg = format_tweet(tweet)
 
                 if 'quoted_status' in tweet:
                     sv.logger.info(f"获得引用：\n{msg}")
                     quoted_msg = format_tweet(tweet.quoted_status)
                     msg = f"{msg}\n\n>>>>>\n{quoted_msg}"
 
-                if 'in_reply_to_status_id' in tweet and tweet.in_reply_to_status_id:
-                    sv.logger.info(f"获得评论：\n{msg}")
-                    continue
-
-                if screen_name not in router.follows:
-                    sv.logger.warning(f"推主 @{screen_name} 不在订阅列表!\n{msg}")
-                    continue
-
-                if router.follows[screen_name].media_only and not media:
-                    continue
-
                 sv.logger.info(f"推送推文：\n{msg}")
                 for s in router.follows[screen_name].services:
                     await s.broadcast(msg, f' @{screen_name} 推文', 0.3)
 
             else:
-                sv.logger.info("Ignore non-tweet event.")
+                sv.logger.debug("Ignore non-tweet event.")
