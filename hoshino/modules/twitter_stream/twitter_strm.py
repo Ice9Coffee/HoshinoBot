@@ -115,8 +115,8 @@ async def open_stream(client):
                     continue    # 推主不在订阅列表
                 if peony.events.retweet(tweet):
                     continue    # 忽略纯转推
-                if 'in_reply_to_status_id' in tweet and tweet.in_reply_to_status_id:
-                    continue    # 忽略评论
+                if 'in_reply_to_screen_name' in tweet and tweet.in_reply_to_screen_name != screen_name:
+                    continue    # 忽略对他人的评论，保留自评论
 
                 media = tweet.get('extended_entities', {}).get('media', [])
                 if router.follows[screen_name].media_only and not media:
