@@ -137,7 +137,7 @@ async def open_stream(client: PeonyClient):
 
                 old_profile_img = entry.profile_image
                 entry.profile_image = tweet.user.get("profile_image_url_https") or entry.profile_image
-                if entry.profile_image != old_profile_img:
+                if old_profile_img and entry.profile_image != old_profile_img:
                     big_img = re.sub(r'_normal(\.(jpg|jpeg|png|gif|jfif|webp))$', r'\1', entry.profile_image, re.I)
                     msg = [msg, f"@{screen_name} 更换了头像\n{ms.image(big_img)}"]
 
