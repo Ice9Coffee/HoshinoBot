@@ -1,22 +1,23 @@
 import asyncio
+import re
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, Set
 from datetime import datetime
+from typing import Dict, Iterable, Set
 
-import pytz
-import peony
-from peony import PeonyClient
-
-from hoshino import Service, priv, util
 import hoshino
+import peony
+import pytz
+from hoshino import Service, priv, util
 from hoshino.config import twitter as cfg
 from hoshino.typing import MessageSegment as ms
+from peony import PeonyClient
 
 
 @dataclass
 class FollowEntry:
     services: Set[Service] = field(default_factory=set)
     media_only: bool = False
+    profile_image: str = None
 
 
 class TweetRouter:
@@ -67,9 +68,12 @@ router.add(sv_pripri, ["pripri_anime"])
 router.add(sv_uma, ["uma_musu", "uma_musu_anime"])
 router.add(sv_test, ["Ice9Coffee"])
 
-coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
-moe_artist = ["koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon", "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th"]
 depress_artist = ["tkmiz"]
+coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
+moe_artist = [
+    "koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon",
+    "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda", "kujouitiso"
+]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
 router.add(sv_depress_artist, depress_artist)
@@ -102,15 +106,15 @@ async def twitter_stream_daemon():
                 await asyncio.sleep(5)
 
 
-async def open_stream(client):
+async def open_stream(client: PeonyClient):
     follow_ids = [(await client.api.users.show.get(screen_name=i)).id for i in router.follows]
     sv.logger.info(f"订阅推主={router.follows.keys()}, {follow_ids=}")
     stream = client.stream.statuses.filter.post(follow=follow_ids)
     async with stream:
         async for tweet in stream:
+
             sv.logger.info("Got twitter event.")
             if peony.events.tweet(tweet):
-
                 screen_name = tweet.user.screen_name
                 if screen_name not in router.follows:
                     continue    # 推主不在订阅列表
@@ -120,19 +124,25 @@ async def open_stream(client):
                 if reply_to and reply_to != screen_name:
                     continue    # 忽略对他人的评论，保留自评论
 
+                entry = router.follows[screen_name]
                 media = tweet.get('extended_entities', {}).get('media', [])
-                if router.follows[screen_name].media_only and not media:
+                if entry.media_only and not media:
                     continue    # 无附带媒体，订阅选项media_only=True时忽略
 
                 msg = format_tweet(tweet)
 
                 if 'quoted_status' in tweet:
-                    sv.logger.info(f"获得引用：\n{msg}")
                     quoted_msg = format_tweet(tweet.quoted_status)
                     msg = f"{msg}\n\n>>>>>\n{quoted_msg}"
 
+                old_profile_img = entry.profile_image
+                entry.profile_image = tweet.user.get("profile_image_url_https") or entry.profile_image
+                if entry.profile_image != old_profile_img:
+                    big_img = re.sub(r'_normal(\.(jpg|jpeg|png|gif|jfif|webp))$', r'\1', entry.profile_image, re.I)
+                    msg = [msg, f"@{screen_name} 更换了头像\n{ms.image(big_img)}"]
+
                 sv.logger.info(f"推送推文：\n{msg}")
-                for s in router.follows[screen_name].services:
+                for s in entry.services:
                     await s.broadcast(msg, f' @{screen_name} 推文', 0.3)
 
             else:
