@@ -118,7 +118,7 @@ async def _arena_query(bot, ev: CQEvent, region: int):
         res = await arena.do_query(defen, uid, region)
     except hoshino.aiorequests.HTTPError as e:
         code = e.response["code"]
-        if code == 117:
+        if code == 117 or code == -429:
             await bot.finish(ev, "高峰期服务器限流！请前往pcrdfans.com/battle")
         else:
             await bot.finish(ev, f'code{code} 查询出错，请联系维护组调教\n请先前往pcrdfans.com进行查询', at_sender=True)

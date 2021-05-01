@@ -68,7 +68,7 @@ router.add(sv_uma, ["uma_musu", "uma_musu_anime"])
 router.add(sv_test, ["Ice9Coffee"])
 
 coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
-moe_artist = ["koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon", "kazukiadumi", "Setmen_uU", "bakuPA"]
+moe_artist = ["koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon", "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th"]
 depress_artist = ["tkmiz"]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
@@ -108,6 +108,7 @@ async def open_stream(client):
     stream = client.stream.statuses.filter.post(follow=follow_ids)
     async with stream:
         async for tweet in stream:
+            sv.logger.info("Got twitter event.")
             if peony.events.tweet(tweet):
 
                 screen_name = tweet.user.screen_name
