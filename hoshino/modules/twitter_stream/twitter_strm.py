@@ -62,7 +62,7 @@ depress_artist = ["tkmiz"]
 coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
 moe_artist = [
     "koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon",
-    "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda", "kujouitiso",
+    "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda",
     "siragagaga", "fuzichoco",
 ]
 router.add(sv_coffee_fav, coffee_fav)
