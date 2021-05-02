@@ -1,4 +1,5 @@
 import asyncio
+import os
 import re
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -11,6 +12,11 @@ from hoshino import Service, priv, util
 from hoshino.config import twitter as cfg
 from hoshino.typing import MessageSegment as ms
 from peony import PeonyClient
+
+try:
+    import ujson as json
+except:
+    import json
 
 
 @dataclass
@@ -34,22 +40,6 @@ class TweetRouter:
         self.follows[screen_name].media_only = media_only
 
 
-def format_time(time_str):
-    dt = datetime.strptime(time_str, r"%a %b %d %H:%M:%S %z %Y")
-    dt = dt.astimezone(pytz.timezone("Asia/Shanghai"))
-    return f"{util.month_name(dt.month)}{util.date_name(dt.day)}・{util.time_name(dt.hour, dt.minute)}"
-
-def format_tweet(tweet):
-    name = tweet.user.name
-    time = format_time(tweet.created_at)
-    text = tweet.text
-    media = tweet.get('extended_entities', {}).get('media', [])
-    imgs = ' '.join([str(ms.image(m.media_url)) for m in media])
-    msg = f"@{name}\n{time}\n\n{text}"
-    if imgs:
-        msg = f"{msg}\n{imgs}"
-    return msg
-
 
 sv = Service("twitter-poller", use_priv=priv.SUPERUSER, manage_priv=priv.SUPERUSER, visible=False)
 sv_kc = Service("kc-twitter", help_="艦これ推特转发", enable_on_default=False, bundle="kancolle")
@@ -72,13 +62,60 @@ depress_artist = ["tkmiz"]
 coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
 moe_artist = [
     "koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon",
-    "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda", "kujouitiso"
+    "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda", "kujouitiso",
+    "siragagaga", "fuzichoco",
 ]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
 router.add(sv_depress_artist, depress_artist)
 for i in [*moe_artist, *depress_artist]:
     router.set_media_only(i)
+
+
+class UserIdCache:
+    _cache_file = os.path.expanduser('~/.hoshino/twitter_uid_cache.json')
+
+    def __init__(self) -> None:
+        self.cache = {}
+        if os.path.isfile(self._cache_file):
+            try:
+                with open(self._cache_file, 'r', encoding='utf8') as f:
+                    self.cache = json.load(f)
+            except Exception as e:
+                sv.logger.exception(e)
+                sv.logger.error(f"{type(e)} occured when loading `twitter_uid_cache.json`, using empty cache.")    
+
+
+    async def convert(self, client: PeonyClient, screen_names: Iterable[str], cached=True):
+        if not cached:
+            self.cache = {}
+        follow_ids = []
+        for i in screen_names:
+            if i not in self.cache:
+                user = await client.api.users.show.get(screen_name=i)
+                self.cache[i] = user.id
+            follow_ids.append(self.cache[i])
+        with open(self._cache_file, 'w', encoding='utf8') as f:
+            json.dump(self.cache, f)
+        return follow_ids
+
+
+
+def format_time(time_str):
+    dt = datetime.strptime(time_str, r"%a %b %d %H:%M:%S %z %Y")
+    dt = dt.astimezone(pytz.timezone("Asia/Shanghai"))
+    return f"{util.month_name(dt.month)}{util.date_name(dt.day)}・{util.time_name(dt.hour, dt.minute)}"
+
+def format_tweet(tweet):
+    name = tweet.user.name
+    time = format_time(tweet.created_at)
+    text = tweet.text
+    media = tweet.get('extended_entities', {}).get('media', [])
+    imgs = ' '.join([str(ms.image(m.media_url)) for m in media])
+    msg = f"@{name}\n{time}\n\n{text}"
+    if imgs:
+        msg = f"{msg}\n{imgs}"
+    return msg
 
 
 bot = hoshino.get_bot()
@@ -106,14 +143,17 @@ async def twitter_stream_daemon():
                 await asyncio.sleep(5)
 
 
+user_id_cache = UserIdCache()
+
 async def open_stream(client: PeonyClient):
-    follow_ids = [(await client.api.users.show.get(screen_name=i)).id for i in router.follows]
+    # follow_ids = [(await client.api.users.show.get(screen_name=i)).id for i in router.follows]
+    follow_ids = await user_id_cache.convert(client, router.follows)
     sv.logger.info(f"订阅推主={router.follows.keys()}, {follow_ids=}")
     stream = client.stream.statuses.filter.post(follow=follow_ids)
     async with stream:
         async for tweet in stream:
 
-            sv.logger.info("Got twitter event.")
+            sv.logger.debug("Got twitter event.")
             if peony.events.tweet(tweet):
                 screen_name = tweet.user.screen_name
                 if screen_name not in router.follows:
