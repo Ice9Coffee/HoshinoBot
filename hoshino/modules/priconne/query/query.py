@@ -4,7 +4,7 @@ from hoshino.typing import CQEvent
 from . import sv
 
 rank_jp = '20-4'
-rank_tw = '19-3'
+rank_tw = '19-4'
 rank_cn = '12-5'
 ptw = ' '.join(map(str, [
     R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode,

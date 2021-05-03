@@ -62,8 +62,9 @@ depress_artist = ["tkmiz"]
 coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
 moe_artist = [
     "koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon",
-    "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda",
-    "siragagaga", "fuzichoco",
+    "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda", "hoshi_u3",
+    "siragagaga", "fuzichoco", "miyu_miyasaka", "naco_miyasaka", "tsukimi08",
+    "tsubakininiwawa", "_Dan_ball", "ominaeshin", "gomalio_y",
 ]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
@@ -89,12 +90,11 @@ class UserIdCache:
     async def convert(self, client: PeonyClient, screen_names: Iterable[str], cached=True):
         if not cached:
             self.cache = {}
-        follow_ids = []
         for i in screen_names:
             if i not in self.cache:
                 user = await client.api.users.show.get(screen_name=i)
                 self.cache[i] = user.id
-            follow_ids.append(self.cache[i])
+        follow_ids = [self.cache[i] for i in screen_names]
         with open(self._cache_file, 'w', encoding='utf8') as f:
             json.dump(self.cache, f)
         return follow_ids
