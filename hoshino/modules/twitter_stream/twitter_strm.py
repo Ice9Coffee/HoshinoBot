@@ -64,7 +64,9 @@ moe_artist = [
     "koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon",
     "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda", "hoshi_u3",
     "siragagaga", "fuzichoco", "miyu_miyasaka", "naco_miyasaka", "tsukimi08",
-    "tsubakininiwawa", "_Dan_ball", "ominaeshin", "gomalio_y",
+    "tsubakininiwawa", "_Dan_ball", "ominaeshin", "gomalio_y", "izumiyuhina",
+    "1kurusk", "amsrntk3", "kani_biimu", "Nakkar7", "li_hongbo", "nahaki_401",
+    "ukiukisoda", "yukkieeeeeen",
 ]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
@@ -153,7 +155,7 @@ async def open_stream(client: PeonyClient):
     async with stream:
         async for tweet in stream:
 
-            sv.logger.debug("Got twitter event.")
+            sv.logger.info("Got twitter event.")
             if peony.events.tweet(tweet):
                 screen_name = tweet.user.screen_name
                 if screen_name not in router.follows:
