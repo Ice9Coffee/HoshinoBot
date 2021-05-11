@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont
 import hoshino
 from hoshino import Service, R
 from hoshino.typing import *
-from hoshino.util import FreqLimiter, concat_pic, pic2b64, silence
+from hoshino.util import FreqLimiter, concat_pic, pic2b64, silence, filt_message
 
 from .. import chara
 
@@ -96,6 +96,7 @@ async def _arena_query(bot, ev: CQEvent, region: int):
         _, name, score = chara.guess_id(unknown)
         if score < 70 and not defen:
             return  # 忽略无关对话
+        unknown = filt_message(unknown)
         msg = f'无法识别"{unknown}"' if score < 70 else f'无法识别"{unknown}" 您说的有{score}%可能是{name}'
         await bot.finish(ev, msg)
     if not defen:
