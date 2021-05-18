@@ -66,7 +66,7 @@ moe_artist = [
     "siragagaga", "fuzichoco", "miyu_miyasaka", "naco_miyasaka", "tsukimi08",
     "tsubakininiwawa", "_Dan_ball", "ominaeshin", "gomalio_y", "izumiyuhina",
     "1kurusk", "amsrntk3", "kani_biimu", "Nakkar7", "li_hongbo", "nahaki_401",
-    "ukiukisoda", "yukkieeeeeen",
+    "ukiukisoda", "yukkieeeeeen", "t_takahashi0830", "riko0202",
 ]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
