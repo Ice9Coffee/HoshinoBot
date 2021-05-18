@@ -1,10 +1,20 @@
 # HoshinoBot
+[![License](https://img.shields.io/github/license/Ice-Cirno/HoshinoBot)](LICENSE)
+![Python Version](https://img.shields.io/badge/python-3.8+-blue)
+![Nonebot Version](https://img.shields.io/badge/nonebot-1.6.0%2B%2C%202.0.0---blue)
+[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoのお茶会-brightgreen)](https://jq.qq.com/?_wv=1027&k=eYGgrL4A)
+[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://jq.qq.com/?_wv=1027&k=wgirhYYQ)
 
-A qqbot for Princess Connect Re:Dive (and other usage :)
+A QQ-bot for Princess Connect Re:Dive based on [Nonebot](https://github.com/nonebot/nonebot)
 
-**2020年8月2日0点，qq机器人框架相继停止维护。**
-**感谢 酷Q项目 和 CQHTTP插件 的开发者们！感谢他们让Hoshino得以诞生！**
-**Hoshino不再对酷Q进行支持**
+<details>
+  <summary>开发历史</summary>
+
+- 2019.09.20 HoshinoBot诞生
+- ... (待补充)
+- **2020年8月2日0点，qq机器人框架相继停止维护。** **感谢 酷Q项目 和 CQHTTP插件 的开发者们！感谢他们让Hoshino得以诞生！** **Hoshino不再对酷Q进行支持**
+
+</details>
 
 
 ## 简介
@@ -67,16 +77,28 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 ```
 
 
+## 如何开始使用
+
+QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoのお茶会-brightgreen)](https://jq.qq.com/?_wv=1027&k=eYGgrL4A)提供了我们部署的bot，提供Hoshino的原生服务。您可以在这里试用bot功能、赞助开发者，赞助者可邀请bot加入自己的群使用。
+
+如果您具备基本的linux与python能力，并拥有一台服务器（轻量级即可），您可以参阅部署指南自行部署。
+
+
+## 开源协议及免责声明
+
+本项目遵守GPLv3协议开源，请在协议允许的条件及范围内使用本项目。本项目的开发者不会强制向您索要任何费用，同时也不会提供任何质保，一切因本项目引起的法律、利益纠纷由与本项目的开发者无关。
+- 对于自行搭建、小范围私用的非营利性bot，若遇到任何部署、开发上的疑问，欢迎提交issue或加入[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://jq.qq.com/?_wv=1027&k=wgirhYYQ)讨论，我们欢迎有礼貌、描述详尽的提问！
+- 对于以营利为目的部署的bot，由部署者负责，与本项目的开发者无关，本项目的开发者及社区没有义务回答您部署时的任何疑问。
+- 对于HoshinoBot插件的开发者，在您发布插件或利用插件营利时，请遵守GPLv3协议将插件代码开源。
+最终解释权归HoshinoBot开发组所有。
 
 
 
+## 部署指南
 
+**由于酷Q已停止运营，您可以使用[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)或[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)作为无头QQ客户端。**
 
-## ~~部署指南~~
-
-**由于酷Q已停止维护，本指南已失效。您可以使用[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)或[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)作为替代。由于当前mirai仍不稳定（甚至删库跑路），请自行参考相应的文档进行部署，本项目组不解答部署问题。**
-
-您也可以参考由 [pcrbot 社区](https://github.com/pcrbot)提供的部署指南：
+旧文档已失效（新文档正在编写中...），请参考由 [pcrbot 社区](https://github.com/pcrbot)提供的部署指南：
 
 - 《[Linux 下部署一个公主连结 qq 群聊机器人](https://cn.pcrbot.com/deploy-a-priconne-bot-on-linux/)》作者：[地河君_official](https://github.com/Chendihe4975)
 - 《[Windows 给新人的简易部署指南](https://github.com/Soung2279/Mirai-Bot-Setup)》作者：[SYoung](https://github.com/Soung2279)
@@ -306,7 +328,7 @@ access_token_secret = "your_access_token_secret"
 
 #### 晴乃词库
 
-舰娘及装备查询功能使用了精简版的晴乃词库，如有需要请加QQ群[Hoshino的后花园](https://jq.qq.com/?wv=1027&k=55fGEgi)或联系晴乃维护组。
+舰娘及装备查询功能使用了精简版的晴乃词库，如有需要请加 Hoshino的后花园（群号367501912）或联系晴乃维护组。
 
 
 
