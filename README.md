@@ -25,7 +25,10 @@ A QQ-bot for Princess Connect Re:Dive based on [Nonebot](https://github.com/none
 
 ## 功能介绍
 
-HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-redive.jp) 玩家为核心，主要功能有：
+HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-redive.jp) 玩家为核心。
+
+<details>
+  <summary>主要功能</summary>
 
 - **转蛋模拟**：单抽、十连、抽一井
 - **竞技场解法查询**：支持按服务器过滤，支持反馈点赞点踩
@@ -41,7 +44,10 @@ HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-red
 
 > 由于bot的功能会快速迭代开发，使用方式这里不进行具体的说明，请向bot发送"help"或移步[此文件](hoshino/modules/botmanage/help.py)查看详细。会战管理功能的详细说明，请[点击这里](hoshino/modules/pcrclanbattle/clanbattle/README.md)
 
-HoshinoBot 还具有以下通用功能：
+</details>
+
+<details>
+  <summary>通用功能</summary>
 
 - **[蜜柑计划](http://mikanani.me)番剧更新订阅**
 - **入群欢迎**&**退群提醒**
@@ -51,7 +57,12 @@ HoshinoBot 还具有以下通用功能：
 - **机器翻译**
 - **反馈发送**：反馈内容将由bot私聊发送给维护组
 
-此外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能：
+</details>
+
+此外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能
+
+<details>
+  <summary>点击展开</summary>
 
 - **官推转发**：「艦これ」開発/運営 & C2機関
 - **时报**
@@ -64,6 +75,8 @@ HoshinoBot 还具有以下通用功能：
 > 艦これ相关功能由于个人精力实在有限，无法进行更多功能（如海图攻略）的开发/维护。
 >
 > 如果您有新的想法，欢迎联系我！即便您不会编程，您也可以在内容更新上帮到我们！
+
+</details>
 
 -------------
 
@@ -90,6 +103,7 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 - 对于自行搭建、小范围私用的非营利性bot，若遇到任何部署、开发上的疑问，欢迎提交issue或加入[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://jq.qq.com/?_wv=1027&k=wgirhYYQ)讨论，我们欢迎有礼貌、描述详尽的提问！
 - 对于以营利为目的部署的bot，由部署者负责，与本项目的开发者无关，本项目的开发者及社区没有义务回答您部署时的任何疑问。
 - 对于HoshinoBot插件的开发者，在您发布插件或利用插件营利时，请遵守GPLv3协议将插件代码开源。
+
 最终解释权归HoshinoBot开发组所有。
 
 
