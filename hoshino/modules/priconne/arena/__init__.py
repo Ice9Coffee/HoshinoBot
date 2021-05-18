@@ -153,7 +153,8 @@ async def _arena_query(bot, ev: CQEvent, region: int):
     at = str(MessageSegment.at(ev.user_id))
 
     msg = [
-        # defen,
+        defen,
+        # at,
         f'已为骑士{at}查询到以下进攻方案：',
         str(teams),
         # '作业评价：',
