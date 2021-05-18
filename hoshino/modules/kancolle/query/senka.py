@@ -6,7 +6,6 @@ from PIL import Image
 
 from hoshino import R, aiorequests
 from hoshino.typing import CQEvent
-from hoshino.typing import MessageSegment as ms
 
 from . import sv
 
@@ -21,7 +20,7 @@ def rank_url(yy, mm, ss):
 
 async def get_img(yy, mm, ss):
     img = R.img('kancolle/senka/', rank_filename(yy, mm, ss))
-    if not os.path.exists(img.path):
+    if not img.exist:
         link = rank_url(yy, mm, ss)
         resp = await aiorequests.get(link, stream=True)
         if 200 == resp.status_code:
