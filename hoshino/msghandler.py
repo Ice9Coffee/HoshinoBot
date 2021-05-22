@@ -9,26 +9,26 @@ async def handle_message(bot, event: CQEvent, _):
         return
 
     for t in trigger.chain:
-        sf = t.find_handler(event)
-        if sf:
+        service_func = t.find_handler(event)
+        if service_func:
             trigger_name = t.__class__.__name__
             break
 
-    if not sf:
+    if not service_func:
         return  # triggered nothing.
-    sf.sv.logger.info(f'Message {event.message_id} triggered {sf.__name__} by {trigger_name}.')
+    service_func.sv.logger.info(f'Message {event.message_id} triggered {service_func.__name__} by {trigger_name}.')
 
-    if sf.only_to_me and not event['to_me']:
+    if service_func.only_to_me and not event['to_me']:
         return  # not to me, ignore.
 
-    if not sf.sv._check_all(event):
+    if not service_func.sv._check_all(event):
         return  # permission denied.
 
     try:
-        await sf.func(bot, event)
+        await service_func.func(bot, event)
     except CanceledException:
         raise
     except Exception as e:
-        sf.sv.logger.error(f'{type(e)} occured when {sf.__name__} handling message {event.message_id}.')
-        sf.sv.logger.exception(e)
+        service_func.sv.logger.error(f'{type(e)} occured when {service_func.__name__} handling message {event.message_id}.')
+        service_func.sv.logger.exception(e)
     raise CanceledException(f'Handled by {trigger_name} of Hoshino')

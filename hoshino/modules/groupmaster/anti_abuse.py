@@ -71,6 +71,8 @@ BANNED_WORD = (
 async def ban_word(session):
     ctx = session.ctx
     user_id = ctx['user_id']
+    if hoshino.priv.check_block_user(user_id):
+        return
     msg_from = str(user_id)
     if ctx['message_type'] == 'group':
         msg_from += f'@[群:{ctx["group_id"]}]'

@@ -19,11 +19,12 @@ sv = Service('twitter-poller', use_priv=priv.SUPERUSER, manage_priv=priv.SUPERUS
 URL_TIMELINE = 'statuses/user_timeline'
 
 subr_dic = {
-    Service('kc-twitter', enable_on_default=False, help_='艦これ官推转发', bundle='kancolle'): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi'],
+    Service('kc-twitter', enable_on_default=False, help_='艦これ官推转发', bundle='kancolle'): ['KanColle_STAFF', 'C2_STAFF', 'ywwuyi', 'FlatIsNice'],
     Service('pcr-twitter', enable_on_default=True, help_='日服Twitter转发', bundle='pcr订阅'): ['priconne_redive', 'priconne_anime'],
     Service('pripri-twitter', enable_on_default=False, visible=False): ['pripri_anime'],
     Service('coffee-favorite-twitter', manage_priv=priv.SUPERUSER,
             enable_on_default=False, visible=False): ['shiratamacaron', 'k_yuizaki', 'suzukitoto0323'],
+    Service('uma-twitter', enable_on_default=False, help_="ウマ娘推特转发", bundle='umamusume'): ['uma_musu', 'uma_musu_anime'],
 }
 
 latest_info = {}      # { account: {last_tweet_id: int, profile_image: str } }
@@ -59,18 +60,21 @@ def tweet_formatter(item):
     name = item['user']['name']
     time = time_formatter(item['created_at'])
     text = item['full_text']
-    try:
-        img = item['entities']['media'][0]['media_url']
-        assert re.search(r'\.(jpg|jpeg|png|gif|jfif|webp)$', img, re.I)
-        img = f"\n{ms.image(img)}"
-    except:
-        img = ''
-    return f"@{name}\n{time}\n\n{text}{img}"
+    imgs = []
+    for media in item.get('extended_entities', item['entities']).get('media', []):
+        try:
+            img = media['media_url']
+            if re.search(r'\.(jpg|jpeg|png|gif|jfif|webp)$', img, re.I):
+                imgs.append(str(ms.image(img)))
+        except Exception as e:
+            sv.logger.exception(e)
+    imgs = ' '.join(imgs)
+    return f"@{name}\n{time}\n\n{text}\n{imgs}"
 
 
 def has_media(item):
     try:
-        return bool(item['entities']['media'][0]['media_url'])
+        return bool(item['extended_entities']['media'][0]['media_url'])
     except:
         return False
 
@@ -106,7 +110,7 @@ async def poll_new_tweets(account:str):
 
 # Requests/15-min window: 900  == 1 req/s
 _subr_num = len(latest_info)
-_freq = 8 * _subr_num
+_freq = 3 * _subr_num
 sv.logger.info(f"twitter_poller works at {_subr_num} / {_freq} seconds")
 
 @sv.scheduled_job('interval', seconds=_freq)
@@ -148,12 +152,16 @@ async def one_tweet(bot, ev: CQEvent):
         'screen_name': account,
         'count': count,
         'tweet_mode': 'extended',
+        'include_rts': False,
     }
     rsp = await twt_request(URL_TIMELINE, params)
     items = rsp.get_iterator()
-    if account in latest_info and latest_info[account]['media_only']:
-        items = filter(has_media, items)
+    # if account in latest_info and latest_info[account]['media_only']:
+    #     items = filter(has_media, items)
     twts = list(map(tweet_formatter, items))
     for t in twts:
-        await bot.send(ev, t)
+        try:
+            await bot.send(ev, t)
+        except Exception as e:
+            sv.logger.exception(e)
         await asyncio.sleep(0.5)

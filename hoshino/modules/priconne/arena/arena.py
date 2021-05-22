@@ -1,9 +1,8 @@
 import base64
 import os
 import time
-from collections import defaultdict
 
-from hoshino import aiorequests, config, util
+from hoshino import aiorequests, config
 
 from .. import chara
 from . import sv

@@ -13,3 +13,4 @@ beautifulsoup4>=4.9.0
 pygtrie>=2.0
 tinydb>=4.0
 aiohttp>=3.6
+peony-twitter[all]~=1.1.7

@@ -3,9 +3,9 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-rank_jp = '19-5'
-rank_tw = '18-5'
-rank_cn = '12-3'
+rank_jp = '20-4'
+rank_tw = '19-4'
+rank_cn = '12-5'
 ptw = ' '.join(map(str, [
     R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode,
     R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode,

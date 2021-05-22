@@ -1,21 +1,34 @@
 # HoshinoBot
+[![License](https://img.shields.io/github/license/Ice-Cirno/HoshinoBot)](LICENSE)
+![Python Version](https://img.shields.io/badge/python-3.8+-blue)
+![Nonebot Version](https://img.shields.io/badge/nonebot-1.6.0%2B%2C%202.0.0---blue)
+[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoのお茶会-brightgreen)](https://jq.qq.com/?_wv=1027&k=eYGgrL4A)
+[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://jq.qq.com/?_wv=1027&k=wgirhYYQ)
 
-A qqbot for Princess Connect Re:Dive (and other usage :)
+A QQ-bot for Princess Connect Re:Dive based on [Nonebot](https://github.com/nonebot/nonebot)
 
-**2020年8月2日0点，qq机器人框架相继停止维护。**
-**感谢 酷Q项目 和 CQHTTP插件 的开发者们！感谢他们让Hoshino得以诞生！**
-**Hoshino不再对酷Q进行支持**
+<details>
+  <summary>开发历史</summary>
+
+- 2019.09.20 HoshinoBot诞生
+- ... (待补充)
+- **2020年8月2日0点，qq机器人框架相继停止维护。** **感谢 酷Q项目 和 CQHTTP插件 的开发者们！感谢他们让Hoshino得以诞生！** **Hoshino不再对酷Q进行支持**
+
+</details>
 
 
 ## 简介
 
-**HoshinoBot:** 基于 [nonebot](http://nonebot.cqp.moe) 框架，开源、无公害、非转基因的QQ机器人。
+**HoshinoBot:** 基于 [nonebot](https://docs.nonebot.dev/) 框架，开源、无公害、非转基因的QQ机器人。
 
 
 
 ## 功能介绍
 
-HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-redive.jp) 玩家为核心，主要功能有：
+HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-redive.jp) 玩家为核心。
+
+<details>
+  <summary>主要功能</summary>
 
 - **转蛋模拟**：单抽、十连、抽一井
 - **竞技场解法查询**：支持按服务器过滤，支持反馈点赞点踩
@@ -31,7 +44,10 @@ HoshinoBot 的功能开发以服务 [公主连结☆Re:Dive](http://priconne-red
 
 > 由于bot的功能会快速迭代开发，使用方式这里不进行具体的说明，请向bot发送"help"或移步[此文件](hoshino/modules/botmanage/help.py)查看详细。会战管理功能的详细说明，请[点击这里](hoshino/modules/pcrclanbattle/clanbattle/README.md)
 
-HoshinoBot 还具有以下通用功能：
+</details>
+
+<details>
+  <summary>通用功能</summary>
 
 - **[蜜柑计划](http://mikanani.me)番剧更新订阅**
 - **入群欢迎**&**退群提醒**
@@ -41,7 +57,12 @@ HoshinoBot 还具有以下通用功能：
 - **机器翻译**
 - **反馈发送**：反馈内容将由bot私聊发送给维护组
 
-此外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能：
+</details>
+
+此外，HoshinoBot 为 [艦隊これくしょん](http://www.dmm.com/netgame/feature/kancolle.html) 玩家开发了以下功能
+
+<details>
+  <summary>点击展开</summary>
 
 - **官推转发**：「艦これ」開発/運営 & C2機関
 - **时报**
@@ -55,6 +76,8 @@ HoshinoBot 还具有以下通用功能：
 >
 > 如果您有新的想法，欢迎联系我！即便您不会编程，您也可以在内容更新上帮到我们！
 
+</details>
+
 -------------
 
 ### 功能模块控制
@@ -67,14 +90,36 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
 ```
 
 
+## 如何开始使用
+
+QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoのお茶会-brightgreen)](https://jq.qq.com/?_wv=1027&k=eYGgrL4A)提供了我们部署的bot，提供Hoshino的原生服务。您可以在这里试用bot功能、赞助开发者，赞助者可邀请bot加入自己的群使用。
+
+如果您具备基本的linux与python能力，并拥有一台服务器（轻量级即可），您可以参阅部署指南自行部署。
+
+
+## 开源协议及免责声明
+
+本项目遵守GPL-3.0协议开源，请在协议允许的条件及范围内使用本项目。本项目的开发者不会强制向您索要任何费用，同时也不会提供任何质保，一切因本项目引起的法律、利益纠纷由与本项目的开发者无关。
+- 对于自行搭建、小范围私用的非营利性bot，若遇到任何部署、开发上的疑问，欢迎提交issue或加入[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://jq.qq.com/?_wv=1027&k=wgirhYYQ)讨论，我们欢迎有礼貌、描述详尽的提问！
+- 对于以营利为目的部署的bot，由部署者负责，与本项目的开发者无关，本项目的开发者及社区没有义务回答您部署时的任何疑问。
+- 对于HoshinoBot插件的开发者，在您发布插件或利用插件营利时，请遵守GPL-3.0协议将插件代码开源。
+
+最终解释权归HoshinoBot开发组所有。
 
 
 
+## 部署指南
 
+**由于酷Q已停止运营，您可以使用[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)或[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)作为无头QQ客户端。**
 
-## ~~部署指南~~
+旧文档已失效（新文档正在编写中...），请参考由 [pcrbot 社区](https://github.com/pcrbot)提供的部署指南：
 
-**由于酷Q已停止维护，本指南已失效。您可以使用[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)或[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)作为替代。由于当前mirai仍不稳定（甚至删库跑路），请自行参考相应的文档进行部署，本项目组不解答部署问题。**
+- 《[Linux 下部署一个公主连结 qq 群聊机器人](https://cn.pcrbot.com/deploy-a-priconne-bot-on-linux/)》作者：[地河君_official](https://github.com/Chendihe4975)
+- 《[Windows 给新人的简易部署指南](https://github.com/Soung2279/Mirai-Bot-Setup)》作者：[SYoung](https://github.com/Soung2279)
+- 《[使用 Docker 部署 HoshinoBot 与 yobot](https://cn.pcrbot.com/depoly-with-docker/)》作者：[yuudi](https://github.com/yuudi)
+
+<details>
+  <summary>（点击查看旧文档）</summary>
 
 本bot功能繁多，部分功能需要静态图片资源和带有认证的api key，恕不能公开。本指南将首先带领您搭建具有**模拟抽卡(纯文字版)**、**会战管理**功能的HoshinoBot。其他功能需额外配置，请参考本章**更进一步**的对应小节。
 
@@ -204,6 +249,7 @@ HoshinoBot 的功能繁多，各群可根据自己的需要进行开关控制，
     注意，此时您的机器人功能还不完全，部分功能可能无法正常工作。若希望您的机器人可以发送图片，或使用其他进阶功能，请参考本章**更进一步**的对应小节。
 
 
+</details>
 
 ### 更进一步
 
@@ -296,7 +342,7 @@ access_token_secret = "your_access_token_secret"
 
 #### 晴乃词库
 
-舰娘及装备查询功能使用了精简版的晴乃词库，如有需要请加QQ群[Hoshino的后花园](https://jq.qq.com/?wv=1027&k=55fGEgi)或联系晴乃维护组。
+舰娘及装备查询功能使用了精简版的晴乃词库，如有需要请加 Hoshino的后花园（群号367501912）或联系晴乃维护组。
 
 
 
