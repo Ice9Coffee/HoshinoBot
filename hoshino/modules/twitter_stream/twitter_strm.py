@@ -5,13 +5,14 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Dict, Iterable, Set
 
-import hoshino
-import peony
 import pytz
+import peony
+from peony import PeonyClient
+
+import hoshino
 from hoshino import Service, priv, util
 from hoshino.config import twitter as cfg
 from hoshino.typing import MessageSegment as ms
-from peony import PeonyClient
 
 try:
     import ujson as json
@@ -59,20 +60,21 @@ router.add(sv_uma, ["uma_musu", "uma_musu_anime"])
 router.add(sv_test, ["Ice9Coffee"])
 
 depress_artist = ["tkmiz"]
-coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku"]
+coffee_fav = ["shiratamacaron", "k_yuizaki", "suzukitoto0323", "usagicandy_taku", "usagi_takumichi"]
 moe_artist = [
     "koma_momozu", "santamatsuri", "panno_mimi", "suimya", "Anmi_", "mamgon",
     "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda", "hoshi_u3",
     "siragagaga", "fuzichoco", "miyu_miyasaka", "naco_miyasaka", "tsukimi08",
     "tsubakininiwawa", "_Dan_ball", "ominaeshin", "gomalio_y", "izumiyuhina",
     "1kurusk", "amsrntk3", "kani_biimu", "Nakkar7", "li_hongbo", "nahaki_401",
-    "ukiukisoda", "yukkieeeeeen", "t_takahashi0830", "riko0202",
+    "ukiukisoda", "yukkieeeeeen", "t_takahashi0830", "riko0202", "enoki_art",
+    "Zoirun", "rulu_py",
 ]
 router.add(sv_coffee_fav, coffee_fav)
 router.add(sv_moe_artist, moe_artist)
 router.add(sv_depress_artist, depress_artist)
-for i in [*moe_artist, *depress_artist]:
-    router.set_media_only(i)
+for a in [*moe_artist, *depress_artist]:
+    router.set_media_only(a)
 
 
 class UserIdCache:
@@ -86,7 +88,7 @@ class UserIdCache:
                     self.cache = json.load(f)
             except Exception as e:
                 sv.logger.exception(e)
-                sv.logger.error(f"{type(e)} occured when loading `twitter_uid_cache.json`, using empty cache.")    
+                sv.logger.error(f"{type(e)} occured when loading `twitter_uid_cache.json`, using empty cache.")
 
 
     async def convert(self, client: PeonyClient, screen_names: Iterable[str], cached=True):
