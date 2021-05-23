@@ -179,3 +179,13 @@ def filt_message(message: Union[Message, str]):
         return message
     else:
         raise TypeError
+
+
+
+def render_list(lines, prompt="") -> str:
+    n = len(lines)
+    if n == 0:
+        return prompt
+    if n == 1:
+        return prompt + "\n┗" + lines[0]
+    return prompt + "\n┣" + "\n┣".join(lines[:-1]) + "\n┗" + lines[-1]
