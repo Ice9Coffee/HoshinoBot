@@ -154,7 +154,7 @@ class Service:
             f'Service {self.name} is disabled at group {group_id}')
 
     def check_enabled(self, group_id):
-        return bool( (group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group))
+        return bool((group_id in self.enable_group) or (self.enable_on_default and group_id not in self.disable_group))
 
 
     def _check_all(self, ev: CQEvent):
@@ -163,7 +163,7 @@ class Service:
 
     async def get_enable_groups(self) -> dict:
         """获取所有启用本服务的群
-        
+
         @return { group_id: [self_id1, self_id2] }
         """
         gl = defaultdict(list)
