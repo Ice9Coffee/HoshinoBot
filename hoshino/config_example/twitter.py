@@ -2,6 +2,7 @@ consumer_key = ""
 consumer_secret = ""
 access_token_key = ""
 access_token_secret = ""
+proxy = None                # 代理设置 当你的服务器需要使用代理访问Twitter时设置
 
 follows = {
     "twitter-stream-test": ["Ice9Coffee"],
