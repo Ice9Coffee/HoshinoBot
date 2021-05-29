@@ -5,7 +5,7 @@ import zhconv
 
 import hoshino
 from hoshino import util
-from hoshino.typing import CQEvent
+from hoshino.typing import CQEvent, List
 
 
 class BaseTrigger:
@@ -145,7 +145,7 @@ suffix = SuffixTrigger()
 keyword = KeywordTrigger()
 rex = RexTrigger()
 
-chain = [
+chain: List[BaseTrigger] = [
     prefix,
     suffix,
     _TextNormalizer(),

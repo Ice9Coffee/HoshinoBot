@@ -64,16 +64,10 @@ class BattleMaster(object):
 
     @staticmethod
     def get_stage(round_, server):
-        # if server == BattleMaster.SERVER_CN:
-        #     return 4 if round_ >= 11 else 3 if round_ >= 6 else 2 if round_ >= 2 else 1
-        #     y, m, _ = BattleMaster.get_yyyymmdd(datetime.now(), 8)
-        #     if y == 2020:
-        #         if m < 9:
-        #             return 5 if round_ == 1 else 6
-        #         elif m < 12:
-        #             return 7 if round_ <= 1 else 8
-        # All other situation
-        return 5 if round_ >= 45 else 4 if round_ >= 35 else 3 if round_ >= 11 else 2 if round_ >= 4 else 1
+        if server == BattleMaster.SERVER_JP:
+            return 5 if round_ >= 41 else 4 if round_ >= 31 else 3 if round_ >= 11 else 2 if round_ >= 4 else 1
+        else:
+            return 5 if round_ >= 45 else 4 if round_ >= 35 else 3 if round_ >= 11 else 2 if round_ >= 4 else 1
 
 
     def get_boss_info(self, round_, boss, server):

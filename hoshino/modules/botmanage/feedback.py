@@ -13,7 +13,7 @@ EXCEED_NOTICE = f'您今天已经喝过{_max}杯了，请明早5点后再来！'
 async def feedback(bot, ev: CQEvent):
     uid = ev.user_id
     if not lmt.check(uid):
-        await bot.finish(EXCEED_NOTICE, at_sender=True)
+        await bot.finish(ev, EXCEED_NOTICE, at_sender=True)
     coffee = hoshino.config.SUPERUSERS[0]
     text = str(ev.message).strip()
     if not text:
