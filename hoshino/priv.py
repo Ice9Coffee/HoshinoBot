@@ -14,6 +14,7 @@ SUPERUSER = 999
 from datetime import datetime
 
 import hoshino
+from hoshino import config
 from hoshino.typing import CQEvent
 
 #===================== block list =======================#
@@ -53,7 +54,8 @@ def get_user_priv(ev: CQEvent):
         return SUPERUSER
     if check_block_user(uid):
         return BLACK
-    # TODO: White list
+    if uid in config.WHITE_LIST:
+        return WHITE
     if ev['message_type'] == 'group':
         if not ev.anonymous:
             role = ev.sender.get('role')
