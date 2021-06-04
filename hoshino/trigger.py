@@ -1,4 +1,5 @@
 import re
+from collections import defaultdict
 
 import pygtrie
 import zhconv
@@ -12,7 +13,7 @@ class BaseTrigger:
     def add(self, x, sf: "ServiceFunc"):
         raise NotImplementedError
 
-    def find_handler(self, event: CQEvent) -> "ServiceFunc":
+    def find_handler(self, event: CQEvent) -> List["ServiceFunc"]:
         raise NotImplementedError
 
 
@@ -22,24 +23,26 @@ class PrefixTrigger(BaseTrigger):
         self.trie = pygtrie.CharTrie()
 
     def add(self, prefix: str, sf: "ServiceFunc"):
+        prefix_cht = zhconv.convert(prefix, "zh-hant")
         if prefix in self.trie:
-            other = self.trie[prefix]
-            hoshino.logger.warning(
-                f"Failed to add prefix trigger `{prefix}`: Conflicts between {sf.__name__} and {other.__name__}"
-            )
-            return
-        self.trie[prefix] = sf
-        self.trie[zhconv.convert(prefix, "zh-hant")] = sf
-        hoshino.logger.debug(f"Succeed to add prefix trigger `{prefix}`")
+            self.trie[prefix].append(sf)
+            if prefix_cht != prefix:
+                self.trie[prefix_cht].append(sf)
+            hoshino.logger.warning(f"Prefix trigger `{prefix}` added multi handler: `{sf.__name__}`")
+        else:
+            self.trie[prefix] = [sf]
+            if prefix_cht != prefix:
+                self.trie[prefix_cht] = [sf]
+            hoshino.logger.debug(f"Succeed to add prefix trigger `{prefix}`")
 
-    def find_handler(self, event: CQEvent):
+    def find_handler(self, event: CQEvent) -> List["ServiceFunc"]:
         first_msg_seg = event.message[0]
         if first_msg_seg.type != "text":
-            return None
+            return []
         first_text = first_msg_seg.data["text"].lstrip()
         item = self.trie.longest_prefix(first_text)
         if not item:
-            return None
+            return []
 
         event["prefix"] = item.key
         first_text = first_text[len(item.key) :].lstrip()
@@ -57,24 +60,26 @@ class SuffixTrigger(BaseTrigger):
 
     def add(self, suffix: str, sf: "ServiceFunc"):
         suffix_r = suffix[::-1]
+        suffix_r_cht = zhconv.convert(suffix_r, "zh-hant")
         if suffix_r in self.trie:
-            other = self.trie[suffix_r]
-            hoshino.logger.warning(
-                f"Failed to add suffix trigger `{suffix}`: Conflicts between {sf.__name__} and {other.__name__}"
-            )
-            return
-        self.trie[suffix_r] = sf
-        self.trie[zhconv.convert(suffix_r, "zh-hant")] = sf
-        hoshino.logger.debug(f"Succeed to add suffix trigger `{suffix}`")
+            self.trie[suffix_r].append(sf)
+            if suffix_r_cht != suffix_r:
+                self.trie[suffix_r_cht].append(sf)
+            hoshino.logger.warning(f"Suffix trigger `{suffix}` added multi handler: `{sf.__name__}`")
+        else:
+            self.trie[suffix_r] = [sf]
+            if suffix_r_cht != suffix_r:
+                self.trie[suffix_r_cht] = [sf]
+            hoshino.logger.debug(f"Succeed to add suffix trigger `{suffix}`")
 
-    def find_handler(self, event: CQEvent):
+    def find_handler(self, event: CQEvent) -> List["ServiceFunc"]:
         last_msg_seg = event.message[-1]
         if last_msg_seg.type != "text":
-            return None
+            return []
         last_text = last_msg_seg.data["text"].rstrip()
         item = self.trie.longest_prefix(last_text[::-1])
         if not item:
-            return None
+            return []
 
         event["suffix"] = item.key[::-1]
         last_text = last_text[: -len(item.key)].rstrip()
@@ -94,50 +99,53 @@ class KeywordTrigger(BaseTrigger):
         if sf.normalize_text:
             keyword = util.normalize_str(keyword)
         if keyword in self.allkw:
-            other = self.allkw[keyword]
-            hoshino.logger.warning(
-                f"Failed to add keyword trigger `{keyword}`: Conflicts between {sf.__name__} and {other.__name__}"
-            )
-            return
-        self.allkw[keyword] = sf
-        hoshino.logger.debug(f"Succeed to add keyword trigger `{keyword}`")
+            self.allkw[keyword].append(sf)
+            hoshino.logger.warning(f"Keyword trigger `{keyword}` added multi handler: `{sf.__name__}`")
+        else:
+            self.allkw[keyword] = [sf]
+            hoshino.logger.debug(f"Succeed to add keyword trigger `{keyword}`")
 
-    def find_handler(self, event: CQEvent) -> "ServiceFunc":
-        for kw, sf in self.allkw.items():
-            text = event.norm_text if sf.normalize_text else event.plain_text
-            if kw in text:
-                return sf
-        return None
+    def find_handler(self, event: CQEvent) -> List["ServiceFunc"]:
+        ret = []
+        for kw, sfs in self.allkw.items():
+            for sf in sfs:
+                text = event.norm_text if sf.normalize_text else event.plain_text
+                if kw in text:
+                    ret.append(sf)
+        return ret
 
 
 class RexTrigger(BaseTrigger):
     def __init__(self):
         super().__init__()
-        self.allrex = {}
+        self.allrex = defaultdict(list)
 
     def add(self, rex: re.Pattern, sf: "ServiceFunc"):
-        self.allrex[rex] = sf
+        self.allrex[rex].append(sf)
         hoshino.logger.debug(f"Succeed to add rex trigger `{rex.pattern}`")
 
     def find_handler(self, event: CQEvent) -> "ServiceFunc":
-        for rex, sf in self.allrex.items():
-            text = event.norm_text if sf.normalize_text else event.plain_text
-            match = rex.search(text)
-            if match:
-                event["match"] = match
-                return sf
-        return None
+        ret = []
+        for rex, sfs in self.allrex.items():
+            for sf in sfs:
+                text = event.norm_text if sf.normalize_text else event.plain_text
+                match = rex.search(text)
+                if match:
+                    event["match"] = match
+                    ret.append(sf)
+        return ret
 
 
 class _PlainTextExtractor(BaseTrigger):
     def find_handler(self, event: CQEvent):
         event.plain_text = event.message.extract_plain_text().strip()
-
+        return []
 
 class _TextNormalizer(_PlainTextExtractor):
     def find_handler(self, event: CQEvent):
         super().find_handler(event)
         event.norm_text = util.normalize_str(event.plain_text)
+        return []
 
 
 prefix = PrefixTrigger()
@@ -149,6 +157,6 @@ chain: List[BaseTrigger] = [
     prefix,
     suffix,
     _TextNormalizer(),
-    keyword,
     rex,
+    keyword,
 ]
