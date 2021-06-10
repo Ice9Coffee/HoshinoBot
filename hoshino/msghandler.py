@@ -4,7 +4,6 @@ from hoshino.typing import CQEvent
 
 @message_preprocessor
 async def handle_message(bot, event: CQEvent, _):
-
     if event.detail_type != 'group':
         return
 
@@ -29,7 +28,8 @@ async def handle_message(bot, event: CQEvent, _):
         except CanceledException:
             raise
         except Exception as e:
-            service_func.sv.logger.error(f'{type(e)} occured when {service_func.__name__} handling message {event.message_id}.')
+            service_func.sv.logger.error(
+                f'{type(e)} occured when {service_func.__name__} handling message {event.message_id}.')
             service_func.sv.logger.exception(e)
         raise CanceledException(f'Handled by Hoshino')
         # exception raised, no need for break

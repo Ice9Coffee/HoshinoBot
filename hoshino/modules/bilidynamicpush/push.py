@@ -63,7 +63,7 @@ def getImageCqCode(path):
 
 
 def getLimitedMessage(originMsg):
-    if messageLengthLimit > 0 and len(originMsg) > messageLengthLimit:
+    if 0 < messageLengthLimit < len(originMsg):
         return originMsg[0:messageLengthLimit] + '……'
     else:
         return originMsg
