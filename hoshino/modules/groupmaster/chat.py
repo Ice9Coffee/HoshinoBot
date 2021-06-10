@@ -11,7 +11,11 @@ async def say_hello(session):
     await session.send('はい！私はいつも貴方の側にいますよ！')
 
 
-sv = Service('chat', visible=False)
+sv = Service(
+    name='chat',
+    visible=False
+)
+
 
 @sv.on_fullmatch('沙雕机器人')
 async def say_sorry(bot, ev):
@@ -41,7 +45,7 @@ async def seina(bot, ev):
     await bot.send(ev, R.img('星奏.png').cqcode)
 
 
-@sv.on_fullmatch(('我有个朋友说他好了', '我朋友说他好了', ))
+@sv.on_fullmatch(('我有个朋友说他好了', '我朋友说他好了',))
 async def ddhaole(bot, ev):
     await bot.send(ev, '那个朋友是不是你弟弟？')
     await util.silence(ev, 30)
@@ -62,22 +66,18 @@ async def chat_queshi(bot, ctx):
         await bot.send(ctx, R.img('确实.jpg').cqcode)
 
 
-@sv.on_keyword(('会战'))
-async def chat_clanba(bot, ctx):
-    if random.random() < 0.02:
-        await bot.send(ctx, R.img('我的天啊你看看都几度了.jpg').cqcode)
-
-
 @sv.on_keyword(('内鬼'))
 async def chat_neigui(bot, ctx):
     if random.random() < 0.10:
         await bot.send(ctx, R.img('内鬼.png').cqcode)
+
 
 nyb_player = f'''{R.img('newyearburst.gif').cqcode}
 正在播放：New Year Burst
 ──●━━━━ 1:05/1:30
 ⇆ ㅤ◁ ㅤㅤ❚❚ ㅤㅤ▷ ㅤ↻
 '''.strip()
+
 
 @sv.on_keyword(('春黑', '新黑'))
 async def new_year_burst(bot, ev):

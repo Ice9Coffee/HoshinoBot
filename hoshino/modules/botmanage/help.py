@@ -1,7 +1,7 @@
 from hoshino import Service, priv
 from hoshino.typing import CQEvent
 
-sv = Service('_help_', manage_priv=priv.SUPERUSER, visible=False)
+sv = Service(name='_help_', manage_priv=priv.SUPERUSER, visible=False)
 
 TOP_MANUAL = '''
 =====================
@@ -35,6 +35,7 @@ TOP_MANUAL = '''
 ※※调教时请注意使用频率，您的滥用可能会导致bot账号被封禁
 '''.strip()
 
+
 def gen_bundle_manual(bundle_name, service_list, gid):
     manual = [bundle_name]
     service_list = sorted(service_list, key=lambda s: s.name)
@@ -47,7 +48,7 @@ def gen_bundle_manual(bundle_name, service_list, gid):
     return '\n'.join(manual)
 
 
-@sv.on_prefix(('help', '帮助'))
+# @sv.on_prefix(('help', '帮助'))
 async def send_help(bot, ev: CQEvent):
     bundle_name = ev.message.extract_plain_text().strip()
     bundles = Service.get_bundles()

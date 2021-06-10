@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+  <meta charset="utf-8">
+  <title>镜华|Kyouka - 表情包管理系统</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="Uhost is Creative Website Template" name="description">
+  <meta content="" name="keywords">
+  <meta content="" name="author">
+
+  <!-- CSS Files
+    ================================================== -->
+  <link rel="stylesheet" href="https://www.jq22.com/jquery/bootstrap-4.2.1.css">
+  <link href="{{ url_for('static',filename='css/style.css') }}" rel="stylesheet" type="text/css">
+  <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+  <!-- color scheme -->
+  <link id="colors" href="{{ url_for('static',filename='css/colors/scheme-01.css') }}" rel="stylesheet" type="text/css">
+  <link href="{{ url_for('static',filename='css/coloring.css') }}" rel="stylesheet" type="text/css">
+  <!-- RS5.0 Stylesheet -->
+  <link href="{{ url_for('static',filename='revolution/css/settings.css') }}" rel="stylesheet" type="text/css">
+  <link href="{{ url_for('static',filename='revolution/css/layers.css') }}" rel="stylesheet" type="text/css">
+  <link href="{{ url_for('static',filename='revolution/css/navigation.css') }}" rel="stylesheet" type="text/css">
+</head>
+
+<body>
+  <div id="wrapper">
+    <!-- content begin -->
+    <div class="no-bottom no-top" id="content">
+      <div id="top"></div>
+      <!-- section begin -->
+      <section class="no-top no-bottom text-light"
+        data-bgimage="url({{ url_for('static',filename='images/background/11.png') }})"
+        data-stellar-background-ratio=".2">
+
+        <div class="overlay-bg t90">
+          <div class="container">
+            <div class="row">
+              <div class="col-md-12 text-center">
+                <h1>{{bot_name}}</h1>
+                <h3 class="no-bottom">表情包管理系统</h3>
+              </div>
+              <div class="spacer-60"></div>
+
+              <div class="col-md-8 offset-md-2">
+                <div class="box-highlight mb40">
+                  <div class="heading text-center">
+                    <h3>{{group_name}}</h3>
+                  </div>
+                  <div class="content" id="app">
+                    <el-container>
+                      <el-tabs type="border-card" align="center" @tab-click="updateTable">
+                        <el-tab-pane label="上传表情">
+                          <el-upload drag action="/uploader"
+                            :on-success="(response, file, fileList)=>{this.$message({type: 'success',message: '上传成功!'})}"
+                            multiple>
+                            <i class="el-icon-upload"></i>
+                            <div class="el-upload__text">将文件拖到此处，或<em>点击上传</em></div>
+                            <div class="el-upload__tip" slot="tip">只能上传jpg/png文件，且不超过16MB</div>
+                          </el-upload>
+                        </el-tab-pane>
+
+                        <el-tab-pane label="表情管理">
+                          <el-table :data="tableData" style="width: 100%">
+                            <el-table-column fixed prop="filename" label="文件名">
+                            </el-table-column>
+                            <el-table-column fixed="right" label="操作" width="120">
+                              <template slot-scope="scope">
+                                </el-button>
+                                <el-button type="danger" icon="el-icon-delete" size="mini"
+                                  v-on:click="deleteHw(scope.$index,tableData)" />
+                              </template>
+                            </el-table-column>
+                          </el-table>
+                        </el-tab-pane>
+                      </el-tabs>
+                    </el-container>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- section close -->
+
+
+    </div>
+    <!-- content close -->
+
+    <div id="preloader">
+      <div class="spinner">
+        <div class="bounce1"></div>
+        <div class="bounce2"></div>
+        <div class="bounce3"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Javascript Files
+        ================================================== -->
+  <script src="{{ url_for('static',filename='js/jquery.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/bootstrap.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/wow.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/jquery.isotope.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/easing.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/owl.carousel.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/validation.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/jquery.magnific-popup.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/enquire.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/jquery.stellar.min.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/jquery.plugin.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/typed.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/app.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/jquery.countTo.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/jquery.countdown.js') }}"></script>
+  <script src="{{ url_for('static',filename='js/designesia.js') }}"></script>
+  <script src="https://unpkg.com/vue/dist/vue.js"></script>
+  <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+  <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+  <script>
+    var vue = new Vue({
+      el: '#app',
+      data: {
+        tableData: []
+      },
+      methods: {
+        updateTable: function () {
+          var that = this;
+          axios.get("\\get\\memelist").then(
+            function (response) {
+              that.tableData = response.data;
+            },
+            function (err) {
+              console.log(err)
+            }
+          )
+        },
+        deleteHw: function (index, rows) {
+          var that = this;
+          this.$prompt('输入密码', '提示', {
+              confirmButtonText: '确定',
+              cancelButtonText: '取消',
+              inputType: 'password'
+            })
+            .then((val) => {
+              axios.delete("/del?filename=" + rows[index].filename+"&password="+val.value)
+                .then(function (response) {
+                  if (response.data == 'success') {
+                    that.$message({
+                      type: 'success',
+                      message: '删除成功!'
+                    });
+                    rows.splice(index, 1);
+                  } else if(response.data == 'wrong password'){
+                    that.$message({
+                      type: 'error',
+                      message: '密码错误!'
+                    });
+                  }else{
+                    that.$message({
+                      type: 'error',
+                      message: '未知错误!'
+                    });
+                  }
+                });
+            })
+            .catch(() => {
+              this.$message({
+                type: 'info',
+                message: '已取消删除'
+              })
+            });
+        }
+      }
+    })
+  </script>
+</body>
+<style type="text/css">
+  html,
+  body,
+  #app,
+  .el-container {
+    padding: 5px;
+    margin: 0px;
+    height: 100%;
+  }
+
+  .el-tabs {
+    width: 720px;
+    min-height: 497px;
+  }
+</style>
+
+</html>

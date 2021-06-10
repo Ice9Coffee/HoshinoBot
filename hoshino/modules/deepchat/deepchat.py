@@ -2,7 +2,13 @@ import random
 import hoshino
 from hoshino import Service, aiorequests, priv
 
-sv = Service('deepchat', manage_priv=priv.SUPERUSER, enable_on_default=False, visible=False)
+sv = Service(
+    name='deepchat',
+    manage_priv=priv.SUPERUSER,
+    enable_on_default=False,
+    visible=False
+)
+
 
 @sv.on_message('group')
 async def deepchat(bot, ctx):

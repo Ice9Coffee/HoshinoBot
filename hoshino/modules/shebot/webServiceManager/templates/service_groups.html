@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机器人设置</title>
+    <style>
+        h1 {
+            text-align: center;
+        }
+        div {
+            text-align: center;
+        }
+        ul {
+            list-style-type: none;
+            font-size: 18px;
+            margin: 0 auto;
+        }
+        .groupText {
+            display: inline-block;
+            width: 250px;
+            text-align: left;
+            font-size: medium;
+        }
+        .switchButton {
+            display: inline-block;
+            width: 70px;
+            height: 25px;
+        }
+        .on {
+            background-color: lawngreen; 
+        }
+        .off {
+            background-color: gray;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>{{ sv_name }}</h1>
+    </div>
+    <div>
+        <ul>
+            {% for group in groups %}
+                <li>
+                    <div>
+                        <span class="groupText">
+                            {{ group["group_id"] }}{{ group["group_name"] }}
+                        </span>
+                        <button id="{{group['group_id']}}" onclick="switcher('{{ group['group_id'] }}')" >  </button>
+                        <br>
+                        <br>
+                    </div>
+                </li>
+            {% endfor %}
+            &emsp;
+            <div>
+                <button onclick="onAll()" class="switchButton" >启用所有</button>
+                <button onclick="offAll()" class="switchButton">禁用所有</button>
+                <button onclick="save()" class="switchButton">保存</button>
+            </div>
+        </ul>
+    </div>
+
+    <script>
+        var conf = JSON.parse('{{conf|tojson}}');
+        var sv_name = "{{ sv_name }}";
+        for (gid_str in conf) {
+            if (conf[gid_str][sv_name]) {
+                document.getElementById(gid_str).innerText = '开';
+                document.getElementById(gid_str).className = 'on switchButton'
+            }
+            else{
+                document.getElementById(gid_str).innerText = '关';
+                document.getElementById(gid_str).className = 'off switchButton'
+            }
+        }
+
+        function set_conf(gid_str,is_enable) {
+            conf[gid_str][sv_name] = is_enable;
+            if (is_enable){
+                document.getElementById(gid_str).innerText = '开';
+                document.getElementById(gid_str).className = 'switchButton on';
+            }
+            else{
+                document.getElementById(gid_str).innerText = '关';
+                document.getElementById(gid_str).className = 'switchButton off';
+            }
+        }
+
+        function switcher(gid_str) {
+            var old_status = conf[gid_str][sv_name];
+            var new_status = (old_status + 1)%2;
+            set_conf(gid_str,Boolean(new_status));
+        }
+
+        function onAll() {
+            for (gid_str in conf) {
+                if (conf[gid_str][sv_name] == false) {
+                    conf[gid_str][sv_name] = true;
+                    document.getElementById(gid_str).innerText = '开';
+                    document.getElementById(gid_str).className = 'switchButton on';
+                }
+            }
+        }
+
+        function offAll() {
+            for (gid_str in conf) {
+                if (conf[gid_str][sv_name] == true) {
+                    conf[gid_str][sv_name] = false;
+                    document.getElementById(gid_str).innerText = '关';
+                    document.getElementById(gid_str).className = 'switchButton off';
+                }
+            }
+        }
+
+        function save(){
+            var url = 'http://{{ public_address }}:{{ port }}/set';
+            var request = new XMLHttpRequest();
+            request.onload = function() {
+                if (request.status == 200) {
+                    alert('设置成功');
+                }
+                else {
+                    alert('exception');
+                }
+            };
+
+            request.open('POST',url);
+            request.send(JSON.stringify(conf));
+        }
+    </script>
+</body>
+</html>

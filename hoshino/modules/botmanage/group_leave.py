@@ -2,6 +2,7 @@ import re
 from hoshino import sucmd
 from hoshino.typing import CommandSession
 
+
 @sucmd('quit', aliases=('退群',))
 async def quit_group(session: CommandSession):
     args = session.current_arg_text.split()

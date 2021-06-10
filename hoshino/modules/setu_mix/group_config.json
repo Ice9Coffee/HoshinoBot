@@ -1,0 +1,16 @@
+{
+  "861434319": {
+    "withdraw": 0,
+    "lolicon": true,
+    "lolicon_r18": false,
+    "acggov": false,
+    "xml": false
+  },
+  "683317547": {
+    "withdraw": 0,
+    "lolicon": true,
+    "lolicon_r18": true,
+    "acggov": true,
+    "xml": false
+  }
+}

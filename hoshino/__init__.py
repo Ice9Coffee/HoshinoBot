@@ -15,6 +15,7 @@ HoshinoBot = nonebot.NoneBot
 os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
 logger = new_logger('hoshino', config.DEBUG)
 
+
 def init() -> HoshinoBot:
     global _bot
     nonebot.init(config)

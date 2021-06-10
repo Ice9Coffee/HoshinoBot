@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<head>
+    <title>机器人设置</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* 选择器 {样式} */
+        .switchButton {
+            display: inline-block;
+            width: 70px;
+            height: 25px;
+        }
+        .on {
+            background-color: lawngreen; 
+        }
+        .off {
+            background-color: gray;
+        }
+        .service_text {
+            display: inline-block;
+            width: 120px;
+            text-align: left;
+            font-size: 16px;
+            color: red;
+        }
+        div {
+            width: auto;
+            height: 40px;
+            text-align: center;
+        }
+        ul {
+            list-style-type: none;
+            margin: 0 auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <h1>群{{ group_id }}服务一览</h1>
+    </div>
+    <ul>
+        {% for key in conf[group_id] %}
+            <li>
+                <div>
+                    <span class='service_text'>{{ key }}</span>
+                    <button id="{{key}}" onclick="switcher('{{key}}')" > {{ conf[group_id][key] }} </button>
+                </div>
+            </li>
+        {% endfor %}
+        <div>
+            <button onclick="onAll()" class="switchButton" >启用所有</button>
+            <!-- &emsp; -->
+            <button onclick="offAll()" class="switchButton">禁用所有</button>
+            <!-- &emsp; -->
+            <button onclick="save()" class="switchButton">保存</button>
+        </div>
+    </ul>
+
+    <script>
+        var conf = JSON.parse('{{conf|tojson}}');
+        var gid_str = '{{group_id}}';
+        for (key in conf[gid_str]) {
+            console.log(key);
+            if (conf[gid_str][key]) {
+                document.getElementById(key).innerText = '开';
+                document.getElementById(key).className = 'switchButton on';
+            }
+            else {
+                document.getElementById(key).innerText = '关';
+                document.getElementById(key).className = 'switchButton off';
+            }
+        }
+        function save(){
+            var url = 'http://{{ public_address }}:{{ port }}/set'
+            var request = new XMLHttpRequest();
+            request.onload = function() {
+                if (request.status == 200) {
+                    alert('设置成功');
+                }
+                else {
+                    alert('exception');
+                }
+            };
+
+            request.open('POST',url);
+            request.send(JSON.stringify(conf));
+        }
+        function set_conf(sv_name,is_enable) {
+            conf[gid_str][sv_name] = is_enable;
+            if (is_enable){
+                document.getElementById(sv_name).innerText = '开';
+                document.getElementById(sv_name).className = 'switchButton on';
+            }
+            else{
+                document.getElementById(sv_name).innerText = '关';
+                document.getElementById(sv_name).className = 'switchButton off';
+            }
+        }
+        function switcher(sv_name) {
+            var old_status = conf[gid_str][sv_name];
+            var new_status = (old_status + 1)%2;
+            set_conf(sv_name,Boolean(new_status));
+        }
+        function onAll() {
+            for (sv_name in conf[gid_str]) {
+                if (conf[gid_str][sv_name] == false) {
+                    conf[gid_str][sv_name] = true;
+                    document.getElementById(sv_name).innerText = '开';
+                    document.getElementById(sv_name).className = 'switchButton on';
+                }
+            }
+        }
+        function offAll() {
+            for (sv_name in conf[gid_str]) {
+                if (conf[gid_str][sv_name] == true) {
+                    conf[gid_str][sv_name] = false;
+                    document.getElementById(sv_name).innerText = '关';
+                    document.getElementById(sv_name).className = 'switchButton off';
+                }
+            }
+        }
+    </script>
+</body>

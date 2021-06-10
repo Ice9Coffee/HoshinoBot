@@ -101,7 +101,10 @@ from hoshino import Service, priv, util, R, HoshinoBot
 from hoshino.typing import CQEvent
 
 HAHAHA_VTB_TIANGOU = R.img('hahaha_vtb_tiangou.jpg')
-sv = Service('anti-holo', manage_priv=priv.SUPERUSER)
+
+
+# sv = Service('anti-holo', manage_priv=priv.SUPERUSER)
+
 
 # @sv.on_keyword(SB_HOLO)
 async def anti_holo(bot: HoshinoBot, ev: CQEvent):

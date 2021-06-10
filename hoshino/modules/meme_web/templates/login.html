@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zxx">
+
+<head>
+    <meta charset="utf-8">
+    <title>{{bot_name}} - Login</title>
+
+    <!-- CSS Files
+    ================================================== -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+
+</head>
+
+<body background="{{ url_for('static',filename='images/background/11.png') }}">
+    <div id="wrapper">
+        <div class="container" id=app>
+            <el-form ref="form" :model="form" label-width="80px" class="login-page">
+                <h2>{{bot_name}} - 登录</h2>
+                <el-form-item label="用  户:" prop="username">
+                    <el-input v-model="form.username" placeholder="请输入用户名">
+                        <el-button slot="prepend" icon="el-icon-user"></el-button>
+                    </el-input>
+                </el-form-item>
+                <el-form-item label="密 码:">
+                    <el-input v-model="form.password" type="password" placeholder="请输入密码">
+                        <el-button slot="prepend" icon="el-icon-key"></el-button>
+                    </el-input>
+                </el-form-item>
+                <el-button type="primary" icon="el-icon-user-solid" @click="login">登 录</el-button>
+            </el-form>
+        </div>
+    </div>
+    <!-- content close -->
+    <div id="preloader">
+        <div class="spinner">
+            <div class="bounce1"></div>
+            <div class="bounce2"></div>
+            <div class="bounce3"></div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Javascript Files
+        ================================================== -->
+    <script src="https://unpkg.com/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue-router/dist/vue-router.js"></script>
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/axios/0.20.0-0/axios.js"></script>
+    <script>
+        var vue = new Vue({
+            el: '#app',
+            data: {
+                form: {
+                    username: '',
+                    password: ''
+                }
+            },
+            methods: {
+                login: function () {
+                    axios.post('/meme/login?username=' + this.form.username + '&password=' + this.form.password)
+                        .then(
+                            (response) => {
+                                if (response.data == 'success') {
+                                    window.location.replace("/meme")
+                                }
+                            }, (err) => {
+                                console.log(err);
+                            }
+                        );
+                }
+            }
+        })
+    </script>
+</body>
+<style type="text/css">
+    .container {
+        margin-top: 200px;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+    }
+
+    body {
+        background-size: 100%;
+        background-attachment: scroll;
+        background-repeat: no-repeat;
+    }
+
+    .login-page {
+        border-radius: 5px;
+        margin: auto;
+        width: 450px;
+        padding: 35px 55px 15px;
+        background: #fff;
+        border: 1px solid #eaeaea;
+        box-shadow: 0 0 25px #cac6c6;
+    }
+
+    label.el-checkbox.rememberme {
+        margin: 0px 0px 15px;
+        text-align: left;
+    }
+</style>
+
+</html>

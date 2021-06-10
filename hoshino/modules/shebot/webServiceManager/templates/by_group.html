@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<head>
+    <title>机器人设置</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        ul {
+            width: 300px;
+            list-style-type: none;
+            margin: 0px auto;
+        }
+        div {
+            font-size: 18px;
+            height: 40px;
+            text-align: left;
+            margin: 0 auto;
+        }
+        a {
+            text-decoration: none;
+            text-align: left;
+        }
+        body {
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>按群管理</h1>
+    <div>
+        <ul>
+            {% for item in items %}
+                <li>
+                    <div>
+                        <a href = 'http://{{ public_address }}:{{ port }}/group/{{ item["group_id"] }}'>
+                            {{ item['group_id'] }}&emsp;{{ item['group_name'] }}
+                        </a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
