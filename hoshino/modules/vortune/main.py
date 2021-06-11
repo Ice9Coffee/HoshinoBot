@@ -8,7 +8,7 @@ from PIL import Image, ImageSequence, ImageDraw, ImageFont
 from nonebot import MessageSegment
 from hoshino.util import pic2b64
 
-absPath = '.'
+absPath = './hoshino/modules/vortune/'
 
 
 async def handlingMessages(msg, bot, userGroup, userQQ, ev):
