@@ -73,8 +73,8 @@ MODULES_ON = {
     # 'bilisearchspider',  # b站订阅
     'botchat',  # 机器人chat
     'botmanage',  # 机器人管理
-    # 'deepchat',
-    'explosion',  # 惠惠
+    # 'deepchat', # 复读
+    # 'explosion',  # 惠惠
     # 'generate_image',  # 取代原image
     'generator',  # 营销文生成等五个小功能
     'groupmanager',  # 群管插件
