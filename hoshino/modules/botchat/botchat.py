@@ -1,7 +1,6 @@
 import os
 import re
 import random
-
 from nonebot import on_command
 from datetime import datetime
 import pytz
@@ -12,7 +11,7 @@ from hoshino.typing import CQEvent
 
 tz = pytz.timezone('Asia/Shanghai')
 
-sv = Service('botchat', visible=True, manage_priv=priv.ADMIN, enable_on_default=True)
+sv = Service('BotChat', visible=True, manage_priv=priv.SUPERUSER, enable_on_default=True)
 
 
 # =====人格=====#
@@ -184,155 +183,119 @@ async def longwangnb(bot, ev):
         await bot.send(ev, '这苏家，不待也罢！立刻下黑羽令，我要让整个江城都知道，我龙王，回来了！')
 
 
-@sv.on_keyword('一路向北')
-async def yiluxiangbei(bot, ev):
-    await bot.send(ev, '我一路向北，离开有你的季节~', at_sender=True)
-
-
-@sv.on_keyword('敢杀我的马')
-async def wodema(bot, ev):
-    await bot.send(ev, 'TMD张麻子，敢杀我的🐎！')
-
-
 # 图片请放于 img/keyword目录下 #
 
 @sv.on_keyword(('确实', '有一说一', 'u1s1', 'yysy'))
 async def chat_queshi(bot, ev):
     if random.random() < 0.05:
-        await bot.send(ev, R.img(f"img/确实.jpg").cqcode)
+        await bot.send(ev, R.img(f"确实.jpg").cqcode)
 
 
-@sv.on_keyword(('内鬼'))
+@sv.on_keyword('内鬼')
 async def chat_neigui(bot, ev):
     if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/内鬼.png").cqcode)
+        await bot.send(ev, R.img(f"内鬼.png").cqcode)
 
 
-@sv.on_keyword(('不要以为这样就赢了'))
+@sv.on_keyword('不要以为这样就赢了')
 async def chat_clanba(bot, ev):
     if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/不要以为这样就赢了.jpg").cqcode)
+        await bot.send(ev, R.img(f"不要以为这样就赢了.jpg").cqcode)
 
 
 @sv.on_keyword(('上流', '上流社会', '红酒'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/上流.jpg").cqcode)
+        await bot.send(ev, R.img(f"上流.jpg").cqcode)
 
 
 @sv.on_keyword(('真行', '彳亍'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/行.jpg").cqcode)
-
-
-@sv.on_keyword(('别肝啦', '别肝了', '求求你们别肝了'))
-async def chat_clanba(bot, ev):
-    if random.random() < 0.30:
-        await bot.send(ev, R.img(f"img/别肝啦.jpg").cqcode)
+        await bot.send(ev, R.img(f"行.jpg").cqcode)
 
 
 @sv.on_keyword(('lsp', '老色批'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/lsp.jpg").cqcode)
+        await bot.send(ev, R.img(f"lsp.jpg").cqcode)
 
 
 @sv.on_keyword(('爬', '爪巴'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.05:
-        await bot.send(ev, R.img(f"img/爬.jpg").cqcode)
+        await bot.send(ev, R.img(f"爬.jpg").cqcode)
 
 
-@sv.on_keyword(('不会吧'))
+@sv.on_keyword('不会吧')
 async def chat_clanba(bot, ev):
     if random.random() < 0.02:
-        await bot.send(ev, R.img(f"img/不会吧.jpg").cqcode)
-
-
-@sv.on_keyword(('mana', '玛娜'))
-async def chat_clanba(bot, ev):
-    if random.random() < 0.20:
-        await bot.send(ev, R.img(f"img/mana.jpg").cqcode)
+        await bot.send(ev, R.img(f"不会吧.jpg").cqcode)
 
 
 @sv.on_keyword(('整一个', '白嫖'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/整一个.png").cqcode)
+        await bot.send(ev, R.img(f"整一个.png").cqcode)
 
 
-@sv.on_keyword(('正道的光'))
+@sv.on_keyword('正道的光')
 async def chat_clanba(bot, ev):
     if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/正道的光.jpg").cqcode)
+        await bot.send(ev, R.img(f"正道的光.jpg").cqcode)
 
 
 @sv.on_keyword(('好臭啊', '野兽先辈'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/臭.jpg").cqcode)
+        await bot.send(ev, R.img(f"臭.jpg").cqcode)
 
 
-@sv.on_keyword(('我超勇的'))
+@sv.on_keyword('我超勇的')
 async def chat_clanba(bot, ev):
     if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/勇.jpg").cqcode)
+        await bot.send(ev, R.img(f"勇.jpg").cqcode)
 
 
 @sv.on_keyword(('你不对劲', '不对劲'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.20:
-        await bot.send(ev, R.img(f"img/不对劲.jpg").cqcode)
+        await bot.send(ev, R.img(f"不对劲.jpg").cqcode)
 
 
 @sv.on_keyword(('respect', '尊重'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/res.jpg").cqcode)
-
-
-@sv.on_keyword(('晒卡', '我出货啦', '我中了', '我出了'))
-async def chat_clanba(bot, ev):
-    if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/gacha.jpg").cqcode)
+        await bot.send(ev, R.img(f"res.jpg").cqcode)
 
 
 @sv.on_keyword(('死机', '错误', 'error'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/错误.jpg").cqcode)
+        await bot.send(ev, R.img(f"错误.jpg").cqcode)
 
 
 @sv.on_keyword(('芜湖', '起飞', '飞飞飞'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/飞.jpg").cqcode)
+        await bot.send(ev, R.img(f"飞.jpg").cqcode)
 
 
 @sv.on_keyword(('？', '你有问题'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.02:
-        await bot.send(ev, R.img(f"img/123.jpg").cqcode)
-
-
-@sv.on_keyword(('布丁'))
-async def chat_clanba(bot, ev):
-    if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/布丁.gif").cqcode)
+        await bot.send(ev, R.img(f"123.jpg").cqcode)
 
 
 @sv.on_fullmatch(('我能去你家吃饭嘛', '我能去你家吃饭吗'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.20:
-        await bot.send(ev, R.img(f"img/吃饭吃一勺.jpg").cqcode)
+        await bot.send(ev, R.img(f"吃饭吃一勺.jpg").cqcode)
 
 
 # =================#
 
-dao_folder = R.img('img/botchat/dao/').path
-
-az_folder = R.img('img/botchat/az/').path
+az_folder = R.img('botchat/az/').path
 
 
 @sv.on_keyword(('啊这'))
@@ -343,11 +306,11 @@ async def chat_az(bot, ev):
         while not path or not os.path.isfile(path):
             filename = random.choice(filelist)
             path = os.path.join(az_folder, filename)
-            pic = R.img('img/botchat/az/', filename).cqcode
+            pic = R.img('botchat/az/', filename).cqcode
             await bot.send(ev, pic, at_sender=False)
 
 
-jietou_folder = R.img('img/botchat/jt/').path
+jietou_folder = R.img('botchat/jt/').path
 
 
 @sv.on_keyword(('接头'))
@@ -358,11 +321,11 @@ async def chat_az(bot, ev):
         while not path or not os.path.isfile(path):
             filename = random.choice(filelist)
             path = os.path.join(jietou_folder, filename)
-            pic = R.img('img/botchat/jt/', filename).cqcode
+            pic = R.img('botchat/jt/', filename).cqcode
             await bot.send(ev, pic, at_sender=False)
 
 
-mdjl_folder = R.img('img/botchat/mdjl/').path
+mdjl_folder = R.img('botchat/mdjl/').path
 
 
 @sv.on_keyword(('妈的绝了'))
@@ -373,59 +336,35 @@ async def chat_mdjl(bot, ev):
         while not path or not os.path.isfile(path):
             filename = random.choice(filelist)
             path = os.path.join(mdjl_folder, filename)
-            pic = R.img('img/botchat/mdjl/', filename).cqcode
+            pic = R.img('botchat/mdjl/', filename).cqcode
             await bot.send(ev, pic, at_sender=False)
 
 
 @sv.on_keyword(('不太好吧'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/botchat/不太好.jpg").cqcode)
+        await bot.send(ev, R.img(f"botchat/不太好.jpg").cqcode)
 
 
 @sv.on_keyword(('零花钱'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/botchat/零花钱.jpg").cqcode)
-
-
-@sv.on_keyword(('伊利亚'))
-async def chat_clanba(bot, ev):
-    if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/botchat/伊利亚.jpg").cqcode)
-
-
-@sv.on_keyword(('伊莉雅', 'yly'))
-async def chat_clanba(bot, ev):
-    if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/botchat/伊莉雅.jpg").cqcode)
+        await bot.send(ev, R.img(f"botchat/零花钱.jpg").cqcode)
 
 
 @sv.on_fullmatch(('牙白', '牙白的死呐', '厉害了啊', '牙白得死呐'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.20:
-        await bot.send(ev, R.img(f"img/botchat/牙白.jpg").cqcode)
+        await bot.send(ev, R.img(f"botchat/牙白.jpg").cqcode)
 
 
 @sv.on_keyword(('遇到困难', '遇到困难睡大觉'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.30:
-        await bot.send(ev, R.img(f"img/botchat/遇到困难.jpg").cqcode)
+        await bot.send(ev, R.img(f"botchat/遇到困难.jpg").cqcode)
 
 
 @sv.on_keyword(('云里雾里', '懵', '不懂'))
 async def chat_clanba(bot, ev):
     if random.random() < 0.15:
-        await bot.send(ev, R.img(f"img/botchat/云里雾里.jpg").cqcode)
-
-
-@sv.on_keyword(('咕噜凌波', '咕噜灵波'))
-async def chat_clanba(bot, ev):
-    if random.random() < 0.20:
-        await bot.send(ev, R.img(f"img/botchat/咕噜灵波.jpg").cqcode)
-
-
-@sv.on_keyword(('甜心刀'))
-async def chat_clanba(bot, ev):
-    if random.random() < 0.10:
-        await bot.send(ev, R.img(f"img/botchat/甜心刀教程.jpg").cqcode)
+        await bot.send(ev, R.img(f"botchat/云里雾里.jpg").cqcode)
