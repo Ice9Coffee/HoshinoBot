@@ -191,16 +191,16 @@ async def chat_queshi(bot, ev):
         await bot.send(ev, R.img(f"确实.jpg").cqcode)
 
 
+@sv.on_keyword(('艹', '草', '操'))
+async def chat_queshi(bot, ev):
+    if random.random() < 0.05:
+        await bot.send(ev, R.img(f"cao.jpg").cqcode)
+
+
 @sv.on_keyword('内鬼')
 async def chat_neigui(bot, ev):
     if random.random() < 0.10:
         await bot.send(ev, R.img(f"内鬼.png").cqcode)
-
-
-@sv.on_keyword('不要以为这样就赢了')
-async def chat_clanba(bot, ev):
-    if random.random() < 0.15:
-        await bot.send(ev, R.img(f"不要以为这样就赢了.jpg").cqcode)
 
 
 @sv.on_keyword(('上流', '上流社会', '红酒'))
