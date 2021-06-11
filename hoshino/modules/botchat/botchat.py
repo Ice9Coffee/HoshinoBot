@@ -35,13 +35,13 @@ async def chat_mua(bot, ev):
 
 @sv.on_fullmatch(('早安', '早安哦', '早上好', '早上好啊', '早上好呀', '早', 'good morning'))
 async def goodmorning(bot, ev):
-    path = './res/HARU/早安.mp3'
+    # path = './res/早安.mp3'
     now_hour = datetime.now(tz).hour
     if 0 <= now_hour < 6:
         await bot.send(ev, f'好早，现在才{now_hour}点呢', at_sender=True)
     elif 6 <= now_hour < 10:
         await bot.send(ev, '早上好！今天打算做什么呢？', at_sender=True)
-        await bot.send(ev, f'[CQ:record,file=file:///{path}]')
+        # await bot.send(ev, f'[CQ:record,file=file:///{path}]')
     elif 21 <= now_hour < 24:
         await bot.send(ev, '别闹，准备睡觉啦！', at_sender=True)
     else:
@@ -51,10 +51,10 @@ async def goodmorning(bot, ev):
 @sv.on_fullmatch(('晚上好', '晚上好啊', '晚上好呀', 'good evening'))
 async def goodevening(bot, ev):
     now_hour = datetime.now(tz).hour
-    path = './res/HARU/晚上好呀。勤劳的青年们有在认真工作嘛.mp3'
+    # path = './res/HARU/晚上好呀。勤劳的青年们有在认真工作嘛.mp3'
     if 18 <= now_hour < 24:
         await bot.send(ev, f'晚上好！今晚想做什么呢？', at_sender=True)
-        await bot.send(ev, f'[CQ:record,file=file:///{path}]')
+        # await bot.send(ev, f'[CQ:record,file=file:///{path}]')
     elif 0 <= now_hour < 6:
         await bot.send(ev, f'{now_hour}点啦，还不睡吗？', at_sender=True)
     elif 6 <= now_hour <= 9:
@@ -79,7 +79,7 @@ async def iamgood(bot, ev):
     await bot.send(ev, f'诶嘿嘿~')
 
 
-@sv.on_fullmatch(('讲话', '说话', '说几句', '说两句'), only_to_me=True)
+# @sv.on_fullmatch(('讲话', '说话', '说几句', '说两句'), only_to_me=True)
 async def saysomething(bot, ev):
     haru_record = "./res/HARU/"
     filelist = os.listdir(haru_record)
