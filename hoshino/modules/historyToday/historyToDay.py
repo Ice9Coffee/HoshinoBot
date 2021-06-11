@@ -6,10 +6,22 @@ from bs4 import BeautifulSoup
 import pytz
 import re
 from datetime import datetime, timedelta
-from hoshino import Service
+from hoshino import Service, priv
 from hoshino.typing import CQEvent, MessageSegment
 
-sv = Service('history', enable_on_default=True, help_='''历史上的今天''')
+sv_help = """
+历史上的今天 到底发生了什么
+"""
+
+sv = Service(
+    name='过去的痕迹',  # 功能名
+    use_priv=priv.NORMAL,  # 使用权限
+    manage_priv=priv.SUPERUSER,  # 管理权限
+    visible=True,  # 是否可见
+    enable_on_default=True,  # 是否默认启用
+    bundle='娱乐',  # 属于哪一类
+    help_=sv_help  # 帮助文本
+)
 
 
 @sv.on_fullmatch(['历史上的今天', '看看历史'])
