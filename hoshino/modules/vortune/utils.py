@@ -20,6 +20,7 @@ import random
 thesaurusReady = False
 botQQ = 0
 
+
 async def initialization():
     global thesaurusReady
     global botQQ
@@ -29,18 +30,21 @@ async def initialization():
         botQQ = int(botQQ['user_id'])
         thesaurusReady = True
 
+
 # ——————————————————————————————————————————————————————————————————————————————
 
 # Time operation
 async def getTheCurrentTime():
-    nowDate = str(datetime.datetime.strftime(datetime.datetime.now(),'%Y-%m-%d'))
+    nowDate = str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d'))
     return nowDate
+
 
 async def getAccurateTimeNow():
-    nowDate = str(datetime.datetime.strftime(datetime.datetime.now(),'%Y-%m-%d/%H:%M:%S'))
+    nowDate = str(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d/%H:%M:%S'))
     return nowDate
 
-async def getTimeDifference(original, model = ALL):
+
+async def getTimeDifference(original, model=ALL):
     a = parse(original)
     b = parse(await getAccurateTimeNow())
     seconds = int((b - a).total_seconds())
@@ -48,8 +52,8 @@ async def getTimeDifference(original, model = ALL):
         return {
             DAY: int((b - a).days),
             HOUR: int(seconds / 3600),
-            MINUTE: int((seconds % 3600) / 60), # The rest
-            SECOND: int(seconds % 60) # The rest
+            MINUTE: int((seconds % 3600) / 60),  # The rest
+            SECOND: int(seconds % 60)  # The rest
         }
     if model == DAY:
         b = parse(await getTheCurrentTime())
@@ -59,25 +63,30 @@ async def getTimeDifference(original, model = ALL):
     if model == SECOND:
         return seconds
 
-async def timeToFile(path, time, parameter = 'default'):
+
+async def timeToFile(path, time, parameter='default'):
     timeStructure = {
         parameter: str(time)
     }
     await writeJson(path, timeStructure)
 
-async def timeReadFromFile(path, parameter = 'default'):
+
+async def timeReadFromFile(path, parameter='default'):
     return (await readJson(path))[parameter]
-    
+
+
 # ——————————————————————————————————————————————————————————————————————————————
 
 # Common tools
 async def atQQ(userQQ):
     return '[CQ:at,qq=' + str(userQQ) + ']\n'
 
+
 async def cleanAt(msg):
     global botQQ
     atField = '[CQ:at,qq=' + str(botQQ) + ']'
     return msg.replace(atField, '').strip()
+
 
 async def whetherAtBot(msg):
     global botQQ
@@ -85,19 +94,23 @@ async def whetherAtBot(msg):
         return True
     return False
 
+
 async def randomListSelection(path, key):
     return random.choice((await readJson(path))[key])
+
 
 async def checkFolder(path):
     dirPath = path[:path.rfind('/')]
     if not os.path.exists(dirPath):
         os.makedirs(dirPath)
 
+
 async def randomlyExtractedFromTheFolder(path):
     try:
         return path + str(random.choice(os.listdir(path)))
     except:
         return FAILURE
+
 
 async def authorityInspection(path, userQQ):
     content = await readJson(path)
@@ -107,6 +120,7 @@ async def authorityInspection(path, userQQ):
         if str(i) == str(userQQ):
             return True
     return False
+
 
 # ——————————————————————————————————————————————————————————————————————————————
 
@@ -119,21 +133,25 @@ async def readJson(p):
     content = ujson.loads(content)
     return content
 
+
 async def writeJson(p, info):
     async with aiofiles.open(p, 'w', encoding='utf-8') as f:
         await f.write(ujson.dumps(info))
     return SUCCESS
 
+
 # ——————————————————————————————————————————————————————————————————————————————
 
 convenientParameterReadingAndWritingPath = ''
+
 
 # Convenient parameter operation
 async def parameterPathSetting(path):
     global convenientParameterReadingAndWritingPath
     convenientParameterReadingAndWritingPath = path
 
-async def parameterReadingAndWriting(parameter, value = '', model = READ):
+
+async def parameterReadingAndWriting(parameter, value='', model=READ):
     global convenientParameterReadingAndWritingPath
     content = await readJson(convenientParameterReadingAndWritingPath)
     if model == READ:
@@ -154,10 +172,11 @@ async def parameterReadingAndWriting(parameter, value = '', model = READ):
             content[parameter] = value
             await writeJson(convenientParameterReadingAndWritingPath, content)
 
+
 # ——————————————————————————————————————————————————————————————————————————————
 
 # Match Command Tool
-async def commandMatching(msg, commandList, model = ALL):
+async def commandMatching(msg, commandList, model=ALL):
     backToCollection = {
         'mark': False,
         'command': ''
@@ -179,6 +198,7 @@ async def commandMatching(msg, commandList, model = ALL):
             pass
     return backToCollection
 
+
 # ——————————————————————————————————————————————————————————————————————————————
 
 # Picture tool
@@ -187,6 +207,8 @@ async def pictureCqCode(relativePosition):
     back = relativePosition[relativePosition.find('/'):]
     filePath = os.path.dirname(__file__) + back
     return filePath
+
+
 #    return '[CQ:image,file=' + filePath + ']'
 
 # ——————————————————————————————————————————————————————————————————————————————

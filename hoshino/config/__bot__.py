@@ -67,16 +67,21 @@ baidu_api_SECRET = ''
 # 切忌一次性开启多个
 MODULES_ON = {
     'aichat',  # 需要apikey，用前修改概率
+    'aircon',  # 群空调
     'anticoncurrency',  # 反并发插件
     'bilidynamicpush',  # B站动态
     # 'bilisearchspider',  # b站订阅
+    'botchat',  # 机器人chat
     'botmanage',  # 机器人管理
     # 'deepchat',
+    'explosion',  # 惠惠
+    # 'generate_image',  # 取代原image
     'generator',  # 营销文生成等五个小功能
     'groupmanager',  # 群管插件
     'groupmaster',  # 群聊基础功能
-    # 'image_generate',  # 取代原image
-    'meme_web',  # memegenerator的web化,勿同时开启
+    'historyToday',  # 历史上的今天
+    'lxsay',  # 鲁迅说
+    'meme_web',  # meme_generator的web化,勿同时开启
     'nbnhhsh',  # 将抽象短语转化为好好说话
     'nmsl',  # 抽象抽象抽抽抽像像像
     'picapi',  # 自定义拉取图片
@@ -87,5 +92,7 @@ MODULES_ON = {
     # 'setu_mix',  # 俩涩图插件合二为一
     'shaojo',  # 今天也是美少女
     'shebot',  # 插件合集，来源https://github.com/pcrbot/plugins-for-Hoshino,其中的接头需要百度云api
+    'vortune',  # 抽签
     'weather',  # 天气插件
+    'what_to_eat',  # 今天吃啥
 }
