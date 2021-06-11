@@ -12,7 +12,7 @@ app = bot.server_app
 if not app.config.get('SECRET_KEY'):
     app.config['SECRET_KEY'] = get_random_str(10)
 
-public_address = config.IP  # 改为你服务器的公网ip,域名应该也可以，我没试过
+public_address = config.public_address  # 改为你服务器的公网ip,域名应该也可以，我没试过
 port = config.PORT
 passwd = config.PassWord  # 登录密码
 

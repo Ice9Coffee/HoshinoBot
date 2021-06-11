@@ -29,7 +29,7 @@ RES_URL = 'http://127.0.0.1:5000/static/'
 IMAGE_PATH = "~/go/src/cqhttp/data/images"  # cqhttp用这条,保持默认即可
 
 '''---------shebot 网址----------'''
-IP = '127.0.0.1'  # 修改为你的服务器ip,推荐修改
+IP = 'bot.jianxiaodai.com'  # 修改为你的服务器ip,推荐修改
 public_address = 'bot.jianxiaodai.com'  # 修改为你的服务器ip+端口,推荐修改
 PassWord = '31894267'  # 登录一些只限维护人知道密码的网页
 
