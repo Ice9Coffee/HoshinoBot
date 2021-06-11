@@ -61,6 +61,8 @@ baidu_api_ID = ''
 baidu_api_KEY = ''
 baidu_api_SECRET = ''
 
+WHITE_LIST = []
+
 # 启用的模块
 # 初次尝试部署时请先保持默认
 # 如欲启用新模块，请认真阅读部署说明，逐个启用逐个配置
