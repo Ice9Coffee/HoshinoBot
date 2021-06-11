@@ -34,7 +34,7 @@ async def bangzhu(bot, ev):
 
 # 帮助文本
 sv = Service(
-    name='抽签',
+    name='抽签1',
     use_priv=priv.NORMAL,  # 使用权限
     manage_priv=priv.SUPERUSER,  # 管理权限
     visible=True,  # 是否可见
