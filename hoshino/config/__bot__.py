@@ -75,7 +75,7 @@ MODULES_ON = {
     # 'bilisearchspider',  # b站订阅
     'botchat',  # 机器人chat
     'botmanage',  # 机器人管理
-    # 'deepchat', # 复读
+    'deepchat',  # 复读
     # 'explosion',  # 惠惠
     # 'generate_image',  # 取代原image
     'generator',  # 营销文生成等五个小功能
@@ -86,7 +86,7 @@ MODULES_ON = {
     'meme_web',  # meme_generator的web化,勿同时开启
     'nbnhhsh',  # 将抽象短语转化为好好说话
     'nmsl',  # 抽象抽象抽抽抽像像像
-    'picapi',  # 自定义拉取图片
+    # 'picapi',  # 自定义拉取图片
     # 'portune',  # 运势插件
     'reload',  # 重启
     # 'revgif',  # GIF图倒放

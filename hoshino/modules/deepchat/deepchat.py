@@ -2,11 +2,18 @@ import random
 import hoshino
 from hoshino import Service, aiorequests, priv
 
+sv_help = '''
+深度学习聊天
+'''.strip()
+
 sv = Service(
-    name='deepchat',
-    manage_priv=priv.SUPERUSER,
-    enable_on_default=False,
-    visible=False
+    name='深度学习',  # 功能名
+    use_priv=priv.NORMAL,  # 使用权限
+    manage_priv=priv.SUPERUSER,  # 管理权限
+    visible=True,  # 是否可见
+    enable_on_default=True,  # 是否默认启用
+    bundle='娱乐',  # 属于哪一类
+    help_=sv_help  # 帮助文本
 )
 
 
