@@ -31,7 +31,7 @@ sv = Service(
 )
 
 
-@sv.on_fullmatch(("猜头像排行", "猜头像排名", "猜头像排行榜", "猜头像群排行"))
+@sv.on_fullmatch("猜头像排行", "猜头像排名", "猜头像排行榜", "猜头像群排行")
 async def description_guess_group_ranking(bot, ev: CQEvent):
     ranking = gm.db.get_ranking(ev.group_id)
     msg = ["【猜头像小游戏排行榜】"]

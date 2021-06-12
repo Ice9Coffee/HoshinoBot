@@ -32,10 +32,10 @@ async def send_news(bot, ev, spider:BaseSpider, max_num=5):
     news = news[:min(max_num, len(news))]
     await bot.send(ev, spider.format_items(news), at_sender=True)
 
-@svtw.on_fullmatch(('台服新闻', '台服日程'))
+@svtw.on_fullmatch('台服新闻', '台服日程')
 async def send_sonet_news(bot, ev):
     await send_news(bot, ev, SonetSpider)
 
-@svbl.on_fullmatch(('B服新闻', 'b服新闻', 'B服日程', 'b服日程'))
+@svbl.on_fullmatch('B服新闻', 'b服新闻', 'B服日程', 'b服日程')
 async def send_bili_news(bot, ev):
     await send_news(bot, ev, BiliSpider)

@@ -29,7 +29,7 @@ sv = Service("pcr-desc-guess", bundle="pcr娱乐", help_="""
 )
 
 
-@sv.on_fullmatch(("猜角色排行", "猜角色排名", "猜角色排行榜", "猜角色群排行"))
+@sv.on_fullmatch("猜角色排行", "猜角色排名", "猜角色排行榜", "猜角色群排行")
 async def description_guess_group_ranking(bot, ev: CQEvent):
     ranking = gm.db.get_ranking(ev.group_id)
     msg = ["【猜角色小游戏排行榜】"]
@@ -41,7 +41,7 @@ async def description_guess_group_ranking(bot, ev: CQEvent):
     await bot.send(ev, "\n".join(msg))
 
 
-@sv.on_fullmatch(("猜角色", "猜人物"))
+@sv.on_fullmatch("猜角色", "猜人物")
 async def description_guess(bot, ev: CQEvent):
     if gm.is_playing(ev.group_id):
         await bot.finish(ev, "游戏仍在进行中…")

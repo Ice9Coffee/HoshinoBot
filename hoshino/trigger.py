@@ -28,7 +28,7 @@ class PrefixTrigger(BaseTrigger):
             self.trie[prefix].append(sf)
             if prefix_cht != prefix:
                 self.trie[prefix_cht].append(sf)
-            hoshino.logger.warning(f"Prefix trigger `{prefix}` added multi handler: `{sf.__name__}`")
+            hoshino.logger.warning(f"Prefix trigger `{prefix}` added multiple handlers: {sf.__name__}@{sf.sv.name}")
         else:
             self.trie[prefix] = [sf]
             if prefix_cht != prefix:

@@ -16,7 +16,6 @@ image/
 images/
 
 # 非公开的组件
-# hoshino/modules/deepchat/
 hoshino/modules/pcrclanbattle/clanbattlev3
 hoshino/modules/pcrclanbattle/clanbattlev4
 hoshino/modules/umamusume

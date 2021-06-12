@@ -43,7 +43,7 @@ todo_list = [
     '搓一把日麻'
 ]
 
-@sv.on_fullmatch(('签到', '盖章', '妈', '妈?', '妈妈', '妈!', '妈！', '妈妈！'), only_to_me=True)
+@sv.on_fullmatch('签到', '盖章', '妈', '妈?', '妈妈', '妈!', '妈！', '妈妈！', only_to_me=True)
 async def give_okodokai(bot, ev: CQEvent):
     uid = ev.user_id
     if not lmt.check(uid):
