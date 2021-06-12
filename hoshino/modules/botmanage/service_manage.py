@@ -15,7 +15,7 @@ async def lssv(session: CommandSession):
     parser.add_argument('-H', '--hidden', action='store_true')
     parser.add_argument('-g', '--group', type=int, default=0)
     args = parser.parse_args(session.argv)
-    
+
     verbose_all = args.all
     only_hidden = args.hidden
     if session.ctx['user_id'] in session.bot.config.SUPERUSERS:
