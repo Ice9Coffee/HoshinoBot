@@ -193,20 +193,23 @@ class Service:
         return deco
 
 
-    def on_prefix(self, prefix, only_to_me=False) -> Callable:
-        if isinstance(prefix, str):
-            prefix = (prefix, )
+    def on_prefix(self, *prefix, only_to_me=False) -> Callable:
+        if len(prefix) == 1 and not isinstance(prefix[0], str):
+            prefix = prefix[0]
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me)
             for p in prefix:
-                trigger.prefix.add(p, sf)
+                if isinstance(p, str):
+                    trigger.prefix.add(p, sf)
+                else:
+                    self.logger.error(f'Failed to add prefix trigger `{p}`, expecting `str` but `{type(p)}` given!')
             return func
         return deco
 
 
-    def on_fullmatch(self, word, only_to_me=False) -> Callable:
-        if isinstance(word, str):
-            word = (word, )
+    def on_fullmatch(self, *word, only_to_me=False) -> Callable:
+        if len(word) == 1 and not isinstance(word[0], str):
+            word = word[0]
         def deco(func) -> Callable:
             @wraps(func)
             async def wrapper(bot: HoshinoBot, event: CQEvent):
@@ -216,7 +219,10 @@ class Service:
                 return await func(bot, event)
             sf = ServiceFunc(self, wrapper, only_to_me)
             for w in word:
-                trigger.prefix.add(w, sf)
+                if isinstance(w, str):
+                    trigger.prefix.add(w, sf)
+                else:
+                    self.logger.error(f'Failed to add fullmatch trigger `{w}`, expecting `str` but `{type(w)}` given!')
             return func
             # func itself is still func, not wrapper. wrapper is a part of trigger.
             # so that we could use multi-trigger freely, regardless of the order of decorators.
@@ -230,24 +236,30 @@ class Service:
         return deco
 
 
-    def on_suffix(self, suffix, only_to_me=False) -> Callable:
-        if isinstance(suffix, str):
-            suffix = (suffix, )
+    def on_suffix(self, *suffix, only_to_me=False) -> Callable:
+        if len(suffix) == 1 and not isinstance(suffix[0], str):
+            suffix = suffix[0]
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me)
             for s in suffix:
-                trigger.suffix.add(s, sf)
+                if isinstance(s, str):
+                    trigger.suffix.add(s, sf)
+                else:
+                    self.logger.error(f'Failed to add suffix trigger `{s}`, expecting `str` but `{type(s)}` given!')
             return func
         return deco
 
 
-    def on_keyword(self, keywords, only_to_me=False, normalize=True) -> Callable:
-        if isinstance(keywords, str):
-            keywords = (keywords, )
+    def on_keyword(self, *keywords, only_to_me=False, normalize=True) -> Callable:
+        if len(keywords) == 1 and not isinstance(keywords[0], str):
+            keywords = keywords[0]
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me, normalize)
             for kw in keywords:
-                trigger.keyword.add(kw, sf)
+                if isinstance(kw, str):
+                    trigger.keyword.add(kw, sf)
+                else:
+                    self.logger.error(f'Failed to add keyword trigger `{kw}`, expecting `str` but `{type(kw)}` given!')
             return func
         return deco
 
@@ -257,7 +269,10 @@ class Service:
             rex = re.compile(rex)
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me, normalize)
-            trigger.rex.add(rex, sf)
+            if isinstance(rex, re.Pattern):
+                trigger.rex.add(rex, sf)
+            else:
+                self.logger.error(f'Failed to add rex trigger `{rex}`, expecting `str` or `re.Pattern` but `{type(rex)}` given!')
             return func
         return deco
 

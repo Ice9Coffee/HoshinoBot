@@ -16,9 +16,8 @@ image/
 images/
 
 # 非公开的组件
-# hoshino/modules/deepchat/
 hoshino/modules/pcrclanbattle/clanbattlev3
-hoshino/modules/pcrclanbattle/_clanbattlev4
+hoshino/modules/pcrclanbattle/clanbattlev4
 hoshino/modules/umamusume
 
 # 暂时删除的代码

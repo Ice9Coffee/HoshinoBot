@@ -4,8 +4,8 @@ from hoshino.typing import CQEvent
 from . import sv
 
 rank_jp = '20-4'
-rank_tw = '19-4'
-rank_cn = '12-5'
+rank_tw = '19-5'
+rank_cn = '13-3'
 ptw = ' '.join(map(str, [
     R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode,
     R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode,
@@ -56,7 +56,7 @@ async def rank_sheet(bot, ev):
         await util.silence(ev, 60)
 
 
-@sv.on_fullmatch(('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库'))
+@sv.on_fullmatch('jjc', 'JJC', 'JJC作业', 'JJC作业网', 'JJC数据库', 'jjc作业', 'jjc作业网', 'jjc数据库')
 async def say_arina_database(bot, ev):
     await bot.send(ev, '公主连接Re:Dive 竞技场编成数据库\n日文：https://nomae.net/arenadb \n中文：https://pcrdfans.com/battle')
 
@@ -94,11 +94,11 @@ BCR_SITES = f'''
 {OTHER_KEYWORDS}
 ※日台服速查请输入【pcr速查】'''
 
-@sv.on_fullmatch(('pcr速查', 'pcr图书馆', '图书馆'))
+@sv.on_fullmatch('pcr速查', 'pcr图书馆', '图书馆')
 async def pcr_sites(bot, ev: CQEvent):
     await bot.send(ev, PCR_SITES, at_sender=True)
     await util.silence(ev, 60)
-@sv.on_fullmatch(('bcr速查', 'bcr攻略'))
+@sv.on_fullmatch('bcr速查', 'bcr攻略')
 async def bcr_sites(bot, ev: CQEvent):
     await bot.send(ev, BCR_SITES, at_sender=True)
     await util.silence(ev, 60)
@@ -123,7 +123,7 @@ DRAGON_TOOL = f'''
 龍的探索者們小遊戲單字表 https://hanshino.nctu.me/online/KyaruMiniGame
 镜像 https://hoshino.monster/KyaruMiniGame
 网站内有全词条和搜索，或需科学上网'''
-@sv.on_fullmatch(('一个顶俩', '拼音接龙', '韵母接龙'))
+@sv.on_fullmatch('一个顶俩', '拼音接龙', '韵母接龙')
 async def dragon(bot, ev):
     await bot.send(ev, DRAGON_TOOL, at_sender=True)
     await util.silence(ev, 60)

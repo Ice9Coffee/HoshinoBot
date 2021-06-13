@@ -8,27 +8,28 @@ async def handle_message(bot, event: CQEvent, _):
     if event.detail_type != 'group':
         return
 
+    service_funcs = []
     for t in trigger.chain:
-        service_func = t.find_handler(event)
-        if service_func:
-            trigger_name = t.__class__.__name__
-            break
+        service_funcs.extend(t.find_handler(event))
 
-    if not service_func:
+    if not service_funcs:
         return  # triggered nothing.
-    service_func.sv.logger.info(f'Message {event.message_id} triggered {service_func.__name__} by {trigger_name}.')
 
-    if service_func.only_to_me and not event['to_me']:
-        return  # not to me, ignore.
+    for service_func in service_funcs:
 
-    if not service_func.sv._check_all(event):
-        return  # permission denied.
+        if service_func.only_to_me and not event['to_me']:
+            continue  # not to me, ignore.
 
-    try:
-        await service_func.func(bot, event)
-    except CanceledException:
-        raise
-    except Exception as e:
-        service_func.sv.logger.error(f'{type(e)} occured when {service_func.__name__} handling message {event.message_id}.')
-        service_func.sv.logger.exception(e)
-    raise CanceledException(f'Handled by {trigger_name} of Hoshino')
+        if not service_func.sv._check_all(event):
+            continue  # permission denied.
+
+        service_func.sv.logger.info(f'Message {event.message_id} triggered {service_func.__name__}.')
+        try:
+            await service_func.func(bot, event)
+        except CanceledException:
+            raise
+        except Exception as e:
+            service_func.sv.logger.error(f'{type(e)} occured when {service_func.__name__} handling message {event.message_id}.')
+            service_func.sv.logger.exception(e)
+        raise CanceledException(f'Handled by Hoshino')
+        # exception raised, no need for break
