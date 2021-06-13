@@ -1,30 +1,22 @@
-import asyncio
-import importlib
+# 订阅推主
+
+import json
 import os
 import re
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime
 from typing import Dict, Iterable, Set
 
-import pytz
 import peony
 from peony import PeonyClient
 
-import hoshino
-from hoshino import Service, priv, util, sucmd
+from hoshino import Service, priv
 from hoshino.config import twitter as cfg
-from hoshino.typing import MessageSegment as ms, CommandSession
+from hoshino.typing import MessageSegment as ms
 
-try:
-    import ujson as json
-except:
-    import json
+from . import sv
+from .util import format_tweet
 
-
-sv = Service("twitter-poller", use_priv=priv.SUPERUSER, manage_priv=priv.SUPERUSER, visible=False)
-bot = hoshino.get_bot()
-daemon = None
 follow_collection = [
     Service("twitter-stream-test", enable_on_default=False, manage_priv=priv.SUPERUSER, visible=False),
     Service("kc-twitter", help_="艦これ推特转发", enable_on_default=False, bundle="kancolle"),
@@ -75,7 +67,7 @@ class UserIdCache:
                     self.cache = json.load(f)
             except Exception as e:
                 sv.logger.exception(e)
-                sv.logger.error(f"{type(e)} occured when loading `twitter_uid_cache.json`, using empty cache.")
+                sv.logger.error(f"{type(e)} occured when loading `~/.hoshino/twitter_uid_cache.json`, using empty cache.")
 
     async def convert(self, client: PeonyClient, screen_names: Iterable[str], cached=True):
         if not cached:
@@ -90,32 +82,7 @@ class UserIdCache:
         return follow_ids
 
 
-def format_time(time_str):
-    dt = datetime.strptime(time_str, r"%a %b %d %H:%M:%S %z %Y")
-    dt = dt.astimezone(pytz.timezone("Asia/Shanghai"))
-    return f"{util.month_name(dt.month)}{util.date_name(dt.day)}・{util.time_name(dt.hour, dt.minute)}"
-
-
-def format_tweet(tweet):
-    name = tweet.user.name
-    time = format_time(tweet.created_at)
-    text = tweet.text
-    media = tweet.get("extended_entities", {}).get("media", [])
-    imgs = " ".join([str(ms.image(m.media_url)) for m in media])
-    msg = f"@{name}\n{time}\n\n{text}"
-    if imgs:
-        msg = f"{msg}\n{imgs}"
-    return msg
-
-
-@bot.on_startup
-async def start_daemon():
-    global daemon
-    loop = asyncio.get_event_loop()
-    daemon = loop.create_task(twitter_stream_daemon())
-
-
-async def twitter_stream_daemon():
+async def follow_stream():
     client = PeonyClient(
         consumer_key=cfg.consumer_key,
         consumer_secret=cfg.consumer_secret,
@@ -123,29 +90,15 @@ async def twitter_stream_daemon():
         access_token_secret=cfg.access_token_secret,
         proxy=cfg.proxy,
     )
-    async with client:
-        while True:
-            try:
-                await open_stream(client)
-            except (KeyboardInterrupt, asyncio.CancelledError):
-                sv.logger.info("Twitter stream daemon exited.")
-                return
-            except Exception as e:
-                sv.logger.exception(e)
-                sv.logger.error(f"Error {type(e)} Occurred in twitter stream. Restarting stream in 5s.")
-                await asyncio.sleep(5)
-
-
-async def open_stream(client: PeonyClient):
     router = TweetRouter()
     router.load(cfg.follows, cfg.media_only_users)
     user_id_cache = UserIdCache()
-    follow_ids = await user_id_cache.convert(client, router.follows)
-    sv.logger.info(f"订阅推主={router.follows.keys()}, {follow_ids=}")
-    stream = client.stream.statuses.filter.post(follow=follow_ids)
-    async with stream:
-        async for tweet in stream:
+    async with client:
+        follow_ids = await user_id_cache.convert(client, router.follows)
+        sv.logger.info(f"订阅推主={router.follows.keys()}, {follow_ids=}")
+        stream = client.stream.statuses.filter.post(follow=follow_ids)
 
+        async for tweet in stream:
             sv.logger.info("Got twitter event.")
             if peony.events.tweet(tweet):
                 screen_name = tweet.user.screen_name
@@ -180,15 +133,3 @@ async def open_stream(client: PeonyClient):
 
             else:
                 sv.logger.debug("Ignore non-tweet event.")
-
-
-@sucmd("reload-twitter-stream-daemon", force_private=False, aliases=("重启转推", "重载转推"))
-async def reload_twitter_stream_daemon(session: CommandSession):
-    try:
-        daemon.cancel()
-        importlib.reload(cfg)
-        await start_daemon()
-        await session.send('ok')
-    except Exception as e:
-        sv.logger.exception(e)
-        await session.send(f'Error: {type(e)}')
