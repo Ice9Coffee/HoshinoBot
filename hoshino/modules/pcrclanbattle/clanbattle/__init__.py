@@ -9,7 +9,7 @@ from hoshino.typing import *
 from .argparse import ArgParser
 from .exception import *
 
-sv = Service('clanbattle', help_='发送【!帮助】查看说明', bundle='pcr会战')
+sv = Service('clanbattle', help_='Hoshino开源版 命令以感叹号开头 发送【!帮助】查看说明', bundle='pcr会战')
 SORRY = 'ごめんなさい！嘤嘤嘤(〒︿〒)'
 
 _registry:Dict[str, Tuple[Callable, ArgParser]] = {}

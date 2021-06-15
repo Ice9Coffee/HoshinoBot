@@ -36,6 +36,8 @@ async def track_stream():
 
                 if not re.search(r'\d{9}', tweet.text):
                     continue    # 忽略无id的推特
+                if re.search(r'ura(シナリオ)?([:：])?[0-6]', tweet.text, re.I):
+                    continue    # 忽略低ura因子
 
                 msg = format_tweet(tweet)
 

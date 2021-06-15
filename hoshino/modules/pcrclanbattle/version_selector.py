@@ -1,10 +1,10 @@
 from hoshino import Service, priv
 from hoshino.typing import CQEvent
 
-sv = Service('clanbattle-version-selector', use_priv=priv.ADMIN, manage_priv=priv.SUPERUSER, visible=False)
+sv = Service('clanbattle-version-selector', manage_priv=priv.SUPERUSER, visible=False)
 
 help_str = '''
-请发送【】内的命令
+请*群管理*或*群主*发送【】内的命令
 【启用会战v2】
 Hoshino开源版 命令以感叹号开头
 适用于2021年6月前的日服、2021年10月前的台服、2023年6月前的B服
@@ -30,6 +30,8 @@ async def version_select(bot, ev: CQEvent):
     }
     if arg not in cbsvs:
         await bot.finish(ev, help_str)
+    if not priv.check_priv(ev, priv.ADMIN):
+        await bot.finish(ev, '只有*群管理*和*群主*才能切换会战管理版本')
     if not cbsvs[arg]:
         await bot.finish(ev, f'本bot未实装clanbattle{arg}，请加入Hoshinoのお茶会(787493356)体验！')
     for k, v in cbsvs.items():
