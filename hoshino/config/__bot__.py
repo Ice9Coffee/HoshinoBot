@@ -75,7 +75,7 @@ MODULES_ON = {
     # 'bilisearchspider',  # b站订阅
     'botchat',  # 机器人chat
     'botmanage',  # 机器人管理
-    'coser',  # coser
+    'cosPic',  # cos 图
     'deepchat',  # 复读
     # 'explosion',  # 惠惠
     # 'generate_image',  # 取代原image
