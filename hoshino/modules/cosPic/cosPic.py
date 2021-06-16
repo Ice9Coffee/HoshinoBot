@@ -5,7 +5,7 @@ import os
 from hoshino import R, Service, priv
 
 sv_help = '''
-获取 Cos 图
+不要沉迷二次元, 偶尔也要三次元一下啊
 输入cos | coser 随机获取一张cos图
 '''.strip()
 
