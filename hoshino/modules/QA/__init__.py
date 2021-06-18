@@ -7,8 +7,10 @@ from nonebot import permission as perm
 from .data import Question
 from hoshino import R, Service, priv
 from hoshino.typing import CQEvent
+
 answers = {}
 sv = Service('QA', manage_priv=priv.ADMIN, enable_on_default=True, visible=True)
+
 
 def union(group_id, user_id):
     return (group_id << 32) | user_id
@@ -105,15 +107,15 @@ async def handle(bot, context):
             return
     elif message == ('查看qa') or message == ('查看QA'):
         if priv.check_priv(context, priv.ADMIN):
-            gid = context.get('group_id',1)
+            gid = context.get('group_id', 1)
             msg = [f"群{gid}问答一览："]
-            i=0
+            i = 0
             for b in Question.select().where(Question.rep_group == context['group_id']):
-                i=i+1
-                msg.append(f"{b.quest}|{b.answer}")  
-                if i%10==0:
+                i = i + 1
+                msg.append(f"{b.quest}|{b.answer}")
+                if i % 10 == 0:
                     await bot.send(context, '\n'.join(msg))
-                    msg = [f"第{(i//10)+1}页："]
+                    msg = [f"第{(i // 10) + 1}页："]
             await bot.send(context, '\n'.join(msg))
             return
 
