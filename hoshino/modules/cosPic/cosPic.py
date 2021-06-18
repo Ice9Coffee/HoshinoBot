@@ -3,7 +3,7 @@ import requests
 import hoshino
 import os
 import hashlib
-import Coser
+from .Coser import Coser
 from hoshino import R, Service, priv
 
 sv_help = '''
