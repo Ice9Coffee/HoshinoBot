@@ -3,7 +3,7 @@ import requests
 import hoshino
 import os
 import hashlib
-from .Coser import Coser
+from .Coser import Coser, saveToDb
 from hoshino import R, Service, priv
 
 sv_help = '''
@@ -44,6 +44,6 @@ async def cosPic(bot, ctx):
     b = imgUrl.encode(encoding='utf-8')
     md5.update(b)
     str_md5 = md5.hexdigest()
-    Coser.saveToDb(0, 'api.repeater.vip', 0, '', imgUrl, 'cos', str_md5, '')
+    saveToDb(0, 'api.repeater.vip', 0, '', imgUrl, 'cos', str_md5, '')
     msg = f'[CQ:image,file={imgUrl}]'.format(imgUrl=imgUrl)
     await bot.send(ctx, msg)
