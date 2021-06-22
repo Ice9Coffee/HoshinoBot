@@ -3,8 +3,17 @@
     "platform": "bilibili",
     "room": 9751285,
     "subs_groups": [
+      696678074,
       433424135,
       863265828
+    ],
+    "latest_time": ""
+  },
+  "23058813": {
+    "platform": "bilibili",
+    "room": 23058813,
+    "subs_groups": [
+      696678074
     ],
     "latest_time": ""
   }

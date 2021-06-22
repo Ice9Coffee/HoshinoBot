@@ -2,7 +2,7 @@ from os import path
 
 from lxml import etree
 from nonebot import CommandSession
-
+from bilibili_api import live
 from hoshino.service import Service, priv
 from .._util import load_config, save_config, broadcast, RSS
 
@@ -75,29 +75,61 @@ for subs in _subscribes:
         _lives.append(dl)
 
 
-@sv.scheduled_job('cron', minute='*/3', second='10')
+@sv.scheduled_job('cron', minute='*', second='10')
 async def check_live():
     for lv in _lives:
-        await lv.get()
-        data = lv.parse_xml()
-        if data.get('title'):  # 开播状态
-            title = data['title']
-            link = data['link']
-            tuber = data['tuber']
-            latest_time = data['latest_time']
-            if latest_time != lv.latest_time:
-                lv.latest_time = latest_time
-                global _subscribes
-                _subscribes[str(lv.room_id)]['latest_time'] = latest_time
-                save_config(_subscribes, subs_path)
-                sv.logger.info(f'检测到{lv.platform}{lv.room_id}直播间开播了')
-                await notice(lv.room_id, f'开播提醒=========\n{tuber}\n{title}\n{link}')
+        if lv.platform == '哔哩哔哩':
+            await check_bili_live(lv)
         else:
-            # 未开播
-            pass
+            await check_other_live(lv)
 
 
-@sv.on_command('live', aliases=('订阅直播推送'), only_to_me=False)
+async def check_bili_live(lv):
+    roomId = lv.room_id
+    data = await live.LiveRoom(room_display_id=roomId).get_room_info()
+    roomInfo = data.get('room_info')
+    if roomInfo.get('live_status') == 1:  # 开播状态
+        title = roomInfo['title']
+        cover = roomInfo['cover']
+        live_start_time = roomInfo['live_start_time']
+        link = "https://live.bilibili.com/" + str(roomId)
+        # 判断是否是新开播
+        if live_start_time != lv.latest_time:
+            lv.latest_time = live_start_time
+            global _subscribes
+            _subscribes[str(roomId)]['latest_time'] = live_start_time
+            # 跟新开播时间
+            save_config(_subscribes, subs_path)
+            sv.logger.info(f'检测到{lv.platform}{lv.room_id}直播间开播了')
+
+            pic = f'[CQ:image,file={cover}]'.format(cover=cover)
+            await notice(lv.room_id, f'开播提醒=========\n{pic}\n{title}\n{link}')
+    else:
+        # 未开播
+        pass
+
+
+async def check_other_live(lv):
+    await lv.get()
+    data = lv.parse_xml()
+    if data.get('title'):  # 开播状态
+        title = data['title']
+        link = data['link']
+        tuber = data['tuber']
+        latest_time = data['latest_time']
+        if latest_time != lv.latest_time:
+            lv.latest_time = latest_time
+            global _subscribes
+            _subscribes[str(lv.room_id)]['latest_time'] = latest_time
+            save_config(_subscribes, subs_path)
+            sv.logger.info(f'检测到{lv.platform}{lv.room_id}直播间开播了')
+            await notice(lv.room_id, f'开播提醒=========\n{tuber}\n{title}\n{link}')
+    else:
+        # 未开播
+        pass
+
+
+@sv.on_command('live', aliases='订阅直播推送', only_to_me=False)
 async def subscribe(session: CommandSession):
     session.get('platform', prompt='请选择订阅的平台，目前支持哔哩哔哩和斗鱼')
     if session.state['platform'] == '哔哩哔哩' or session.state['platform'] == 'bilibili':
