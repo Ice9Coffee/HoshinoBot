@@ -27,6 +27,8 @@ async def track_stream():
             sv.logger.info("Got twitter event.")
             if peony.events.tweet(tweet):
                 screen_name = tweet.user.screen_name
+                if screen_name in cfg.uma_ura9_black_list:
+                    continue    # black list
                 if peony.events.retweet(tweet):
                     continue    # 忽略纯转推
                 if tweet.get("quoted_status"):
@@ -36,8 +38,18 @@ async def track_stream():
 
                 if not re.search(r'\d{9}', tweet.text):
                     continue    # 忽略无id的推特
-                if re.search(r'ura(シナリオ)?([:：])?[0-6]', tweet.text, re.I):
+                if re.search(r'ura(シナリオ)?([:：])?[0-7]', tweet.text, re.I):
                     continue    # 忽略低ura因子
+                if re.search(r'目指|狙|チャレンジ', tweet.text, re.I):
+                    continue    # 忽略未达成
+                if re.search(r'青(因子)?[0-8]', tweet.text, re.I):
+                    continue    # 忽略低星蓝
+                if re.search(r'(スピ(ード)?|スタ(ミナ)?|パワー|根性?|賢さ?)\s*[0124578]', tweet.text, re.I):
+                    continue    # 忽略低星蓝
+                if re.search(r'ura(シナリオ)?([:：])?9(では|じゃ)', tweet.text, re.I):
+                    continue    # 忽略否定型
+                if re.search(r'青(因子)?9(では|じゃ)', tweet.text, re.I):
+                    continue    # 忽略否定型
 
                 msg = format_tweet(tweet)
 
