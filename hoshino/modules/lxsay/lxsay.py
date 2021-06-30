@@ -34,12 +34,15 @@ async def lx_say(bot, ev: CQEvent):
     args = ev.message.extract_plain_text().split()
     gid = ev.group_id
     uid = ev.user_id
+    name = ev.name
     if len(args) != 1:
         await bot.finish(ev, '你让鲁迅说点啥?', at_sender=True)
     content = args[0]
     if len(content) >= 25:
         await bot.finish(ev, '太长了, 鲁迅说不完!', at_sender=True)
     else:
+        if '菜狗' in content or '菜如狗怎么了' in content:
+            content = name + "给爷爬~~"
         mes = get_lx_pic(content)
         await bot.finish(ev, mes)
 

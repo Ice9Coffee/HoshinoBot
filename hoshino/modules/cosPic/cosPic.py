@@ -5,6 +5,8 @@ import os
 import hashlib
 from .Coser import Coser, saveToDb
 from hoshino import R, Service, priv
+from hoshino.typing import CQEvent
+from hoshino.util import FreqLimiter, DailyNumberLimiter
 
 sv_help = '''
 不要沉迷二次元, 偶尔也要三次元一下啊
@@ -12,7 +14,7 @@ sv_help = '''
 '''.strip()
 
 sv = Service(
-    name='Cos图',  # 功能名
+    name='cos图',  # 功能名
     use_priv=priv.NORMAL,  # 使用权限
     manage_priv=priv.SUPERUSER,  # 管理权限
     visible=True,  # 是否可见
@@ -21,6 +23,10 @@ sv = Service(
     help_=sv_help  # 帮助文本
 )
 
+_max = 5
+EXCEED_NOTICE = f'今天已经要了{_max}张图了~~~明天进货吧~~~!'
+_limit = DailyNumberLimiter(_max)
+
 
 @sv.on_fullmatch(["帮助-Cos图"])
 async def helper(bot, ev):
@@ -28,7 +34,10 @@ async def helper(bot, ev):
 
 
 @sv.on_fullmatch(('coser', 'cos'))
-async def cosPic(bot, ctx):
+async def cosPic(bot, ctx: CQEvent):
+    if not _limit.check(ctx.user_id):
+        await bot.send(ctx, EXCEED_NOTICE, at_sender=True)
+
     async with aiohttp.TCPConnector(verify_ssl=False) as connector:
         async with aiohttp.request(
                 method='GET',
@@ -46,4 +55,4 @@ async def cosPic(bot, ctx):
     str_md5 = md5.hexdigest()
     saveToDb(0, 'api.repeater.vip', 0, '', imgUrl, 'cos', str_md5, '')
     msg = f'[CQ:image,file={imgUrl}]'.format(imgUrl=imgUrl)
-    await bot.send(ctx, msg)
+    await bot.send(ctx, msg, at_sender=True)
