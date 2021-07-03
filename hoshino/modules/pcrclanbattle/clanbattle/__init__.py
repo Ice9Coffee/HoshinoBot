@@ -97,7 +97,8 @@ QUICK_START = f'''
 !查刀
 !催刀
 
-※前往 t.cn/A6wBzowv 查看完整命令一览表
+※点击链接分享查看完整命令表
+※或前往 v2.hoshinobot.cc
 ※如有问题请先阅读一览表底部的FAQ
 ※使用前请务必【逐字】阅读开头的必读事项
 '''.rstrip()
@@ -105,7 +106,7 @@ QUICK_START = f'''
 @on_command('!帮助', aliases=('！帮助', '!幫助', '！幫助', '!help', '！help'), only_to_me=False)
 async def cb_help(session:CommandSession):
     await session.send(QUICK_START, at_sender=True)
-    msg = MessageSegment.share(url='https://github.com/Ice-Cirno/HoshinoBot/blob/master/hoshino/modules/pcrclanbattle/clanbattle/README.md',
+    msg = MessageSegment.share(url='https://github.com/Ice-Cirno/HoshinoBot/wiki/%E4%BC%9A%E6%88%98%E7%AE%A1%E7%90%86v2',
                                title='Hoshino会战管理v2',
-                               content='命令一览表')
+                               content='完整命令一览表')
     await session.send(msg)
