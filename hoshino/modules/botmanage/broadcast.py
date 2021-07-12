@@ -14,7 +14,10 @@ async def broadcast(session: CommandSession):
     for sid in hoshino.get_self_ids():
         gl = await bot.get_group_list(self_id=sid)
         gl = [g['group_id'] for g in gl]
-        await bot.send_private_msg(self_id=sid, user_id=su, message=f"开始向{len(gl)}个群广播：\n{msg}")
+        try:
+            await bot.send_private_msg(self_id=sid, user_id=su, message=f"开始向{len(gl)}个群广播：\n{msg}")
+        except Exception as e:
+            hoshino.logger.error(f'向广播发起者发送广播摘要失败：{type(e)}')
         for g in gl:
             await asyncio.sleep(0.5)
             try:
