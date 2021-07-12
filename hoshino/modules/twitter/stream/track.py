@@ -38,13 +38,13 @@ async def track_stream():
 
                 if not re.search(r'\d{9}', tweet.text):
                     continue    # 忽略无id的推特
-                if re.search(r'ura(シナリオ)?([:：])?[0-7]', tweet.text, re.I):
+                if re.search(r'ura(シナリオ)?([:：])?\s*[0-7０１２３４５６７]', tweet.text, re.I):
                     continue    # 忽略低ura因子
                 if re.search(r'目指|狙|チャレンジ|微妙', tweet.text, re.I):
                     continue    # 忽略未达成
-                if re.search(r'青(因子)?[0-8]', tweet.text, re.I):
+                if re.search(r'青(因子)?\s*[0-8０１２３４５６７８]', tweet.text, re.I):
                     continue    # 忽略低星蓝
-                if re.search(r'(スピ(ード)?|スタ(ミナ)?|パワー|根性?|賢さ?)\s*[0124578]', tweet.text, re.I):
+                if re.search(r'(スピ(ード)?|スタ(ミナ)?|パワー?|根性?|賢さ?)\s*[0124578０１２４５７８]', tweet.text, re.I):
                     continue    # 忽略低星蓝
                 if re.search(r'ura(シナリオ)?([:：])?9(では|じゃ|周回)', tweet.text, re.I):
                     continue    # 忽略否定型

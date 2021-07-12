@@ -7,18 +7,20 @@ from hoshino.typing import MessageSegment as CommandSession
 
 sv = Service("twitter-poller", use_priv=priv.SU, manage_priv=priv.SU, visible=False)
 bot = get_bot()
-daemon = None
+daemon1 = None
+daemon2 = None
 
 from .follow import follow_stream
 from .track import track_stream
 
 @bot.on_startup
 async def start_daemon():
-    global daemon
+    global daemon1
+    global daemon2
 
     loop = asyncio.get_event_loop()
-    daemon = loop.create_task(stream_daemon(follow_stream))
-    loop.create_task(stream_daemon(track_stream))
+    daemon1 = loop.create_task(stream_daemon(follow_stream))
+    daemon2 = loop.create_task(stream_daemon(track_stream))
 
 
 async def stream_daemon(stream_func):
@@ -37,7 +39,8 @@ async def stream_daemon(stream_func):
 @sucmd("reload-twitter-stream-daemon", force_private=False, aliases=("重启转推", "重载转推"))
 async def reload_twitter_stream_daemon(session: CommandSession):
     try:
-        daemon.cancel()
+        daemon1.cancel()
+        daemon2.cancel()
         importlib.reload(cfg)
         await start_daemon()
         await session.send("ok")
