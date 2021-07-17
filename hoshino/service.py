@@ -8,6 +8,7 @@ from functools import wraps
 import nonebot
 import pytz
 from nonebot.command import SwitchException, _FinishException, _PauseException
+from nonebot.message import CanceledException
 
 import hoshino
 from hoshino import log, priv, trigger
@@ -299,6 +300,8 @@ class Service:
                             f'Message {session.ctx["message_id"]} is handled as command by {func.__name__}.'
                         )
                         return ret
+                    except CanceledException:
+                        raise _FinishException
                     except (_PauseException, _FinishException, SwitchException) as e:
                         raise e
                     except Exception as e:
@@ -319,6 +322,10 @@ class Service:
                             f'Message {session.ctx["message_id"]} is handled as natural language by {func.__name__}.'
                         )
                         return ret
+                    except CanceledException:
+                        raise _FinishException
+                    except (_PauseException, _FinishException, SwitchException) as e:
+                        raise e
                     except Exception as e:
                         self.logger.error(f'{type(e)} occured when {func.__name__} handling message {session.ctx["message_id"]}.')
                         self.logger.exception(e)
@@ -402,6 +409,8 @@ def sucmd(name, force_private=True, **kwargs) -> Callable:
                 return
             try:
                 return await func(session)
+            except CanceledException:
+                raise _FinishException
             except (_PauseException, _FinishException, SwitchException):
                 raise
             except Exception as e:

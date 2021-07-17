@@ -109,7 +109,7 @@ class DFAFilter():
     def add(self, keyword):
         # if not isinstance(keyword, unicode):
         #     keyword = keyword.decode('utf-8')
-        keyword = keyword.lower()
+        # keyword = keyword.lower()
         chars = keyword.strip()
         if not chars:
             return
@@ -137,7 +137,7 @@ class DFAFilter():
     def filter(self, message, repl="*"):
         # if not isinstance(message, unicode):
         #     message = message.decode('utf-8')
-        message = message.lower()
+        # message = message.lower()
         ret = []
         start = 0
         while start < len(message):

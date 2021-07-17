@@ -27,3 +27,7 @@ media_only_users = [
     *follows["moe-artist-twitter"],
     *follows["depress-artist-twitter"],
 ]
+
+uma_ura9_black_list = [
+    'YaibA_No9', 'ReToken',
+]

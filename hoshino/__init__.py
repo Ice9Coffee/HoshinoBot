@@ -20,6 +20,7 @@ def init() -> HoshinoBot:
     nonebot.init(config)
     _bot = nonebot.get_bot()
     _bot.finish = _finish
+    _bot.get_self_ids = get_self_ids
 
     from .log import error_handler, critical_handler
     nonebot.logger.addHandler(error_handler)
