@@ -317,7 +317,7 @@ MIKAN_TOKEN = "abcdfegABCFEFG+123=="
 > 请先在`hoshino/config/__bot__.py`的`MODULES_ON`中取消`hourcall`的注释  
 > 本功能默认关闭，在群内发送 "启用 hourcall" 即可开启
 
-报时功能使用/魔改了艦これ中各个艦娘的报时语音，您可以在[舰娘百科](https://zh.kcwiki.org/wiki/舰娘百科)或[艦これ 攻略 Wiki](https://wikiwiki.jp/kancolle/)找到相应的文本/翻译，当然您也可以自行编写台词。在此，我们向原台词作者[田中](https://bbs.nga.cn/read.php?tid=9143913)[谦介](http://nga.178.com/read.php?tid=14045507)先生和他杰出的游戏作品表达诚挚的感谢！
+报时功能使用/魔改了艦これ中各个艦娘的报时语音，您可以在[舰娘百科](https://zh.kcwiki.org/wiki/舰娘百科)或[艦これ 攻略 Wiki](https://wikiwiki.jp/kancolle/)找到相应的文本/翻译，当然您也可以自行编写台词。在此，我们向原台词作者[田中](https://bbs.nga.cn/read.php?tid=9143913)[谦介](http://bbs.nga.cn/read.php?tid=14045507)先生和他杰出的游戏作品表达诚挚的感谢！
 
 若您已获取时报文本，在文件`hoshino/config/hourcall.py`中填写您的文本。
 
