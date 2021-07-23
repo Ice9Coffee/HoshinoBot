@@ -1,12 +1,11 @@
-nonebot[scheduler]~=1.6.0
-aiocqhttp>=1.2
+nonebot[scheduler]~=1.8.0
+aiocqhttp~=1.4.0
 lxml>=4.4.1
 pytz>=2019.3
 requests>=2.22.0
 sogou_tr_free>=0.0.6
 zhconv>=1.4.0
 Pillow>=6.2.1
-TwitterAPI>=2.5.10
 matplotlib>=3.2.0
 numpy>=1.18.0
 beautifulsoup4>=4.9.0
