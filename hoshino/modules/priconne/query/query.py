@@ -3,23 +3,23 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-rank_jp = '20-4'
-rank_tw = '19-5'
-rank_cn = '13-3'
+# rank_jp = '20-4'
+rank_tw = '20-4'
+rank_cn = '14-3'
 ptw = ' '.join(map(str, [
     R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode,
-    R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode,
-    R.img(f'priconne/quick/r{rank_tw}-tw-2.png').cqcode,
-    R.img(f'priconne/quick/r{rank_tw}-tw-3.png').cqcode,
+    # R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode,
+    # R.img(f'priconne/quick/r{rank_tw}-tw-2.png').cqcode,
+    # R.img(f'priconne/quick/r{rank_tw}-tw-3.png').cqcode,
 ]))
-pjp = ' '.join(map(str, [
-    R.img(f'priconne/quick/r{rank_jp}-jp-1.png').cqcode,
-    R.img(f'priconne/quick/r{rank_jp}-jp-2.png').cqcode,
-    R.img(f'priconne/quick/r{rank_jp}-jp-3.png').cqcode,
-]))
+# pjp = ' '.join(map(str, [
+#     R.img(f'priconne/quick/r{rank_jp}-jp-1.png').cqcode,
+#     R.img(f'priconne/quick/r{rank_jp}-jp-2.png').cqcode,
+#     R.img(f'priconne/quick/r{rank_jp}-jp-3.png').cqcode,
+# ]))
 pcn = ' '.join(map(str, [
-    R.img(f'priconne/quick/r{rank_cn}-cn-1.png').cqcode,
-    R.img(f'priconne/quick/r{rank_cn}-cn-2.png').cqcode,
+    R.img(f'priconne/quick/r{rank_cn}-cn-0.png').cqcode,
+    # R.img(f'priconne/quick/r{rank_cn}-cn-2.png').cqcode,
 ]))
 
 @sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
@@ -32,26 +32,17 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*陆rank表', at_sender=True)
         return
     msg = [
-        '\n表格仅供参考',
-        # '\n※rank表仅供参考，升r有风险，强化需谨慎\n※请以会长要求为准',
+        # '\n表格仅供参考',
+        '\n※rank表仅供参考，升r有风险，强化需谨慎\n※请以会长要求为准',
     ]
     if is_jp:
-        msg.append(f'※不定期搬运自图中Q群\n※广告为原作者推广，与本bot无关\nR{rank_jp} rank表：\n{pjp}')
-        # pos = match.group(3)
-        # if not pos or '前' in pos:
-        #     msg.append(str(p4))
-        # if not pos or '中' in pos:
-        #     msg.append(str(p5))
-        # if not pos or '后' in pos:
-        #     msg.append(str(p6))
-        await bot.send(ev, '\n'.join(msg), at_sender=True)
-        await util.silence(ev, 60)
+        await bot.send(ev, "\n休闲：输出拉满 辅助当月最高Rank-1裸\n一档：问你家会长", at_sender=True)
     elif is_tw:
         msg.append(f'※不定期搬运自漪夢奈特\n※详见油管频道\nR{rank_tw} rank表：\n{ptw}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
     elif is_cn:
-        msg.append(f'※不定期搬运自B站专栏\n※制作by席巴鸽\nR{rank_cn} rank表：\n{pcn}')
+        msg.append(f'※不定期搬运自nga\n※制作by樱花铁道之夜\nR{rank_cn} rank表：\n{pcn}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
 
