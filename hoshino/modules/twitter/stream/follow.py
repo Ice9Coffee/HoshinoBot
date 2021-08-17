@@ -1,5 +1,6 @@
 # 订阅推主
 
+import asyncio
 import json
 import os
 import re
@@ -129,7 +130,7 @@ async def follow_stream():
 
                 sv.logger.info(f"推送推文：\n{msg}")
                 for s in entry.services:
-                    await s.broadcast(msg, f" @{screen_name} 推文", 0.2)
+                    asyncio.get_event_loop().create_task(s.broadcast(msg, f" @{screen_name} 推文", 0.2))
 
             else:
                 sv.logger.debug("Ignore non-tweet event.")
