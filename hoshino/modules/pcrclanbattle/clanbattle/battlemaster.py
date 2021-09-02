@@ -49,7 +49,7 @@ class BattleMaster(object):
         yyyy = time.year
         mm = time.month
         dd = time.day
-        if dd < 3:
+        if dd < 21:
             mm = mm - 1
         if mm < 1:
             mm = 12
