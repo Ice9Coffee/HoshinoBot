@@ -1,5 +1,5 @@
 from hoshino.typing import CQEvent
-from hoshino.util import FreqLimiter, escape
+from hoshino.util import FreqLimiter, filt_message
 
 from .. import chara
 from . import sv
@@ -9,7 +9,7 @@ lmt = FreqLimiter(5)
 @sv.on_suffix('是谁')
 @sv.on_prefix('谁是')
 async def whois(bot, ev: CQEvent):
-    name = escape(ev.message.extract_plain_text().strip())
+    name = ev.message.extract_plain_text().strip()
     if not name:
         return
     id_ = chara.name2id(name)
@@ -29,6 +29,7 @@ async def whois(bot, ev: CQEvent):
 
     lmt.start_cd(uid, 120 if guess else 0)
     if guess:
+        name = filt_message(name)
         msg = f'兰德索尔似乎没有叫"{name}"的人...\n角色别称补全计划: github.com/Ice-Cirno/HoshinoBot/issues/5'
         await bot.send(ev, msg)
         msg = f'您有{confi}%的可能在找{guess_name} {c.icon.cqcode} {c.name}'
