@@ -29,7 +29,7 @@ async def stream_daemon(stream_func):
             await stream_func()
         except (KeyboardInterrupt, asyncio.CancelledError):
             sv.logger.info("Twitter stream daemon exited.")
-            return
+            raise
         except Exception as e:
             sv.logger.exception(e)
             sv.logger.error(f"Error {type(e)} Occurred in twitter stream. Restarting stream in 5s.")
