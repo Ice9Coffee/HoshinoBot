@@ -67,7 +67,7 @@ async def switch_service(session: CommandSession, turn_on: bool):
                     except:
                         pass
             else:
-                notfound.append(util.escape(name))
+                notfound.append(util.filt_message(name))
         msg = []
         if succ:
             msg.append(f'已{action_tip}服务：' + ', '.join(succ))

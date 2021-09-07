@@ -3,7 +3,7 @@ import random
 
 from hoshino import Service
 from hoshino.typing import CQEvent
-from hoshino.util import escape
+from hoshino.util import filt_message
 
 sv = Service('dice', help_='''
 [.r] 掷骰子
@@ -51,6 +51,6 @@ async def dice(bot, ev):
 
 @sv.on_prefix('.qj')
 async def kc_marriage(bot, ev: CQEvent):
-    wife = escape(ev.message.extract_plain_text().strip())
+    wife = filt_message(ev.message.extract_plain_text().strip())
     tip = f'与{wife}的ケッコンカッコカリ结果是：' if wife else '的ケッコンカッコカリ结果是：'
     await do_dice(bot, ev, 1, 3, 6, 1, 0, tip)

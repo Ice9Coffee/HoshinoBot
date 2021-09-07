@@ -1,19 +1,19 @@
 import os
 
-import aiocqhttp
 import nonebot
-from nonebot import Message, MessageSegment, message_preprocessor
 from nonebot.message import CanceledException
+from nonebot import Message, MessageSegment, message_preprocessor
 
-from .log import new_logger
-from . import config
+HoshinoBot = nonebot.NoneBot
 
-__version__ = '2.1.0'
+from . import log, config, util
+from .service import Service, sucmd
+
+__version__ = '2.2.0'
 
 _bot = None
-HoshinoBot = nonebot.NoneBot
 os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
-logger = new_logger('hoshino', config.DEBUG)
+logger = log.new_logger('hoshino', config.DEBUG)
 
 def init() -> HoshinoBot:
     global _bot
@@ -21,6 +21,7 @@ def init() -> HoshinoBot:
     _bot = nonebot.get_bot()
     _bot.finish = _finish
     _bot.get_self_ids = get_self_ids
+    _bot.silence = util.silence
 
     from .log import error_handler, critical_handler
     nonebot.logger.addHandler(error_handler)
@@ -49,8 +50,6 @@ def get_bot() -> HoshinoBot:
 
 
 def get_self_ids():
+    if _bot is None:
+        raise ValueError('HoshinoBot has not been initialized')
     return _bot._wsr_api_clients.keys()
-
-
-from . import R
-from .service import Service, sucmd, priv

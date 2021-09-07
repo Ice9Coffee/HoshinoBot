@@ -1,26 +1,21 @@
 import itertools
+from datetime import datetime
 from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-# rank_jp = '20-4'
-rank_tw = '20-4'
+rank_tw = '20-5'
 rank_cn = '14-3'
-ptw = ' '.join(map(str, [
-    R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode,
-    # R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode,
-    # R.img(f'priconne/quick/r{rank_tw}-tw-2.png').cqcode,
-    # R.img(f'priconne/quick/r{rank_tw}-tw-3.png').cqcode,
-]))
-# pjp = ' '.join(map(str, [
-#     R.img(f'priconne/quick/r{rank_jp}-jp-1.png').cqcode,
-#     R.img(f'priconne/quick/r{rank_jp}-jp-2.png').cqcode,
-#     R.img(f'priconne/quick/r{rank_jp}-jp-3.png').cqcode,
-# ]))
-pcn = ' '.join(map(str, [
-    R.img(f'priconne/quick/r{rank_cn}-cn-0.png').cqcode,
-    # R.img(f'priconne/quick/r{rank_cn}-cn-2.png').cqcode,
-]))
+ptw = R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode
+pcn = R.img(f'priconne/quick/r{rank_cn}-cn-0.png').cqcode
+
+
+def get_jp_support_rank(t: datetime):
+    delta = t - datetime(2021, 7, 15)
+    years, days = divmod(delta.days, 365)
+    rank = 20 + years * 12 + days // 30
+    return rank
+
 
 @sv.on_rex(r'^(\*?([日台国陆b])服?([前中后]*)卫?)?rank(表|推荐|指南)?$')
 async def rank_sheet(bot, ev):
@@ -32,13 +27,12 @@ async def rank_sheet(bot, ev):
         await bot.send(ev, '\n请问您要查询哪个服务器的rank表？\n*日rank表\n*台rank表\n*陆rank表', at_sender=True)
         return
     msg = [
-        # '\n表格仅供参考',
         '\n※rank表仅供参考，升r有风险，强化需谨慎\n※请以会长要求为准',
     ]
     if is_jp:
-        await bot.send(ev, "\n休闲：输出拉满 辅助当月最高Rank-1裸\n一档：问你家会长", at_sender=True)
+        await bot.send(ev, f"\n休闲：输出拉满 辅助R{get_jp_support_rank(datetime.now())}-0\n一档：问你家会长", at_sender=True)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\n※详见油管频道\nR{rank_tw} rank表：\n{ptw}')
+        msg.append(f'※不定期搬运自漪夢奈特\nR{rank_tw}参考表：\n{ptw}\n※详见油管频道https://www.youtube.com/playlist?list=PLYMR7DEWZIdsG1DSXe6HuNZT0M4jIozK2\n')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
         await util.silence(ev, 60)
     elif is_cn:
