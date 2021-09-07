@@ -54,7 +54,7 @@ async def avatar_guess(bot, ev: CQEvent):
         game.answer = random.choice(ids)
         while chara.is_npc(game.answer):
             game.answer = random.choice(ids)
-        c = chara.fromid(game.answer)
+        c = chara.fromid(game.answer, random.choice((3, 6)))
         img = c.icon.open()
         w, h = img.size
         l = random.randint(0, w - PATCH_SIZE)
