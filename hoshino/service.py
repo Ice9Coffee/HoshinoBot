@@ -169,7 +169,11 @@ class Service:
         """
         gl = defaultdict(list)
         for sid in hoshino.get_self_ids():
-            sgl = set(g['group_id'] for g in await self.bot.get_group_list(self_id=sid))
+            try:
+                sgl = await self.bot.get_group_list(self_id=sid)
+            except CQHttpError:
+                sgl = []
+            sgl = set(g['group_id'] for g in sgl)
             if self.enable_on_default:
                 sgl = sgl - self.disable_group
             else:
