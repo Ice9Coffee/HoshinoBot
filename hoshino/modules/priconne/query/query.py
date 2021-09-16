@@ -11,9 +11,9 @@ pcn = R.img(f'priconne/quick/r{rank_cn}-cn-0.png').cqcode
 
 
 def get_jp_support_rank(t: datetime):
-    delta = t - datetime(2021, 7, 15)
+    delta = t - datetime(2021, 8, 15)
     years, days = divmod(delta.days, 365)
-    rank = 20 + years * 12 + days // 30
+    rank = 21 + (years * 12 + days // 30) // 3
     return rank
 
 
