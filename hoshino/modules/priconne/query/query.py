@@ -4,10 +4,15 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-rank_tw = '20-5'
-rank_cn = '14-3'
-ptw = R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode
+rank_tw = '21-3'
+rank_cn = '14-5'
 pcn = R.img(f'priconne/quick/r{rank_cn}-cn-0.png').cqcode
+ptw = (
+    R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode +
+    R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode +
+    R.img(f'priconne/quick/r{rank_tw}-tw-2.png').cqcode +
+    R.img(f'priconne/quick/r{rank_tw}-tw-3.png').cqcode
+)
 
 
 def get_jp_support_rank(t: datetime):
