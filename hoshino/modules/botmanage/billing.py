@@ -19,7 +19,7 @@ async def billing(session: CommandSession):
         for sid in hoshino.get_self_ids():
             gs = await bot.get_group_list(self_id=sid)
             sid_group[sid] = [g['group_id'] for g in gs]
-    except CQHttpError:
+    except CQHttpError as e:
         await session.finish(str(e))
 
     failed = []
