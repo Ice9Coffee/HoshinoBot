@@ -61,7 +61,7 @@ PCR_SITES = f'''
 【论坛/NGA社区】bbs.nga.cn/thread.php?fid=-10308342
 【iOS实用工具/初音笔记】bbs.nga.cn/read.php?tid=14878762
 【安卓实用工具/静流笔记】bbs.nga.cn/read.php?tid=20499613
-【台服卡池千里眼】bbs.nga.cn/read.php?tid=16986067
+【台服卡池千里眼】bbs.nga.cn/read.php?tid=28236922
 【日官网】priconne-redive.jp
 【台官网】www.princessconnect.so-net.tw
 
@@ -116,4 +116,10 @@ DRAGON_TOOL = f'''
 @sv.on_fullmatch('一个顶俩', '拼音接龙', '韵母接龙')
 async def dragon(bot, ev):
     await bot.send(ev, DRAGON_TOOL, at_sender=True)
+    await util.silence(ev, 60)
+
+
+@sv.on_fullmatch('千里眼')
+async def future_gacha(bot, ev):
+    await bot.send(ev, "亿里眼·一之章 bbs.nga.cn/read.php?tid=21317816\n亿里眼·二之章 bbs.nga.cn/read.php?tid=25358671")
     await util.silence(ev, 60)
