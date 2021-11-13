@@ -34,6 +34,12 @@ def init() -> HoshinoBot:
 
     from . import msghandler
 
+    async def fake_group_id(event):
+        if event.detail_type == 'guild':
+            event.group_id = int(event.channel_id)
+
+    _bot.before_message('guild')(fake_group_id)
+
     return _bot
 
 
