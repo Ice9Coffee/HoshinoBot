@@ -4,19 +4,17 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-rank_tw = '21-3'
 rank_cn = '14-5'
 pcn = R.img(f'priconne/quick/r{rank_cn}-cn-0.png').cqcode
-ptw = (
-    R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode +
-    R.img(f'priconne/quick/r{rank_tw}-tw-1.png').cqcode +
-    R.img(f'priconne/quick/r{rank_tw}-tw-2.png').cqcode +
-    R.img(f'priconne/quick/r{rank_tw}-tw-3.png').cqcode
-)
 
 
-def get_jp_support_rank(t: datetime):
-    delta = t - datetime(2021, 8, 15)
+def get_support_rank(t: datetime, server):
+    if server == 'jp':
+        delta = t - datetime(2021, 8, 15)
+    elif server == 'tw':
+        delta = t - datetime(2021, 12, 15)
+    else:
+        raise ValueError('Unknown server')
     years, days = divmod(delta.days, 365)
     rank = 21 + (years * 12 + days // 30) // 3
     return rank
@@ -35,11 +33,9 @@ async def rank_sheet(bot, ev):
         '\n※rank表仅供参考，升r有风险，强化需谨慎\n※请以会长要求为准',
     ]
     if is_jp:
-        await bot.send(ev, f"\n休闲：输出拉满 辅助R{get_jp_support_rank(datetime.now())}-0\n一档：问你家会长", at_sender=True)
+        await bot.send(ev, f"\n休闲：输出拉满 辅助R{get_support_rank(datetime.now(), 'jp')}-0\n一档：问你家会长", at_sender=True)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\nR{rank_tw}参考表：\n{ptw}\n※详见油管频道https://www.youtube.com/playlist?list=PLYMR7DEWZIdsG1DSXe6HuNZT0M4jIozK2\n')
-        await bot.send(ev, '\n'.join(msg), at_sender=True)
-        await util.silence(ev, 60)
+        await bot.send(ev, f"\n休闲：输出拉满 辅助R{get_support_rank(datetime.now(), 'tw')}-0\n一档：问你家会长", at_sender=True)
     elif is_cn:
         msg.append(f'※不定期搬运自nga\n※制作by樱花铁道之夜\nR{rank_cn} rank表：\n{pcn}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)

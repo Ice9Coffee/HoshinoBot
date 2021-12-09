@@ -51,3 +51,5 @@ async def kc_query(bot, ev):
     if key in DB:
         sv.logger.info(DB[key])
         await bot.send(ev, DB[key], at_sender=True)
+    else:
+        sv.logger.info(f"{key} not found!")
