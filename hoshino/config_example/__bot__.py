@@ -10,6 +10,7 @@ HOST = '127.0.0.1'      # 本地部署使用此条配置（QQ客户端和bot端�
 
 DEBUG = False           # 调试模式
 
+BLACK_LIST = []
 WHITE_LIST = []
 SUPERUSERS = [10000]    # 填写超级用户的QQ号，可填多个用半角逗号","隔开
 NICKNAME = ''           # 机器人的昵称。呼叫昵称等同于@bot，可用元组配置多个昵称

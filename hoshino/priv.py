@@ -41,6 +41,8 @@ def check_block_group(group_id):
 
 
 def check_block_user(user_id):
+    if user_id in config.BLACK_LIST:
+        return True
     if user_id in _black_user and datetime.now() > _black_user[user_id]:
         del _black_user[user_id]  # 拉黑时间过期
         return False
