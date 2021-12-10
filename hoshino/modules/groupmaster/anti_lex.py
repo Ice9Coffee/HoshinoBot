@@ -2,7 +2,7 @@ from hoshino import Service, R
 from hoshino.util import FreqLimiter
 from hoshino.typing import CQEvent, HoshinoBot
 
-sv = Service('anti-lex', help_='买药提醒')
+sv = Service('anti-lex', help_='反蕾打卡提醒')
 lmt = FreqLimiter(3600)
 
 
