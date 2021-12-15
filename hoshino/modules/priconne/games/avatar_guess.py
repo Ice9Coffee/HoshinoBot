@@ -51,10 +51,10 @@ async def avatar_guess(bot, ev: CQEvent):
         await bot.finish(ev, "游戏仍在进行中…")
     with gm.start_game(ev.group_id) as game:
         ids = list(_pcr_data.CHARA_NAME.keys())
-        game.answer = random.choice(ids)
-        while chara.is_npc(game.answer):
-            game.answer = random.choice(ids)
-        c = chara.fromid(game.answer)
+        game.answer = random.choice(ids), random.choice((3, 6))
+        while chara.is_npc(game.answer[0]):
+            game.answer = random.choice(ids), random.choice((3, 6))
+        c = chara.fromid(game.answer[0], game.answer[1])
         img = c.icon.open()
         w, h = img.size
         l = random.randint(0, w - PATCH_SIZE)
@@ -73,8 +73,8 @@ async def on_input_chara_name(bot, ev: CQEvent):
     game = gm.get_game(ev.group_id)
     if not game or game.winner:
         return
-    c = chara.fromname(ev.message.extract_plain_text())
-    if c.id != chara.UNKNOWN and c.id == game.answer:
+    c = chara.fromname(ev.message.extract_plain_text(), game.answer[1])
+    if c.id != chara.UNKNOWN and c.id == game.answer[0]:
         game.winner = ev.user_id
         n = game.record()
         msg = f"正确答案是：{c.name}{c.icon.cqcode}\n{Seg.at(ev.user_id)}猜对了，真厉害！TA已经猜对{n}次了~\n(此轮游戏将在几秒后自动结束，请耐心等待)"

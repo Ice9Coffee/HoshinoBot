@@ -12,7 +12,7 @@ this_season[201:501] = 3
 this_season[501:1001] = 2
 this_season[1001:2001] = 2
 this_season[2001:4000] = 1
-this_season[4000:8000:100] = 50
+this_season[4000:8100:100] = 50
 this_season[8100:15001:100] = 15
 
 all_season[1:11] = 500
@@ -22,8 +22,8 @@ all_season[201:501] = 10
 all_season[501:1001] = 5
 all_season[1001:2001] = 3
 all_season[2001:4001] = 2
-all_season[4001:7999] = 1
-all_season[8100:15001:100] = 30
+all_season[4001:8000] = 1
+all_season[8000:15001:100] = 30
 
 
 @sv.on_prefix('挖矿', 'jjc钻石', '竞技场钻石', 'jjc钻石查询', '竞技场钻石查询')

@@ -4,16 +4,19 @@ from hoshino import util, R
 from hoshino.typing import CQEvent
 from . import sv
 
-rank_tw = '20-5'
-rank_cn = '14-3'
-ptw = R.img(f'priconne/quick/r{rank_tw}-tw-0.png').cqcode
+rank_cn = '14-5'
 pcn = R.img(f'priconne/quick/r{rank_cn}-cn-0.png').cqcode
 
 
-def get_jp_support_rank(t: datetime):
-    delta = t - datetime(2021, 7, 15)
+def get_support_rank(t: datetime, server):
+    if server == 'jp':
+        delta = t - datetime(2021, 8, 15)
+    elif server == 'tw':
+        delta = t - datetime(2021, 12, 15)
+    else:
+        raise ValueError('Unknown server')
     years, days = divmod(delta.days, 365)
-    rank = 20 + years * 12 + days // 30
+    rank = 21 + (years * 12 + days // 30) // 3
     return rank
 
 
@@ -30,11 +33,9 @@ async def rank_sheet(bot, ev):
         '\n※rank表仅供参考，升r有风险，强化需谨慎\n※请以会长要求为准',
     ]
     if is_jp:
-        await bot.send(ev, f"\n休闲：输出拉满 辅助R{get_jp_support_rank(datetime.now())}-0\n一档：问你家会长", at_sender=True)
+        await bot.send(ev, f"\n休闲：输出拉满 辅助R{get_support_rank(datetime.now(), 'jp')}-0\n一档：问你家会长", at_sender=True)
     elif is_tw:
-        msg.append(f'※不定期搬运自漪夢奈特\nR{rank_tw}参考表：\n{ptw}\n※详见油管频道https://www.youtube.com/playlist?list=PLYMR7DEWZIdsG1DSXe6HuNZT0M4jIozK2\n')
-        await bot.send(ev, '\n'.join(msg), at_sender=True)
-        await util.silence(ev, 60)
+        await bot.send(ev, f"\n休闲：输出拉满 辅助R{get_support_rank(datetime.now(), 'tw')}-0\n一档：问你家会长", at_sender=True)
     elif is_cn:
         msg.append(f'※不定期搬运自nga\n※制作by樱花铁道之夜\nR{rank_cn} rank表：\n{pcn}')
         await bot.send(ev, '\n'.join(msg), at_sender=True)
@@ -56,7 +57,7 @@ PCR_SITES = f'''
 【论坛/NGA社区】bbs.nga.cn/thread.php?fid=-10308342
 【iOS实用工具/初音笔记】bbs.nga.cn/read.php?tid=14878762
 【安卓实用工具/静流笔记】bbs.nga.cn/read.php?tid=20499613
-【台服卡池千里眼】bbs.nga.cn/read.php?tid=16986067
+【台服卡池千里眼】bbs.nga.cn/read.php?tid=28236922
 【日官网】priconne-redive.jp
 【台官网】www.princessconnect.so-net.tw
 
@@ -111,4 +112,10 @@ DRAGON_TOOL = f'''
 @sv.on_fullmatch('一个顶俩', '拼音接龙', '韵母接龙')
 async def dragon(bot, ev):
     await bot.send(ev, DRAGON_TOOL, at_sender=True)
+    await util.silence(ev, 60)
+
+
+@sv.on_fullmatch('千里眼')
+async def future_gacha(bot, ev):
+    await bot.send(ev, "亿里眼·一之章 bbs.nga.cn/read.php?tid=21317816\n亿里眼·二之章 bbs.nga.cn/read.php?tid=25358671")
     await util.silence(ev, 60)

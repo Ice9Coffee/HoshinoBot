@@ -52,4 +52,4 @@ def get_bot() -> HoshinoBot:
 def get_self_ids():
     if _bot is None:
         raise ValueError('HoshinoBot has not been initialized')
-    return _bot._wsr_api_clients.keys()
+    return list(_bot._wsr_api_clients.keys())

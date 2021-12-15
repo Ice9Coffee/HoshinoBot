@@ -5,7 +5,7 @@ from hoshino.typing import CommandSession
 
 async def ls_group(session: CommandSession):
     bot = session.bot
-    self_ids = bot._wsr_api_clients.keys()
+    self_ids = bot.get_self_ids()
     for sid in self_ids:
         gl = await bot.get_group_list(self_id=sid)
         msg = [ "{group_id} {group_name}".format_map(g) for g in gl ]
@@ -22,12 +22,12 @@ async def ls_friend(session: CommandSession):
     await session.send(msg)
 
 
-async def ls_service(session: CommandSession, service_name:str):
+async def ls_service(session: CommandSession, service_name: str):
     all_services = Service.get_loaded_services()
     if service_name in all_services:
         sv = all_services[service_name]
-        on_g = '\n'.join(map(lambda x: str(x), sv.enable_group))
-        off_g = '\n'.join(map(lambda x: str(x), sv.disable_group))
+        on_g = '\n'.join(map(str, sv.enable_group))
+        off_g = '\n'.join(map(str, sv.disable_group))
         default_ = 'enabled' if sv.enable_on_default else 'disabled'
         msg = f"服务{sv.name}：\n默认：{default_}\nuse_priv={sv.use_priv}\nmanage_priv={sv.manage_priv}\nvisible={sv.visible}\n启用群：\n{on_g}\n禁用群：\n{off_g}"
         session.finish(msg)
@@ -35,10 +35,9 @@ async def ls_service(session: CommandSession, service_name:str):
         session.finish(f'未找到服务{service_name}')
 
 
-async def ls_bot(session:CommandSession):
-    self_ids = session.bot._wsr_api_clients.keys()
-    msg = str(self_ids)
-    await session.send(msg)
+async def ls_bot(session: CommandSession):
+    self_ids = session.bot.get_self_ids()
+    await session.send(f"共{len(self_ids)}个bot\n{self_ids}")
 
 
 @sucmd('ls', shell_like=True)
