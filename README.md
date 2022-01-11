@@ -114,6 +114,7 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 
 旧文档已失效（新文档正在编写中...），请参考由 [pcrbot 社区](https://github.com/pcrbot)提供的部署指南：
 
+- 《[CentOS 下安装 HoshinoBot 和 yobot](https://cn.pcrbot.com/deploy-hoshinobot-on-centos/)》作者：[7loli](https://github.com/7loli)
 - 《[Linux 下部署一个公主连结 qq 群聊机器人](https://cn.pcrbot.com/deploy-a-priconne-bot-on-linux/)》作者：[地河君_official](https://github.com/Chendihe4975)
 - 《[Windows 给新人的简易部署指南](https://github.com/Soung2279/Mirai-Bot-Setup)》作者：[SYoung](https://github.com/Soung2279)
 - 《[使用 Docker 部署 HoshinoBot 与 yobot](https://cn.pcrbot.com/depoly-with-docker/)》作者：[yuudi](https://github.com/yuudi)
