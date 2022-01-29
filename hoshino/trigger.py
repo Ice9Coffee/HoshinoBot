@@ -138,7 +138,7 @@ class RexTrigger(BaseTrigger):
 
 class _PlainTextExtractor(BaseTrigger):
     def find_handler(self, event: CQEvent):
-        event.plain_text = event.message.extract_plain_text().strip()
+        event.plain_text = str(event.message).strip()
         return []
 
 class _TextNormalizer(_PlainTextExtractor):
