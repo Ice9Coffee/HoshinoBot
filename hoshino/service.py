@@ -269,9 +269,11 @@ class Service:
         return deco
 
 
-    def on_rex(self, rex: Union[str, re.Pattern], only_to_me=False, normalize=True) -> Callable:
+    def on_rex(self, rex: Union[str, re.Pattern], flags: Union[int, re.RegexFlag]=0, only_to_me=False, normalize=True) -> Callable:
+        if isinstance(flags, re.RegexFlag):
+            flags = flags.value
         if isinstance(rex, str):
-            rex = re.compile(rex)
+            rex = re.compile(rex, flags)
         def deco(func) -> Callable:
             sf = ServiceFunc(self, func, only_to_me, normalize)
             if isinstance(rex, re.Pattern):
