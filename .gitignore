@@ -20,6 +20,9 @@ hoshino/modules/pcrclanbattle/clanbattlev3
 hoshino/modules/pcrclanbattle/clanbattlev4
 hoshino/modules/umamusume
 
+# log
+log/
+
 # 暂时删除的代码
 TRASH/
 kokkoro-OLD/
