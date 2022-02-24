@@ -1,4 +1,6 @@
+import asyncio
 import os
+from typing import Iterable
 
 import nonebot
 from nonebot.message import CanceledException
@@ -37,19 +39,18 @@ def init() -> HoshinoBot:
     return _bot
 
 
-async def _finish(event, message, **kwargs):
-    if message:
-        await _bot.send(event, message, **kwargs)
-    raise CanceledException('ServiceFunc of HoshinoBot finished.')
-
-
 def get_bot() -> HoshinoBot:
     if _bot is None:
         raise ValueError('HoshinoBot has not been initialized')
     return _bot
 
 
-def get_self_ids():
-    if _bot is None:
-        raise ValueError('HoshinoBot has not been initialized')
-    return list(_bot._wsr_api_clients.keys())
+def get_self_ids() -> Iterable[str]:
+    return list(get_bot()._wsr_api_clients.keys())
+
+
+def _finish(event, message, **kwargs):
+    if message:
+        bot = get_bot()
+        asyncio.run_coroutine_threadsafe(bot.send(event, message, **kwargs), bot.loop)
+    raise CanceledException('ServiceFunc of HoshinoBot finished.')
