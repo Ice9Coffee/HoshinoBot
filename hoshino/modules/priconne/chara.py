@@ -21,6 +21,9 @@ UnavailableChara = {
     1102,   # 泳装大眼
     1183,   # 星弓星
     1184,   # 星弓栞
+    1204,   # 小小甜心美美
+    1205,   # 小小甜心禊
+    1206,   # 小小甜心镜华
 }
 
 try:
@@ -99,7 +102,7 @@ def is_npc(id_):
     if id_ in UnavailableChara:
         return True
     else:
-        return not ((1000 < id_ < 1200) or (1700 < id_ < 1900))
+        return not ((1000 < id_ < 1300) or (1700 < id_ < 1900))
 
 def gen_team_pic(team, size=64, star_slot_verbose=True):
     num = len(team)
