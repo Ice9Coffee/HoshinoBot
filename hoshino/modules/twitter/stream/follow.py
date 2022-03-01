@@ -33,8 +33,9 @@ follow_collection = [
 @dataclass
 class FollowEntry:
     services: Set[Service] = field(default_factory=set)
-    media_only: bool = False
     profile_image: str = None
+    media_only: bool = False
+    forward_retweet: bool = False
 
 
 class TweetRouter:
@@ -50,11 +51,18 @@ class TweetRouter:
             raise KeyError(f"`{screen_name}` not in `TweetRouter.follows`.")
         self.follows[screen_name].media_only = media_only
 
-    def load(self, service_follow_dict, media_only_users):
+    def set_forward_retweet(self, screen_name, forward_retweet=True):
+        if screen_name not in self.follows:
+            raise KeyError(f"`{screen_name}` not in `TweetRouter.follows`.")
+        self.follows[screen_name].forward_retweet = forward_retweet
+
+    def load(self, service_follow_dict, media_only_users, forward_retweet_users):
         for s in follow_collection:
             self.add(s, service_follow_dict[s.name])
         for x in media_only_users:
             self.set_media_only(x)
+        for x in forward_retweet_users:
+            self.set_forward_retweet(x)
 
 
 class UserIdCache:
@@ -92,7 +100,7 @@ async def follow_stream():
         proxy=cfg.proxy,
     )
     router = TweetRouter()
-    router.load(cfg.follows, cfg.media_only_users)
+    router.load(cfg.follows, cfg.media_only_users, cfg.forward_retweet_users)
     user_id_cache = UserIdCache()
     async with client:
         follow_ids = await user_id_cache.convert(client, router.follows)
@@ -105,22 +113,20 @@ async def follow_stream():
                 screen_name = tweet.user.screen_name
                 if screen_name not in router.follows:
                     continue    # 推主不在订阅列表
-                if peony.events.retweet(tweet):
-                    continue    # 忽略纯转推
+
+                entry = router.follows[screen_name]
+                if peony.events.retweet(tweet) and not entry.forward_retweet:
+                    continue    # 除非配置制定，忽略纯转推
+
                 reply_to = tweet.get("in_reply_to_screen_name")
                 if reply_to and reply_to != screen_name:
                     continue    # 忽略对他人的评论，保留自评论
 
-                entry = router.follows[screen_name]
                 media = tweet.get("extended_entities", {}).get("media", [])
                 if entry.media_only and not media:
                     continue    # 无附带媒体，订阅选项media_only=True时忽略
 
                 msg = format_tweet(tweet)
-
-                if "quoted_status" in tweet:
-                    quoted_msg = format_tweet(tweet.quoted_status)
-                    msg = f"{msg}\n\n>>>>>\n{quoted_msg}"
 
                 old_profile_img = entry.profile_image
                 entry.profile_image = tweet.user.get("profile_image_url_https") or entry.profile_image

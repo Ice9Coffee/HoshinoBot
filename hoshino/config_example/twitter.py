@@ -28,6 +28,8 @@ media_only_users = [
     *follows["depress-artist-twitter"],
 ]
 
+forward_retweet_users = []
+
 uma_ura9_black_list = [
     'YaibA_No9', 'ReToken',
 ]
