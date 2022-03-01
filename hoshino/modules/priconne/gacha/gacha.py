@@ -15,6 +15,7 @@ class Gacha(object):
         else:
             self.tenjou_line = 200
             self.tenjou_rate = '24.54%'
+        self.memo_pieces = 200 if (pool_name == 'JP' or pool_name == 'MIX') else 100
         self.load_pool(pool_name)
 
 
