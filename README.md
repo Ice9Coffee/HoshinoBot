@@ -114,10 +114,9 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 
 <details>
   <summary>（点击查看社区提供的部署指南）</summary>
+> CentOS已停止更新，推荐使用Ubuntu 20.04或Debian。
 
-- 《[CentOS 下安装 HoshinoBot 和 yobot](https://cn.pcrbot.com/deploy-hoshinobot-on-centos/)》作者：[7loli](https://github.com/7loli)
-- 《[Linux 下部署一个公主连结 qq 群聊机器人](https://cn.pcrbot.com/deploy-a-priconne-bot-on-linux/)》作者：[地河君_official](https://github.com/Chendihe4975)
-- 《[Windows 给新人的简易部署指南](https://github.com/Soung2279/Mirai-Bot-Setup)》作者：[SYoung](https://github.com/Soung2279)
+
 - 《[使用 Docker 部署 HoshinoBot 与 yobot](https://cn.pcrbot.com/depoly-with-docker/)》作者：[yuudi](https://github.com/yuudi)
 
 </details>
@@ -205,6 +204,8 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 
 
 #### Linux 部署
+
+> CentOS已停止更新，推荐使用Ubuntu 20.04或Debian。
 
 1. 安装 Python 3.8
 
