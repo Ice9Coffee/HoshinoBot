@@ -3,12 +3,21 @@ from functools import cmp_to_key
 from nonebot import CommandSession, on_command
 from nonebot import permission as perm
 from nonebot.argparse import ArgumentParser
-
 from hoshino import Service, priv, util
+import json
+from sys import path_importer_cache
+import hoshino
+from hoshino import aiorequests
+from hoshino.util import FreqLimiter
+from PIL import Image, ImageDraw, ImageFont
+import io
+import os
+import base64
+
 
 PRIV_TIP = f'群主={priv.OWNER} 群管={priv.ADMIN} 群员={priv.NORMAL} bot维护组={priv.SUPERUSER}'
 
-@on_command('lssv', aliases=('服务列表', '功能列表'), permission=perm.GROUP_ADMIN, only_to_me=False, shell_like=True)
+@on_command('lssv', aliases=('服务列表', '功能列表'), permission=perm.SUPERUSER | perm.GROUP_OWNER | perm.GROUP_ADMIN, only_to_me=False, shell_like=True)
 async def lssv(session: CommandSession):
     parser = ArgumentParser(session=session)
     parser.add_argument('-a', '--all', action='store_true')
@@ -34,9 +43,21 @@ async def lssv(session: CommandSession):
         if verbose_all or (sv.visible ^ only_hidden):
             x = '○' if on else '×'
             msg.append(f"|{x}| {sv.name}")
-    await session.send('\n'.join(msg))
+            pic = image_draw("\n".join(map(str,msg)))
+    await session.send(f'[CQ:image,file={pic}]')
 
-
+def image_draw(msg):
+    fontpath = font_path = os.path.join(os.path.dirname(__file__), 'simhei.ttf')
+    font1 = ImageFont.truetype(fontpath, 16)
+    width, height = font1.getsize_multiline(msg.strip())
+    img = Image.new("RGB", (width + 20, height + 20), (255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    draw.text((10, 10), msg, fill=(0, 0, 0), font=font1)
+    b_io = io.BytesIO()
+    img.save(b_io, format="JPEG")
+    base64_str = 'base64://' + base64.b64encode(b_io.getvalue()).decode()
+    return base64_str
+    
 @on_command('enable', aliases=('启用', '开启', '打开'), permission=perm.GROUP, only_to_me=False)
 async def enable_service(session: CommandSession):
     await switch_service(session, turn_on=True)
