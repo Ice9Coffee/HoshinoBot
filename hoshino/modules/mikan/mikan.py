@@ -28,7 +28,8 @@ class Mikan:
             return []
 
         for i in rss.xpath('/rss/channel/item'):
-            link = i.find('./link').text
+            link: str = i.find('./link').text
+            link = link.replace("https://mikanani.me/Home/Episode/", "magnet:?xt=urn:btih:")
             description = i.find('./description').text
             pubDate = i.find('.//xmlns:pubDate', namespaces={'xmlns': 'https://mikanani.me/0.1/'}).text
             pubDate = pubDate[:19]
