@@ -1,13 +1,13 @@
+import asyncio
 import importlib
 from io import BytesIO
 
 import pygtrie
-import requests
 from fuzzywuzzy import process
 from PIL import Image
 
 import hoshino
-from hoshino import R, log, sucmd, util
+from hoshino import R, log, sucmd, util, aiorequests
 from hoshino.typing import CommandSession
 
 from . import _pcr_data
@@ -30,7 +30,7 @@ class Roster:
     def __init__(self):
         self._roster = pygtrie.CharTrie()
         self.update()
-    
+
     def update(self):
         importlib.reload(_pcr_data)
         self._roster.clear()
@@ -46,17 +46,14 @@ class Roster:
                     logger.warning(f'priconne.chara.Roster: 出现重名{n}于id{idx}与id{self._roster[n]}')
         return result
 
-
     def get_id(self, name):
         name = util.normalize_str(name)
         return self._roster[name] if name in self._roster else UNKNOWN
-
 
     def guess_id(self, name):
         """@return: id, name, score"""
         name, score = process.extractOne(name, self._roster.keys(), processor=util.normalize_str)
         return self._roster[name], name, score
-
 
     def parse_team(self, namestr):
         """@return: List[ids], unknown_namestr"""
@@ -76,25 +73,31 @@ class Roster:
 
 roster = Roster()
 
+
 def name2id(name):
     return roster.get_id(name)
 
+
 def fromid(id_, star=0, equip=0):
     return Chara(id_, star, equip)
+
 
 def fromname(name, star=0, equip=0):
     id_ = name2id(name)
     return Chara(id_, star, equip)
 
+
 def guess_id(name):
     """@return: id, name, score"""
     return roster.guess_id(name)
+
 
 def is_npc(id_):
     if id_ in _pcr_data.UnavailableChara:
         return True
     else:
         return not (1000 < id_ < 1900)
+
 
 def gen_team_pic(team, size=64, star_slot_verbose=True):
     num = len(team)
@@ -105,23 +108,24 @@ def gen_team_pic(team, size=64, star_slot_verbose=True):
     return des
 
 
-def download_chara_icon(id_, star):
+async def download_chara_icon(id_, star):
     url = f'https://redive.estertion.win/icon/unit/{id_}{star}1.webp'
     save_path = R.img(f'priconne/unit/icon_unit_{id_}{star}1.png').path
     logger.info(f'Downloading chara icon from {url}')
     try:
-        rsp = requests.get(url, stream=True, timeout=5)
+        rsp = await aiorequests.get(url, stream=True, timeout=5)
     except Exception as e:
         logger.error(f'Failed to download {url}. {type(e)}')
         logger.exception(e)
     if 200 == rsp.status_code:
-        img = Image.open(BytesIO(rsp.content))
+        img = Image.open(BytesIO(await rsp.content))
         img.save(save_path)
         logger.info(f'Saved to {save_path}')
         return 0    # ok
     else:
         logger.error(f'Failed to download {url}. HTTP {rsp.status_code}')
     return 1        # error
+
 
 class Chara:
 
@@ -140,6 +144,11 @@ class Chara:
 
     @property
     def icon(self):
+        import warnings
+        warnings.warn(
+            "`Chara.icon` is deprecated and will be removed in the next version. Use async method `Chara.get_icon()` instead.",
+            DeprecationWarning
+        )
         star = '3' if 1 <= self.star <= 5 else '6'
         res = R.img(f'priconne/unit/icon_unit_{self.id}{star}1.png')
         if not res.exist:
@@ -147,9 +156,14 @@ class Chara:
         if not res.exist:
             res = R.img(f'priconne/unit/icon_unit_{self.id}11.png')
         if not res.exist:   # FIXME: 不方便改成异步请求
-            download_chara_icon(self.id, 6)
-            download_chara_icon(self.id, 3)
-            download_chara_icon(self.id, 1)
+            loop = asyncio.get_running_loop()
+            loop.run_until_complete(
+                asyncio.gather(
+                    download_chara_icon(self.id, 6),
+                    download_chara_icon(self.id, 3),
+                    download_chara_icon(self.id, 1),
+                )
+            )
             res = R.img(f'priconne/unit/icon_unit_{self.id}{star}1.png')
         if not res.exist:
             res = R.img(f'priconne/unit/icon_unit_{self.id}31.png')
@@ -159,17 +173,35 @@ class Chara:
             res = R.img(f'priconne/unit/icon_unit_{UNKNOWN}31.png')
         return res
 
+    async def get_icon(self):
+        star = '3' if 1 <= self.star <= 5 else '6'
+        res = R.img(f'priconne/unit/icon_unit_{self.id}{star}1.png')
+        if not res.exist:
+            res = R.img(f'priconne/unit/icon_unit_{self.id}31.png')
+        if not res.exist:
+            res = R.img(f'priconne/unit/icon_unit_{self.id}11.png')
+        if not res.exist:
+            await asyncio.gather(
+                download_chara_icon(self.id, 6),
+                download_chara_icon(self.id, 3),
+                download_chara_icon(self.id, 1),
+            )
+            res = R.img(f'priconne/unit/icon_unit_{self.id}{star}1.png')
+        if not res.exist:
+            res = R.img(f'priconne/unit/icon_unit_{self.id}31.png')
+        if not res.exist:
+            res = R.img(f'priconne/unit/icon_unit_{self.id}11.png')
+        if not res.exist:
+            res = R.img(f'priconne/unit/icon_unit_{UNKNOWN}31.png')
+        return res
 
-    def render_icon(self, size, star_slot_verbose=True) -> Image:
-        try:
-            pic = self.icon.open().convert('RGBA').resize((size, size), Image.LANCZOS)
-        except FileNotFoundError:
-            logger.error(f'File not found: {self.icon.path}')
-            pic = unknown_chara_icon.convert('RGBA').resize((size, size), Image.LANCZOS)
+    async def render_icon(self, size, star_slot_verbose=True) -> Image:
+        icon = await self.get_icon()
+        pic = icon.open().convert('RGBA').resize((size, size), Image.LANCZOS)
 
         l = size // 6
         star_lap = round(l * 0.15)
-        margin_x = ( size - 6*l ) // 2
+        margin_x = (size - 6*l) // 2
         margin_y = round(size * 0.05)
         if self.star:
             for i in range(5 if star_slot_verbose else min(self.star, 5)):
@@ -201,9 +233,9 @@ async def download_pcr_chara_icon(sess: CommandSession):
     try:
         id_ = roster.get_id(sess.current_arg_text.strip())
         assert id_ != UNKNOWN, '未知角色名'
-        download_chara_icon(id_, 6)
-        download_chara_icon(id_, 3)
-        download_chara_icon(id_, 1)
+        await download_chara_icon(id_, 6)
+        await download_chara_icon(id_, 3)
+        await download_chara_icon(id_, 1)
         await sess.send('ok')
     except Exception as e:
         logger.exception(e)
@@ -216,12 +248,13 @@ async def download_star6_chara_icon(sess: CommandSession):
     尝试下载缺失的六星头像，已有头像不会被覆盖
     '''
     try:
+        succ = 0
         for id_ in _pcr_data.CHARA_NAME:
             if is_npc(id_):
                 continue
             res = R.img(f'priconne/unit/icon_unit_{id_}61.png')
             if not res.exist:
-                if download_chara_icon(id_, 6) == 0:
+                if await download_chara_icon(id_, 6) == 0:
                     succ += 1
         await sess.send(f'ok! downloaded {succ} icons.')
     except Exception as e:

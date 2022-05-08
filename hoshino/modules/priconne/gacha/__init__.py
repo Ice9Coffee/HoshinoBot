@@ -55,7 +55,7 @@ async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
     gacha = Gacha(_group_pool[gid])
     up_chara = gacha.up
-    up_chara = map(lambda x: str(chara.fromname(x, star=3).icon.cqcode) + x, up_chara)
+    up_chara = map(lambda x: str((await chara.fromname(x, star=3).get_icon()).cqcode) + x, up_chara)
     up_chara = '\n'.join(up_chara)
     await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%")
 
@@ -108,7 +108,7 @@ async def gacha_1(bot, ev: CQEvent):
     chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
-    res = f'{chara.icon.cqcode} {chara.name} {"★"*chara.star}'
+    res = f'{(await chara.get_icon()).cqcode} {chara.name} {"★"*chara.star}'
 
     await silence(ev, silence_time)
     await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)

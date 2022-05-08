@@ -60,7 +60,7 @@ async def description_guess(bot, ev: CQEvent):
             if game.winner:
                 return
         c = chara.fromid(game.answer)
-    await bot.send(ev, f"正确答案是：{c.name} {c.icon.cqcode}\n很遗憾，没有人答对~")
+    await bot.send(ev, f"正确答案是：{c.name} {(await c.get_icon()).cqcode}\n很遗憾，没有人答对~")
 
 
 @sv.on_message()
@@ -72,5 +72,5 @@ async def on_input_chara_name(bot, ev: CQEvent):
     if c.id != chara.UNKNOWN and c.id == game.answer:
         game.winner = ev.user_id
         n = game.record()
-        msg = f"正确答案是：{c.name}{c.icon.cqcode}\n{Seg.at(ev.user_id)}猜对了，真厉害！TA已经猜对{n}次了~\n(此轮游戏将在几秒后自动结束，请耐心等待)"
+        msg = f"正确答案是：{c.name}{(await c.get_icon()).cqcode}\n{Seg.at(ev.user_id)}猜对了，真厉害！TA已经猜对{n}次了~\n(此轮游戏将在几秒后自动结束，请耐心等待)"
         await bot.send(ev, msg)
