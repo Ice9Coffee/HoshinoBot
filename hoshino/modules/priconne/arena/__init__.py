@@ -52,7 +52,7 @@ async def arena_query_jp(bot, ev):
     await _arena_query(bot, ev, region=4)
 
 
-def render_atk_def_teams(entries, border_pix=5):
+async def render_atk_def_teams(entries, border_pix=5):
     n = len(entries)
     icon_size = 64
     im = Image.new('RGBA', (5 * icon_size + 100, n * (icon_size + border_pix) - border_pix), (255, 255, 255, 255))
@@ -62,7 +62,7 @@ def render_atk_def_teams(entries, border_pix=5):
         y1 = i * (icon_size + border_pix)
         y2 = y1 + icon_size
         for j, c in enumerate(e['atk']):
-            icon = c.render_icon(icon_size)
+            icon = await c.render_icon(icon_size)
             x1 = j * icon_size
             x2 = x1 + icon_size
             im.paste(icon, (x1, y1, x2, y2), icon)
@@ -134,7 +134,7 @@ async def _arena_query(bot, ev: CQEvent, region: int):
 
     # 发送回复
     sv.logger.info('Arena generating picture...')
-    teams = render_atk_def_teams(res)
+    teams = await render_atk_def_teams(res)
     teams = pic2b64(teams)
     teams = MessageSegment.image(teams)
     sv.logger.info('Arena picture ready!')
@@ -204,8 +204,8 @@ async def upload(ss: CommandSession):
     def_team = ss.get('def_team', prompt='请输入防守队+5个表示星级的数字+5个表示专武的0/1 无需空格')
     if 'pic' not in ss.state:
         ss.state['pic'] = MessageSegment.image(pic2b64(concat_pic([
-            chara.gen_team_pic(atk_team),
-            chara.gen_team_pic(def_team),
+            await chara.gen_team_pic(atk_team),
+            await chara.gen_team_pic(def_team),
         ])))
     confirm = ss.get('confirm', prompt=f'{ss.state["pic"]}\n{MessageSegment.at(ss.event.user_id)}确认上传？\n> 确认\n> 取消')
     # TODO: upload

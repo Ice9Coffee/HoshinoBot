@@ -54,8 +54,10 @@ gacha_tenjou_aliases = ('抽一井', '来一井', '来发井', '抽发井', '天
 async def gacha_info(bot, ev: CQEvent):
     gid = str(ev.group_id)
     gacha = Gacha(_group_pool[gid])
-    up_chara = gacha.up
-    up_chara = map(lambda x: str((await chara.fromname(x, star=3).get_icon()).cqcode) + x, up_chara)
+    up_chara = []
+    for x in gacha.up:
+        icon = await chara.fromname(x, star=3).get_icon()
+        up_chara.append(str(icon.cqcode) + x)
     up_chara = '\n'.join(up_chara)
     await bot.send(ev, f"本期卡池主打的角色：\n{up_chara}\nUP角色合计={(gacha.up_prob/10):.1f}% 3★出率={(gacha.s3_prob)/10:.1f}%")
 
@@ -126,8 +128,8 @@ async def gacha_10(bot, ev: CQEvent):
     result, hiishi = gacha.gacha_ten()
     silence_time = hiishi * 6 if hiishi < SUPER_LUCKY_LINE else hiishi * 60
 
-    res1 = chara.gen_team_pic(result[:5], star_slot_verbose=False)
-    res2 = chara.gen_team_pic(result[5:], star_slot_verbose=False)
+    res1 = await chara.gen_team_pic(result[:5], star_slot_verbose=False)
+    res2 = await chara.gen_team_pic(result[5:], star_slot_verbose=False)
     res = concat_pic([res1, res2])
     res = pic2b64(res)
     res = MessageSegment.image(res)
@@ -171,7 +173,7 @@ async def gacha_tenjou(bot, ev: CQEvent):
         pics = []
         for i in range(0, lenth, step):
             j = min(lenth, i + step)
-            pics.append(chara.gen_team_pic(res[i:j], star_slot_verbose=False))
+            pics.append(await chara.gen_team_pic(res[i:j], star_slot_verbose=False))
         res = concat_pic(pics)
         res = pic2b64(res)
         res = MessageSegment.image(res)

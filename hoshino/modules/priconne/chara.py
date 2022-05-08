@@ -99,11 +99,11 @@ def is_npc(id_):
         return not (1000 < id_ < 1900)
 
 
-def gen_team_pic(team, size=64, star_slot_verbose=True):
+async def gen_team_pic(team, size=64, star_slot_verbose=True):
     num = len(team)
     des = Image.new('RGBA', (num*size, size), (255, 255, 255, 255))
     for i, chara in enumerate(team):
-        src = chara.render_icon(size, star_slot_verbose)
+        src = await chara.render_icon(size, star_slot_verbose)
         des.paste(src, (i * size, 0), src)
     return des
 
