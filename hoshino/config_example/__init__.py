@@ -7,6 +7,7 @@ from .__bot__ import *
 # check correctness
 RES_DIR = os.path.expanduser(RES_DIR)
 assert RES_PROTOCOL in ('http', 'file', 'base64')
+assert len(SUPERUSERS) > 1
 
 # load module configs
 logger = log.new_logger('config', DEBUG)

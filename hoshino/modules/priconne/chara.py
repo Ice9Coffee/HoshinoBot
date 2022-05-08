@@ -3,7 +3,7 @@ from io import BytesIO
 
 import pygtrie
 import requests
-from fuzzywuzzy import fuzz, process
+from fuzzywuzzy import process
 from PIL import Image
 
 import hoshino
@@ -14,17 +14,6 @@ from . import _pcr_data
 
 logger = log.new_logger('chara', hoshino.config.DEBUG)
 UNKNOWN = 1000
-UnavailableChara = {
-    1069,   # 霸瞳
-    1072,   # 可萝爹
-    1073,   # 拉基拉基
-    1102,   # 泳装大眼
-    1183,   # 星弓星
-    1184,   # 星弓栞
-    1204,   # 小小甜心美美
-    1205,   # 小小甜心禊
-    1206,   # 小小甜心镜华
-}
 
 try:
     gadget_equip = R.img('priconne/gadget/equip.png').open()
@@ -45,14 +34,17 @@ class Roster:
     def update(self):
         importlib.reload(_pcr_data)
         self._roster.clear()
+        result = {'success': 0, 'duplicate': 0}
         for idx, names in _pcr_data.CHARA_NAME.items():
             for n in names:
                 n = util.normalize_str(n)
                 if n not in self._roster:
                     self._roster[n] = idx
+                    result['success'] += 1
                 else:
+                    result['duplicate'] += 1
                     logger.warning(f'priconne.chara.Roster: 出现重名{n}于id{idx}与id{self._roster[n]}')
-        self._all_name_list = self._roster.keys()
+        return result
 
 
     def get_id(self, name):
@@ -62,7 +54,7 @@ class Roster:
 
     def guess_id(self, name):
         """@return: id, name, score"""
-        name, score = process.extractOne(name, self._all_name_list, processor=util.normalize_str)
+        name, score = process.extractOne(name, self._roster.keys(), processor=util.normalize_str)
         return self._roster[name], name, score
 
 
@@ -99,10 +91,10 @@ def guess_id(name):
     return roster.guess_id(name)
 
 def is_npc(id_):
-    if id_ in UnavailableChara:
+    if id_ in _pcr_data.UnavailableChara:
         return True
     else:
-        return not ((1000 < id_ < 1300) or (1700 < id_ < 1900))
+        return not (1000 < id_ < 1900)
 
 def gen_team_pic(team, size=64, star_slot_verbose=True):
     num = len(team)
@@ -126,9 +118,10 @@ def download_chara_icon(id_, star):
         img = Image.open(BytesIO(rsp.content))
         img.save(save_path)
         logger.info(f'Saved to {save_path}')
+        return 0    # ok
     else:
         logger.error(f'Failed to download {url}. HTTP {rsp.status_code}')
-
+    return 1        # error
 
 class Chara:
 
@@ -200,26 +193,37 @@ class Chara:
         return pic
 
 
-
-@sucmd('reload-pcr-chara', force_private=False, aliases=('重载花名册', ))
-async def reload_pcr_chara(session: CommandSession):
-    try:
-        roster.update()
-        await session.send('ok')
-    except Exception as e:
-        logger.exception(e)
-        await session.send(f'Error: {type(e)}')
-
-
 @sucmd('download-pcr-chara-icon', force_private=False, aliases=('下载角色头像'))
-async def download_pcr_chara_icon(session: CommandSession):
+async def download_pcr_chara_icon(sess: CommandSession):
+    '''
+    覆盖更新1、3、6星头像
+    '''
     try:
-        id_ = roster.get_id(session.current_arg_text.strip())
+        id_ = roster.get_id(sess.current_arg_text.strip())
         assert id_ != UNKNOWN, '未知角色名'
         download_chara_icon(id_, 6)
         download_chara_icon(id_, 3)
         download_chara_icon(id_, 1)
-        await session.send('ok')
+        await sess.send('ok')
     except Exception as e:
         logger.exception(e)
-        await session.send(f'Error: {type(e)}')
+        await sess.send(f'Error: {type(e)}')
+
+
+@sucmd('download-star6-chara-icon', force_private=False, aliases=('下载六星头像', '更新六星头像'))
+async def download_star6_chara_icon(sess: CommandSession):
+    '''
+    尝试下载缺失的六星头像，已有头像不会被覆盖
+    '''
+    try:
+        for id_ in _pcr_data.CHARA_NAME:
+            if is_npc(id_):
+                continue
+            res = R.img(f'priconne/unit/icon_unit_{id_}61.png')
+            if not res.exist:
+                if download_chara_icon(id_, 6) == 0:
+                    succ += 1
+        await sess.send(f'ok! downloaded {succ} icons.')
+    except Exception as e:
+        logger.exception(e)
+        await sess.send(f'Error: {type(e)}')

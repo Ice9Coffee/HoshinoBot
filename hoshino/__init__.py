@@ -8,13 +8,15 @@ from nonebot import message_preprocessor
 from nonebot.message import CanceledException
 
 from . import config, log, msghandler, util
-from .service import Service
+from .service import Service, sucmd
 
 __version__ = '2.3.0'
 
 __all__ = [
     'HoshinoBot',
     'Service',
+    'sucmd',
+    'get_bot'
 ]
 
 
