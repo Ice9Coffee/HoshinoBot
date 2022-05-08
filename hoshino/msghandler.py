@@ -1,8 +1,7 @@
-from hoshino import CanceledException, message_preprocessor, trigger
+from hoshino import CanceledException, trigger
 from hoshino.typing import CQEvent
 
 
-@message_preprocessor
 async def handle_message(bot, event: CQEvent, _):
 
     if event.detail_type != 'group':

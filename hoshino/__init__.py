@@ -3,38 +3,71 @@ import os
 from typing import Iterable
 
 import nonebot
+from aiocqhttp import Event as CQEvent
+from nonebot import message_preprocessor
 from nonebot.message import CanceledException
-from nonebot import Message, MessageSegment, message_preprocessor
 
-HoshinoBot = nonebot.NoneBot
+from . import config, log, msghandler, util
+from .service import Service
 
-from . import log, config, util
-from .service import Service, sucmd
+__version__ = '2.3.0'
 
-__version__ = '2.2.0'
+__all__ = [
+    'HoshinoBot',
+    'Service',
+]
+
+
+class HoshinoBot(nonebot.NoneBot):
+    def __init__(self, config_object=None):
+        '''
+        You should NOT instantiate a HoshinoBot!
+        This is for intellisense code completion.
+        Use `hoshino.init()` instead.
+        '''
+        super().__init__(config_object)
+        raise Exception("You should NOT instantiate a HoshinoBot! Use `hoshino.init()` instead.")
+
+    @staticmethod
+    def get_self_ids() -> Iterable[str]:
+        return list(get_bot()._wsr_api_clients.keys())
+
+    @staticmethod
+    def finish(event, message, **kwargs):
+        if message:
+            bot = get_bot()
+            asyncio.run_coroutine_threadsafe(bot.send(event, message, **kwargs), bot.loop)
+        raise CanceledException('ServiceFunc of HoshinoBot finished.')
+
+    @staticmethod
+    async def silence(ev: CQEvent, ban_time, skip_su=True):
+        return await util.silence(ev, ban_time, skip_su)
+
 
 _bot = None
-os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
 logger = log.new_logger('hoshino', config.DEBUG)
+
 
 def init() -> HoshinoBot:
     global _bot
     nonebot.init(config)
     _bot = nonebot.get_bot()
-    _bot.finish = _finish
-    _bot.get_self_ids = get_self_ids
-    _bot.silence = util.silence
+    _bot.get_self_ids = HoshinoBot.get_self_ids
+    _bot.finish = HoshinoBot.finish
+    _bot.silence = HoshinoBot.silence
 
-    from .log import error_handler, critical_handler
-    nonebot.logger.addHandler(error_handler)
-    nonebot.logger.addHandler(critical_handler)
+    nonebot.logger.addHandler(log.error_handler)
+    nonebot.logger.addHandler(log.critical_handler)
+
+    # Hoshino User Data
+    os.makedirs(os.path.expanduser('~/.hoshino'), exist_ok=True)
 
     for module_name in config.MODULES_ON:
         nonebot.load_plugins(
             os.path.join(os.path.dirname(__file__), 'modules', module_name),
             f'hoshino.modules.{module_name}')
 
-    from . import msghandler
+    message_preprocessor(msghandler.handle_message)
 
     return _bot
 
@@ -43,14 +76,3 @@ def get_bot() -> HoshinoBot:
     if _bot is None:
         raise ValueError('HoshinoBot has not been initialized')
     return _bot
-
-
-def get_self_ids() -> Iterable[str]:
-    return list(get_bot()._wsr_api_clients.keys())
-
-
-def _finish(event, message, **kwargs):
-    if message:
-        bot = get_bot()
-        asyncio.run_coroutine_threadsafe(bot.send(event, message, **kwargs), bot.loop)
-    raise CanceledException('ServiceFunc of HoshinoBot finished.')
