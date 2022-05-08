@@ -7,18 +7,6 @@ from aiocqhttp import Event as CQEvent
 from nonebot import message_preprocessor
 from nonebot.message import CanceledException
 
-from . import config, log, msghandler, util
-from .service import Service, sucmd
-
-__version__ = '2.3.0'
-
-__all__ = [
-    'HoshinoBot',
-    'Service',
-    'sucmd',
-    'get_bot'
-]
-
 
 class HoshinoBot(nonebot.NoneBot):
     def __init__(self, config_object=None):
@@ -32,7 +20,7 @@ class HoshinoBot(nonebot.NoneBot):
 
     @staticmethod
     def get_self_ids() -> Iterable[str]:
-        return list(get_bot()._wsr_api_clients.keys())
+        return get_self_ids()
 
     @staticmethod
     def finish(event, message, **kwargs):
@@ -45,6 +33,17 @@ class HoshinoBot(nonebot.NoneBot):
     async def silence(ev: CQEvent, ban_time, skip_su=True):
         return await util.silence(ev, ban_time, skip_su)
 
+
+from .service import Service, sucmd
+from . import config, log, util
+
+__all__ = [
+    'HoshinoBot',
+    'Service',
+    'sucmd',
+    'get_bot',
+    'message_preprocessor',
+]
 
 _bot = None
 logger = log.new_logger('hoshino', config.DEBUG)
@@ -69,7 +68,7 @@ def init() -> HoshinoBot:
             os.path.join(os.path.dirname(__file__), 'modules', module_name),
             f'hoshino.modules.{module_name}')
 
-    message_preprocessor(msghandler.handle_message)
+    from . import msghandler
 
     return _bot
 
@@ -78,3 +77,7 @@ def get_bot() -> HoshinoBot:
     if _bot is None:
         raise ValueError('HoshinoBot has not been initialized')
     return _bot
+
+
+def get_self_ids() -> Iterable[str]:
+    return list(get_bot()._wsr_api_clients.keys())
