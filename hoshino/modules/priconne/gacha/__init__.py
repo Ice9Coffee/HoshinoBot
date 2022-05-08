@@ -110,7 +110,7 @@ async def gacha_1(bot, ev: CQEvent):
     chara, hiishi = gacha.gacha_one(gacha.up_prob, gacha.s3_prob, gacha.s2_prob)
     silence_time = hiishi * 60
 
-    res = f'{(await chara.get_icon()).cqcode} {chara.name} {"★"*chara.star}'
+    res = f'{await chara.get_icon_cqcode()} {chara.name} {"★"*chara.star}'
 
     await silence(ev, silence_time)
     await bot.send(ev, f'素敵な仲間が増えますよ！\n{res}', at_sender=True)

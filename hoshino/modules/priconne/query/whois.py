@@ -32,8 +32,8 @@ async def whois(bot, ev: CQEvent):
         name = filt_message(name)
         msg = f'兰德索尔似乎没有叫"{name}"的人...\n角色别称补全计划: github.com/Ice-Cirno/HoshinoBot/issues/5'
         await bot.send(ev, msg)
-        msg = f'您有{confi}%的可能在找{guess_name} {(await c.get_icon()).cqcode} {c.name}'
+        msg = f'您有{confi}%的可能在找{guess_name} {await c.get_icon_cqcode()} {c.name}'
         await bot.send(ev, msg)
     else:
-        msg = f'{(await c.get_icon()).cqcode} {c.name}'
+        msg = f'{await c.get_icon_cqcode()} {c.name}'
         await bot.send(ev, msg, at_sender=True)

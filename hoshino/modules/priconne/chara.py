@@ -173,8 +173,9 @@ class Chara:
             res = R.img(f'priconne/unit/icon_unit_{UNKNOWN}31.png')
         return res
 
-    async def get_icon(self):
-        star = '3' if 1 <= self.star <= 5 else '6'
+    async def get_icon(self, star=0) -> R.ResImg:
+        star = star or self.star
+        star = 1 if 1 <= star < 3 else 3 if 3 <= star < 6 else 6
         res = R.img(f'priconne/unit/icon_unit_{self.id}{star}1.png')
         if not res.exist:
             res = R.img(f'priconne/unit/icon_unit_{self.id}31.png')
@@ -194,6 +195,9 @@ class Chara:
         if not res.exist:
             res = R.img(f'priconne/unit/icon_unit_{UNKNOWN}31.png')
         return res
+
+    async def get_icon_cqcode(self, star=0):
+        return (await self.get_icon(star)).cqcode
 
     async def render_icon(self, size, star_slot_verbose=True) -> Image:
         icon = await self.get_icon()
@@ -231,12 +235,17 @@ async def download_pcr_chara_icon(sess: CommandSession):
     覆盖更新1、3、6星头像
     '''
     try:
-        id_ = roster.get_id(sess.current_arg_text.strip())
-        assert id_ != UNKNOWN, '未知角色名'
-        await download_chara_icon(id_, 6)
-        await download_chara_icon(id_, 3)
-        await download_chara_icon(id_, 1)
-        await sess.send('ok')
+        ch = fromname(sess.current_arg_text.strip())
+        assert ch.id != UNKNOWN, '未知角色名'
+        await asyncio.gather(
+            download_chara_icon(ch.id, 6),
+            download_chara_icon(ch.id, 3),
+            download_chara_icon(ch.id, 1),
+        )
+        msg = await ch.get_icon_cqcode(6) + \
+            await ch.get_icon_cqcode(3) + \
+            await ch.get_icon_cqcode(1)
+        await sess.send(msg)
     except Exception as e:
         logger.exception(e)
         await sess.send(f'Error: {type(e)}')
@@ -248,15 +257,16 @@ async def download_star6_chara_icon(sess: CommandSession):
     尝试下载缺失的六星头像，已有头像不会被覆盖
     '''
     try:
-        succ = 0
+        tasks = []
         for id_ in _pcr_data.CHARA_NAME:
             if is_npc(id_):
                 continue
             res = R.img(f'priconne/unit/icon_unit_{id_}61.png')
             if not res.exist:
-                if await download_chara_icon(id_, 6) == 0:
-                    succ += 1
-        await sess.send(f'ok! downloaded {succ} icons.')
+                tasks.append(download_chara_icon(id_, 6))
+        ret = await asyncio.gather(*tasks)
+        succ = sum(r == 0 for r in ret)
+        await sess.send(f'ok! downloaded {succ}/{len(ret)} icons.')
     except Exception as e:
         logger.exception(e)
         await sess.send(f'Error: {type(e)}')
