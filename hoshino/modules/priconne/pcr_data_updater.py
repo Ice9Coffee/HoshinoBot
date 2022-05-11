@@ -8,7 +8,7 @@ from hoshino.typing import CommandSession
 
 from . import chara
 
-sv = Service("update-pcr-chara", use_priv=priv.SU, manage_priv=priv.SU, visible=False)
+sv = Service("pcr-data-updater", use_priv=priv.SU, manage_priv=priv.SU, visible=False)
 
 
 async def report_to_su(sess, msg_with_sess, msg_wo_sess):
@@ -23,7 +23,7 @@ async def report_to_su(sess, msg_with_sess, msg_wo_sess):
 
 
 @sucmd('update-pcr-chara', force_private=False, aliases=('重载花名册', '更新花名册'))
-async def pull_data(sess: CommandSession = None):
+async def pull_chara(sess: CommandSession = None):
     try:
         rsp = await aiorequests.get('https://raw.githubusercontent.com/Ice-Cirno/LandosolRoster/master/_pcr_data.py')
         rsp.raise_for_status()
@@ -43,4 +43,6 @@ async def pull_data(sess: CommandSession = None):
     await report_to_su(sess, result, f'pcr_data定时更新：\n{result}')
 
 
-sv.scheduled_job('cron', hour='5', jitter=300)(pull_data)
+@sv.scheduled_job('cron', hour='5', jitter=300)
+async def scheduled_pull_chara():
+    await pull_chara()
