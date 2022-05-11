@@ -1,5 +1,6 @@
-Jinja2==3.0.3
-werkzeug==2.0.3
+Jinja2~=2.11.2
+werkzeug~=1.0.1
+wsproto~=0.15.0
 nonebot[scheduler]==1.8.0
 aiocqhttp~=1.4.0
 lxml>=4.4.1
