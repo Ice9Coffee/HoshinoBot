@@ -17,7 +17,7 @@ follows = {
         "kazukiadumi", "Setmen_uU", "bakuPA", "kantoku_5th", "done_kanda", "hoshi_u3",
         "siragagaga", "fuzichoco", "miyu_miyasaka", "naco_miyasaka", "tsukimi08",
         "tsubakinoniwa", "_Dan_ball", "ominaeshin", "gomalio_y", "izumiyuhina",
-        "1kurusk", "amsrntk3", "kani_biimu", "lhb3699", "nahaki_401", "tukinose_miri",
+        "1kurusk", "amsrntk3", "kani_biimu", "nahaki_401", "tukinose_miri",
         "ukiukisoda", "yukkieeeeeen", "t_takahashi0830", "riko0202", "amedamacon",
         "Zoirun", "rulu_py", "zo3mie", "kurororo_rororo", "_namori_", "rasra25",
         "mignon", "yyish", "tsukiyopoke", "halu_1113", "HenreaderH_", "SiErACitrus",
