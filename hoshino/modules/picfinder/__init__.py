@@ -12,13 +12,13 @@ from hoshino.util import DailyNumberLimiter
 from hoshino.config import NICKNAME
 from aiocqhttp.exceptions import ActionFailed
 
-from .image import get_image_data_sauce, get_image_data_ascii, check_screenshot
 from hoshino.config.picfinder import threshold, SAUCENAO_KEY, SEARCH_TIMEOUT, CHAIN_REPLY, DAILY_LIMIT, helptext, CHECK, enableguild, IGNORE_STAMP
 
 if type(NICKNAME) == str:
     NICKNAME = [NICKNAME]
 
 sv = Service('picfinder', help_=helptext)
+from .image import get_image_data_sauce, get_image_data_ascii, check_screenshot
 
 lmtd = DailyNumberLimiter(DAILY_LIMIT)
 logger = sv.logger
