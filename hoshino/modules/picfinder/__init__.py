@@ -178,24 +178,27 @@ async def picmessage(bot, ev: CQEvent):
 async def replymessage(bot, ev: CQEvent):
     mid = ev.message_id
     uid = ev.user_id
-    seg=ev.message[0]
+    if not ev.message:
+        sv.logger.error(f"message is empty: {ev.raw_message}")
+        return
+    seg = ev.message[0]
     if seg.type != 'reply':
         return
     tmid = seg.data['id']
     cmd = ev.message.extract_plain_text()
-    flag1 = 0
+    is_at_me = 0
     flag2 = 0
     for m in ev.message[2:]:
         if m.type == 'at' and m.data['qq'] == ev.self_id:
-            flag1 = 1
+            is_at_me = 1
     for name in NICKNAME:
         if name in cmd:
-            flag1 = 1
+            is_at_me = 1
             break
     for pfcmd in ['识图', '搜图', '查图', '找图']:
         if pfcmd in cmd:
             flag2 = 1
-    if not (flag1 and flag2):
+    if not (is_at_me and flag2):
         return
     if not priv.check_priv(ev, priv.SUPERUSER):
         if not lmtd.check(uid):

@@ -1,6 +1,8 @@
+import asyncio
 import requests
 import re
 import cloudscraper
+from functools import partial
 
 from lxml import etree
 from io import BytesIO
@@ -398,7 +400,8 @@ def sauces_info(sauce):
         index = sauce['header']['index_id']
         service_name = f'Index #{index}'
         info = "no info"
-        print(format_exc())
+        logger.exception(e)
+
 
     return service_name, info
 
@@ -444,7 +447,7 @@ class SauceNAO():
                     try:
                         thumbnail_image = str(MessageSegment.image(pic2b64(ats_pic(Image.open(BytesIO(await get_pic(thumbnail_url)))))))
                     except Exception as e:
-                        print(format_exc())
+                        logger.exception(e)
                         thumbnail_image = "[预览图下载失败]"
                 else:
                     thumbnail_image = ""
@@ -458,7 +461,7 @@ class SauceNAO():
                     repass = putline
 
             except Exception as e:
-                print(format_exc())
+                logger.exception(e)
                 # print(sauce)
                 pass
 
@@ -478,7 +481,7 @@ class ascii2d():
         else:
             # html_data = await aiorequests.get(url, timeout=15, proxies=proxies)
             # html = etree.HTML(await html_data.text)
-            html_data = self.scraper.get(url, timeout=15, proxies=proxies)
+            html_data = await asyncio.get_running_loop().run_in_executor(None, partial(self.scraper.get, url, timeout=15, proxies=proxies))
             html = etree.HTML(html_data.text)
 
         all_data = html.xpath('//div[@class="row item-box"]')
@@ -514,8 +517,7 @@ class ascii2d():
 
                 info.append([info_url, tag, thumb_url, title])
             except Exception as e:
-                print(format_exc())
-                logger.error(e)
+                logger.exception(e)
                 continue
 
         return info
@@ -526,10 +528,11 @@ class ascii2d():
             if THUMB_ON:
                 try:
                     # thumbnail_image = str(MessageSegment.image(pic2b64(ats_pic(Image.open(BytesIO(await get_pic(line[2])))))))
+                    thumbnail_image = await asyncio.get_running_loop().run_in_executor(None, partial(self.scraper.get, line[2], timeout=20, proxies=proxies))
                     thumbnail_image = str(MessageSegment.image(
-                        pic2b64(ats_pic(Image.open(BytesIO(self.scraper.get(line[2], timeout=20, proxies=proxies).content))))))
+                        pic2b64(ats_pic(Image.open(BytesIO(thumbnail_image.content))))))
                 except Exception as e:
-                    print(format_exc())
+                    logger.exception(e)
                     thumbnail_image = "[预览图下载失败]"
             else:
                 thumbnail_image = ""
@@ -547,11 +550,11 @@ class ascii2d():
         try:
             # html_index_data = await aiorequests.get(url_index, timeout=7, proxies=proxies)
             # html_index = etree.HTML(await html_index_data.text)
-            html_index_data = self.scraper.get(url_index, timeout=7, proxies=proxies)
+            html_index_data = await asyncio.get_running_loop().run_in_executor(None, partial(self.scraper.get, url_index, timeout=7, proxies=proxies))
             html_index = etree.HTML(html_index_data.text)
         except Exception as e:
-            print(format_exc())
             logger.error(f"ascii2d get html data failed: {e}")
+            logger.exception(e)
             return [putline1, putline2]
 
         neet_div = html_index.xpath('//div[@class="detail-link pull-xs-right hidden-sm-down gray-link"]')
@@ -590,7 +593,7 @@ async def get_image_data_sauce(image_url: str, api_key: str):
             simimax = result[1]
             repass = "\n".join([header, result[0]])
     except Exception as e:
-        logger.error(format_exc())
+        logger.exception(e)
         return ["SauceNAO搜索失败……", 0]
 
     return [repass, simimax]
@@ -615,7 +618,7 @@ async def get_image_data_ascii(image_url: str):
             if putline[1]:
                 repass2 = "\n".join([header, putline[1]])
     except Exception as e:
-        logger.error(format_exc())
+        logger.exception(e)
         return ["ascii2d搜索失败……", ""]
 
     return [repass1, repass2]
