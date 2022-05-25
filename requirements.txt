@@ -15,6 +15,5 @@ numpy~=1.22.3
 beautifulsoup4~=4.9.0
 pygtrie~=2.3.3
 tinydb~=4.1.1
-aiohttp~=3.6.2
 peony-twitter[all]~=2.1.2
 cloudscraper~=1.2.60
