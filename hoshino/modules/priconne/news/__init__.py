@@ -3,6 +3,7 @@ from .spider import *
 
 svtw = Service('pcr-news-tw', bundle='pcr订阅', help_='台服官网新闻')
 svbl = Service('pcr-news-bili', bundle='pcr订阅', help_='B服官网新闻')
+svjp = Service('pcr-news-jp', bundle='pcr订阅', help_='日服官网新闻')
 
 async def news_poller(spider:BaseSpider, sv:Service, TAG):
     if not spider.item_cache:
@@ -24,6 +25,9 @@ async def sonet_news_poller():
 async def bili_news_poller():
     await news_poller(BiliSpider, svbl, 'B服官网')
 
+@svjp.scheduled_job('cron', minute='*/5', jitter=20)
+async def jp_news_poller():
+    await news_poller(JpSpider, svjp, '日服官网')
 
 async def send_news(bot, ev, spider:BaseSpider, max_num=5):
     if not spider.item_cache:
@@ -39,3 +43,7 @@ async def send_sonet_news(bot, ev):
 @svbl.on_fullmatch('B服新闻', 'b服新闻', 'B服日程', 'b服日程')
 async def send_bili_news(bot, ev):
     await send_news(bot, ev, BiliSpider)
+
+@svjp.on_fullmatch(('日服新闻', '日服日程'))
+async def send_jp_news(bot, ev):
+    await send_news(bot, ev, JpSpider)

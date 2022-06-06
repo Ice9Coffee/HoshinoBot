@@ -3,6 +3,7 @@ GPLv3 Licensed. Thank @yuudi for his contribution!
 """
 
 import abc
+import re
 from dataclasses import dataclass
 from typing import List, Union
 
@@ -22,12 +23,13 @@ class Item:
 class BaseSpider(abc.ABC):
     url = None
     src_name = None
+    header = {}
     idx_cache = set()
     item_cache = []
 
     @classmethod
     async def get_response(cls) -> aiorequests.AsyncResponse:
-        resp = await aiorequests.get(cls.url)
+        resp = await aiorequests.get(cls.url, headers=cls.header)
         resp.raise_for_status()
         return resp
 
@@ -79,4 +81,29 @@ class BiliSpider(BaseSpider):
                  content="{title}\n▲game.bilibili.com/pcr/news.html#detail={id}".format_map(n)
             ) for n in content["data"]
         ]
+        return items
+
+
+class JpSpider(BaseSpider):
+    url = "https://priconne-redive.jp/news/"
+    src_name = "日服官网"
+    header = {
+        'user-agent':'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36'
+    }
+
+    @staticmethod
+    async def get_items(resp: aiorequests.AsyncResponse):
+        data = await resp.content
+        data = data.decode()
+        title = re.findall('<h4>(.*?)</h4>', data)  # 全部标题
+
+        data_post_ids = re.findall('data-post-id="(.*[0-9])"', data)  # 全部ID
+        items = []
+        for i in range(len(title)):
+            t = title[i]
+            news_id = data_post_ids[i]
+            items.append(Item(
+                idx=news_id,
+                content=f"{t}\nhttps://priconne-redive.jp/news/event/{news_id}/"
+            ))
         return items
