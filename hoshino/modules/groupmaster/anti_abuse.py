@@ -44,7 +44,7 @@ async def hb_handler(ctx):
     user_id = ctx['user_id']
     group_id = ctx['group_id']
     first_msg_seg = ctx['message'][0]
-    if first_msg_seg.type == 'hb':
+    if first_msg_seg.type == 'redbag':
         title = first_msg_seg['data']['title']
         if _check_hbtitle_is_cmd(ctx, title):
             hoshino.priv.set_block_group(group_id, timedelta(hours=1))

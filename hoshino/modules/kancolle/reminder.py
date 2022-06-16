@@ -23,11 +23,20 @@ async def enshu_reminder_evening():
 async def ensei_reminder():
     now = datetime.now(pytz.timezone('Asia/Shanghai'))
     remain_days = 15 - now.day
+    if remain_days == 1:
+        msg = '【远征提醒小助手】提醒您月常远征即将截止！\n你还有60分钟整备「ミ二号船团」并「与欧洲方面友军接触」！'
+    elif remain_days == 2:
+        msg = '【远征提醒小助手】提醒您月常远征还有2天刷新！\n9螺丝 爱领不领 随便你 哼~'
+    elif remain_days == 3:
+        msg = '【远征提醒小助手】提醒您月常远征还有3天刷新！\n现在开始还来得及...大概...'
+    else:
+        msg = f'【远征提醒小助手】提醒您月常远征还有{remain_days}天刷新！'
     msgs = [
-        f'【远征提醒小助手】提醒您月常远征还有{remain_days}天刷新！',
+        msg,
         f'[CQ:at,qq=all] 月常远征还有{remain_days}天刷新！',
     ]
     await sv.broadcast(msgs, 'ensei_reminder', 0.5)
+
 
 @sv.scheduled_job('cron', hour='3', minute='30')
 async def daily_quest_refresh_reminder():
