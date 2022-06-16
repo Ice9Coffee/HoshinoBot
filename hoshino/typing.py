@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from typing import (Any, Callable, Dict, Iterable, List, NamedTuple, Optional,
                     Set, Tuple, Union)
 

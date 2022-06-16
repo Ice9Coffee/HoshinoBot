@@ -61,7 +61,6 @@ async def start_finder(bot, ev: CQEvent):
     ret = None
     for m in ev.message:
         if m.type == 'image':
-            # print(m)
             file = m.data['file']
             url = m.data['url']
             if 'subType' in m.data:
