@@ -1,22 +1,25 @@
 import re
 from collections import defaultdict
+import copy
 
 import pygtrie
 import zhconv
 
 import hoshino
 from hoshino import util
-from hoshino.typing import TYPE_CHECKING, CQEvent, List, Iterable
+from hoshino.typing import CQEvent, List, Iterable
+
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from hoshino.service import ServiceFunc
 
 
 class BaseTrigger:
-    def add(self, x, sf: ServiceFunc):
+    def add(self, x, sf: "ServiceFunc"):
         raise NotImplementedError
 
-    def find_handler(self, event: CQEvent) -> List[ServiceFunc]:
+    def find_handler(self, event: CQEvent) -> List["ServiceFunc"]:
         raise NotImplementedError
 
 
@@ -25,7 +28,7 @@ class PrefixTrigger(BaseTrigger):
         super().__init__()
         self.trie = pygtrie.CharTrie()
 
-    def add(self, prefix: str, sf: ServiceFunc):
+    def add(self, prefix: str, sf: "ServiceFunc"):
         prefix_cht = zhconv.convert(prefix, "zh-hant")
         if prefix in self.trie:
             self.trie[prefix].append(sf)
@@ -38,7 +41,7 @@ class PrefixTrigger(BaseTrigger):
                 self.trie[prefix_cht] = [sf]
             hoshino.logger.debug(f"Succeed to add prefix trigger `{prefix}`")
 
-    def find_handler(self, event: CQEvent) -> Iterable[ServiceFunc]:
+    def find_handler(self, event: CQEvent) -> Iterable["ServiceFunc"]:
         first_msg_seg = event.message[0]
         if first_msg_seg.type != "text":
             return
@@ -47,8 +50,8 @@ class PrefixTrigger(BaseTrigger):
         if not item:
             return
 
+        oldmsg = copy.deepcopy(event.message)
         event["prefix"] = item.key
-        oldmsg = event.message.deepcopy()
         first_text = first_text[len(item.key):].lstrip()
         if not first_text and len(event.message) > 1:
             del event.message[0]
@@ -66,7 +69,7 @@ class SuffixTrigger(BaseTrigger):
         super().__init__()
         self.trie = pygtrie.CharTrie()
 
-    def add(self, suffix: str, sf: ServiceFunc):
+    def add(self, suffix: str, sf: "ServiceFunc"):
         suffix_r = suffix[::-1]
         suffix_r_cht = zhconv.convert(suffix_r, "zh-hant")
         if suffix_r in self.trie:
@@ -80,7 +83,7 @@ class SuffixTrigger(BaseTrigger):
                 self.trie[suffix_r_cht] = [sf]
             hoshino.logger.debug(f"Succeed to add suffix trigger `{suffix}`")
 
-    def find_handler(self, event: CQEvent) -> Iterable[ServiceFunc]:
+    def find_handler(self, event: CQEvent) -> Iterable["ServiceFunc"]:
         last_msg_seg = event.message[-1]
         if last_msg_seg.type != "text":
             return
@@ -89,8 +92,8 @@ class SuffixTrigger(BaseTrigger):
         if not item:
             return
 
+        oldmsg = copy.deepcopy(event.message)
         event["suffix"] = item.key[::-1]
-        oldmsg = event.message.deepcopy()
         last_text = last_text[: -len(item.key)].rstrip()
         if not last_text and len(event.message) > 1:
             del event.message[-1]
@@ -108,7 +111,7 @@ class KeywordTrigger(BaseTrigger):
         super().__init__()
         self.allkw = {}
 
-    def add(self, keyword: str, sf: ServiceFunc):
+    def add(self, keyword: str, sf: "ServiceFunc"):
         if sf.normalize_text:
             keyword = util.normalize_str(keyword)
         if keyword in self.allkw:
@@ -118,7 +121,7 @@ class KeywordTrigger(BaseTrigger):
             self.allkw[keyword] = [sf]
             hoshino.logger.debug(f"Succeed to add keyword trigger `{keyword}`")
 
-    def find_handler(self, event: CQEvent) -> Iterable[ServiceFunc]:
+    def find_handler(self, event: CQEvent) -> Iterable["ServiceFunc"]:
         for kw, sfs in self.allkw.items():
             for sf in sfs:
                 text = event.norm_text if sf.normalize_text else event.plain_text
@@ -131,11 +134,11 @@ class RexTrigger(BaseTrigger):
         super().__init__()
         self.allrex = defaultdict(list)
 
-    def add(self, rex: re.Pattern, sf: ServiceFunc):
+    def add(self, rex: re.Pattern, sf: "ServiceFunc"):
         self.allrex[rex].append(sf)
         hoshino.logger.debug(f"Succeed to add rex trigger `{rex.pattern}`")
 
-    def find_handler(self, event: CQEvent) -> ServiceFunc:
+    def find_handler(self, event: CQEvent) -> "ServiceFunc":
         for rex, sfs in self.allrex.items():
             for sf in sfs:
                 text = event.norm_text if sf.normalize_text else event.plain_text
