@@ -4,9 +4,9 @@ wsproto~=0.15.0
 nonebot[scheduler]==1.8.0
 aiocqhttp~=1.4.0
 aiohttp~=3.8.1
-lxml~=4.8.0
-pytz~=2019.3
-requests~=2.23.0
+lxml>=4.9.1
+pytz>=2019.3
+requests>=2.23.0
 sogou_tr_free~=0.0.8
 zhconv~=1.4.1
 Pillow~=9.1.0

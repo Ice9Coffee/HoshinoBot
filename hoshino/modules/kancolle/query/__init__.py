@@ -29,7 +29,7 @@ sv = Service('kc-query', enable_on_default=False, help_=sv_help, bundle='kancoll
 sv.on_fullmatch('驱逐改二', 'dd改二', 'DD改二', 'dd2')(lambda bot, ev: bot.send(ev, R.img('kancolle/quick/驱逐改二早见表.jpg').cqcode + R.img('kancolle/quick/驱逐改早见表.jpg').cqcode))
 sv.on_fullmatch('远征')(lambda bot, ev: bot.send(ev, f"bbs.nga.cn/read.php?tid=21866416 {R.img('kancolle/quick/远征大成功.png').cqcode} {R.img('kancolle/quick/远征大成功简.png').cqcode}"))
 sv.on_fullmatch('蜜瓜', '夕张')(lambda bot, ev: bot.send(ev, f"https://zh.kcwiki.cn/wiki/%E5%A4%95%E5%BC%A0#.E6.88.98.E6.96.97.E7.89.B9.E6.80.A7 {R.img('kancolle/quick/夕张改二装备适性.png').cqcode}"))
-sv.on_fullmatch('对空回避', '抗击坠')(lambda bot, ev: bot.send(ev, f"https://docs.google.com/spreadsheets/d/1cfV8sHvX1vMEQcckQaG1cBCXWctnS0P_GT9z74EotPw {R.img('kancolle/quick/对空回避.png').cqcode}"))
+sv.on_fullmatch('对空回避', '抗击坠', '抗击坠表')(lambda bot, ev: bot.send(ev, f"https://docs.google.com/spreadsheets/d/1cfV8sHvX1vMEQcckQaG1cBCXWctnS0P_GT9z74EotPw {R.img('kancolle/quick/对空回避.png').cqcode}"))
 
 # ==================================== #
 
