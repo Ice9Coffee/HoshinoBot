@@ -1,4 +1,4 @@
-from hoshino import Service
+from hoshino import Service, util
 from .spider import *
 
 svtw = Service('pcr-news-tw', bundle='pcr订阅', help_='台服官网新闻')
@@ -15,8 +15,9 @@ async def news_poller(spider:BaseSpider, sv:Service, TAG):
         sv.logger.info(f'未检索到{TAG}新闻更新')
         return
     sv.logger.info(f'检索到{len(news)}条{TAG}新闻更新！')
-    await sv.broadcast(spider.format_items(news), TAG, interval_time=0.5)
-    
+    randomizer = util.randomizer(spider.src_name + '新闻')
+    await sv.broadcast(spider.format_items(news), TAG, 0.5, randomizer)
+
 @svtw.scheduled_job('cron', minute='*/5', jitter=20)
 async def sonet_news_poller():
     await news_poller(SonetSpider, svtw, '台服官网')

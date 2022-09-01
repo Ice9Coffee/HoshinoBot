@@ -4,7 +4,7 @@ from datetime import datetime
 from lxml import etree
 
 import hoshino
-from hoshino import Service, aiorequests
+from hoshino import Service, aiorequests, util
 
 sv = Service('bangumi', enable_on_default=False, help_='蜜柑番剧更新推送')
 
@@ -53,33 +53,6 @@ class Mikan:
         return new_bangumi
 
 
-DEVICES = [
-    '22号对水上电探改四(后期调整型)',
-    '15m二重测距仪+21号电探改二',
-    'FuMO25 雷达',
-    'SK+SG 雷达',
-    'SG 雷达(初期型)',
-    'GFCS Mk.37',
-    '潜水舰搭载电探&逆探(E27)',
-    'HF/DF+Type144/147 ASDIC',
-    '三式指挥联络机(对潜)',
-    'O号观测机改二',
-    'S-51J改',
-    '二式陆上侦察机(熟练)',
-    '东海(九〇一空)',
-    '二式大艇',
-    'PBY-5A Catalina',
-    '零式水上侦察机11型乙(熟练)',
-    '紫云',
-    'Ar196改',
-    'Ro.43水侦',
-    'OS2U',
-    'S9 Osprey',
-    '彩云(东加罗林空)',
-    '彩云(侦四)',
-    '试制景云(舰侦型)',
-]
-
 @sv.scheduled_job('cron', minute='*/3', second='15')
 async def mikan_poller():
     if not Mikan.rss_cache:
@@ -92,8 +65,7 @@ async def mikan_poller():
     else:
         sv.logger.info(f'检索到{len(new_bangumi)}条番剧更新！')
         msg = [ f'{i[1]} 【{i[2].strftime(r"%Y-%m-%d %H:%M")}】\n▲下载 {i[0]}' for i in new_bangumi ]
-        randomiser = lambda m: f'{random.choice(DEVICES)}监测到番剧更新!{"!"*random.randint(0,4)}\n{m}'
-        await sv.broadcast(msg, '蜜柑番剧', 0.5, randomiser)
+        await sv.broadcast(msg, '蜜柑番剧', 0.5, util.randomizer('番剧更新'))
 
 
 DISABLE_NOTICE = '本群蜜柑番剧功能已禁用\n使用【启用 bangumi】以启用（需群管理）\n开启本功能后将自动推送字幕组更新'

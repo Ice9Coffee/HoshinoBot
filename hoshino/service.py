@@ -356,7 +356,7 @@ class Service:
         return deco
 
 
-    async def broadcast(self, msgs, TAG='', interval_time=0.5, randomiser=None):
+    async def broadcast(self, msgs, TAG='', interval_time=0.5, randomizer=None):
         bot = self.bot
         if isinstance(msgs, (str, MessageSegment, Message)):
             msgs = (msgs, )
@@ -365,7 +365,7 @@ class Service:
             try:
                 for msg in msgs:
                     await asyncio.sleep(interval_time)
-                    msg = randomiser(msg) if randomiser else msg
+                    msg = randomizer(msg) if randomizer else msg
                     await bot.send_group_msg(self_id=random.choice(selfids), group_id=gid, message=msg)
                 l = len(msgs)
                 if l:

@@ -1,5 +1,6 @@
 import base64
 import os
+import random
 import time
 import unicodedata
 from collections import defaultdict
@@ -192,3 +193,36 @@ def render_list(lines, prompt="") -> str:
     if n == 1:
         return prompt + "\n┗" + lines[0]
     return prompt + "\n┣" + "\n┣".join(lines[:-1]) + "\n┗" + lines[-1]
+
+
+DEVICES = [
+    '22号对水上电探改四(后期调整型)',
+    '42号对空电探改二',
+    '15m二重测距仪改+21号电探改二+熟练射击指挥所',
+    'FuMO25 雷达',
+    'SK+SG 雷达',
+    'SG 雷达(后期型)',
+    'GFCS Mk.37',
+    '潜水舰搭载电探&逆探(E27)',
+    'HF/DF+Type144/147 ASDIC',
+    '三式指挥联络机(对潜)',
+    'O号观测机改二',
+    'S-51J改',
+    '二式陆上侦察机(熟练)',
+    '东海(九〇一空)',
+    '二式大艇',
+    'PBY-5A Catalina',
+    '零式水上侦察机11型乙(熟练)',
+    '零式水上侦察机11型乙改(夜侦)',
+    '紫云',
+    'Ar196改',
+    'Ro.43水侦',
+    'OS2U',
+    'S9 Osprey',
+    '彩云(东加罗林空)',
+    '彩云(侦四)',
+    '试制景云(舰侦型)',
+]
+
+def randomizer(target):
+    return lambda m: f'{random.choice(DEVICES)}监测到{target}!{"!"*random.randint(0,4)}\n{m}'

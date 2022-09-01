@@ -50,7 +50,7 @@ class BaseSpider(abc.ABC):
 
     @classmethod
     def format_items(cls, items) -> str:
-        return f'{cls.src_name}新闻\n' + '\n'.join(map(lambda i: i.content, items))
+        return '\n'.join(map(lambda i: i.content, items))
 
 
 
