@@ -10,7 +10,7 @@ sv_help = '''
 [*晓改二] 舰娘信息查询(暂不可用)
 [*震电] 装备信息查询(暂不可用)
 === 速查表 ===
-[dd2][远征][蜜瓜][抗击坠]
+[dd2][远征][蜜瓜][抗击坠][攻略]
 '''.strip()
 sv = Service('kc-query', enable_on_default=False, help_=sv_help, bundle='kancolle')
 
@@ -22,21 +22,18 @@ async def _(bot, ev: CQEvent):
     if limiter.check(ev.group_id):
         await bot.send(ev, '''
 2022夏&初秋活「大規模反攻上陸！トーチ作戦！」
-索引 https://nga.178.com/read.php?tid=33242072
-======
-拆包 https://nga.178.com/read.php?tid=33241849
-梦美带路 https://nga.178.com/read.php?tid=33242680
-极简版信息搬运 https://nga.178.com/read.php?tid=33233876
-======
-秋月牧场 https://nga.178.com/read.php?tid=33228729
-双子座 https://nga.178.com/read.php?tid=33238545
-十级证书 https://nga.178.com/read.php?tid=33243768
-风岛 https://zekamashi.net/202208-event/torch-sougou/
-低配甲前段 https://nga.178.com/read.php?tid=33236670
-IceCirno的活动记录 https://nga.178.com/read.php?tid=33282039
-北方棲姬改的丙丁攻略 https://nga.178.com/read.php?tid=33221111
+秋月牧场 nga.178.com/read.php?tid=33228729
+双子座 nga.178.com/read.php?tid=33238545
+十级证书 nga.178.com/read.php?tid=33243768
+风岛 zekamashi.net/202208-event/torch-sougou/
+IceCirno的活动记录 nga.178.com/read.php?tid=33282039
+其他关键词：[拆包][带路][信息搬运]
 '''.strip())
         limiter.start_cd(ev.group_id)
+
+sv.on_fullmatch('拆包')(lambda bot, ev: bot.send(ev, '2022夏活拆包集中讨论\nhttps://nga.178.com/read.php?tid=33241849'))
+sv.on_fullmatch('带路')(lambda bot, ev: bot.send(ev, '极简版[大規模反攻上陸！トーチ作戦！]信息搬运贴\nhttps://nga.178.com/read.php?tid=33242680'))
+sv.on_fullmatch('信息搬运')(lambda bot, ev: bot.send(ev, '[大规模反复迷路]2022年夏活海图带路条件\nhttps://nga.178.com/read.php?tid=33233876'))
 
 sv.on_fullmatch('驱逐改二', 'dd改二', 'DD改二', 'dd2')(lambda bot, ev: bot.send(ev, R.img('kancolle/quick/驱逐改二早见表.jpg').cqcode + R.img('kancolle/quick/驱逐改早见表.jpg').cqcode))
 sv.on_fullmatch('远征')(lambda bot, ev: bot.send(ev, f"nga.178.com/read.php?tid=21866416 {R.img('kancolle/quick/远征大成功.png').cqcode} {R.img('kancolle/quick/远征大成功简.png').cqcode}"))
