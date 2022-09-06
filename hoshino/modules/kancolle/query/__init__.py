@@ -1,5 +1,7 @@
 from hoshino.service import Service
 from hoshino import R
+from hoshino.util import FreqLimiter
+from hoshino.typing import CQEvent
 
 sv_help = '''
 [人事表200102] 战果人事表(数字为 年/月/服务器)
@@ -12,19 +14,29 @@ sv_help = '''
 '''.strip()
 sv = Service('kc-query', enable_on_default=False, help_=sv_help, bundle='kancolle')
 
-# sv.on_fullmatch('拆包')(lambda bot, ev: bot.send(ev, 'nga.178.com/read.php?tid=28148427'))
-# temp = '''极简信息搬运贴nga.178.com/read.php?tid=28130801
-# 与Верный酱的地中海假日nga.178.com/read.php?tid=28149658
-# 记者的舰娘笔记nga.178.com/read.php?tid=28154058
-# 目白麦昆开荒组nga.178.com/read.php?tid=28142296
-# 地中海就是波罗的海，马耳他就是奥兰nga.178.com/read.php?tid=28142877
-# ぜかましzekamashi.net/category/202108-event/
-# '''
-# sv.on_fullmatch('e1攻略', 'E1攻略')(lambda bot, ev: bot.send(ev, temp))
-# sv.on_fullmatch('e2攻略', 'E2攻略')(lambda bot, ev: bot.send(ev, temp))
-# sv.on_fullmatch('e3攻略', 'E3攻略')(lambda bot, ev: bot.send(ev, temp))
-# sv.on_fullmatch('e4攻略', 'E4攻略')(lambda bot, ev: bot.send(ev, temp))
-# sv.on_fullmatch('e5攻略', 'E5攻略')(lambda bot, ev: bot.send(ev, temp))
+
+limiter = FreqLimiter(120)
+
+@sv.on_fullmatch('攻略', 'e1', 'e2', 'e3', 'e4', 'e5', 'E1', 'E2', 'E3', 'E4', 'E5')
+async def _(bot, ev: CQEvent):
+    if limiter.check(ev.group_id):
+        await bot.send(ev, '''
+2022夏&初秋活「大規模反攻上陸！トーチ作戦！」
+索引 https://nga.178.com/read.php?tid=33242072
+======
+拆包 https://nga.178.com/read.php?tid=33241849
+梦美带路 https://nga.178.com/read.php?tid=33242680
+极简版信息搬运 https://nga.178.com/read.php?tid=33233876
+======
+秋月牧场 https://nga.178.com/read.php?tid=33228729
+双子座 https://nga.178.com/read.php?tid=33238545
+十级证书 https://nga.178.com/read.php?tid=33243768
+风岛 https://zekamashi.net/202208-event/torch-sougou/
+低配甲前段 https://nga.178.com/read.php?tid=33236670
+IceCirno的活动记录 https://nga.178.com/read.php?tid=33282039
+北方棲姬改的丙丁攻略 https://nga.178.com/read.php?tid=33221111
+'''.strip())
+        limiter.start_cd(ev.group_id)
 
 sv.on_fullmatch('驱逐改二', 'dd改二', 'DD改二', 'dd2')(lambda bot, ev: bot.send(ev, R.img('kancolle/quick/驱逐改二早见表.jpg').cqcode + R.img('kancolle/quick/驱逐改早见表.jpg').cqcode))
 sv.on_fullmatch('远征')(lambda bot, ev: bot.send(ev, f"nga.178.com/read.php?tid=21866416 {R.img('kancolle/quick/远征大成功.png').cqcode} {R.img('kancolle/quick/远征大成功简.png').cqcode}"))
