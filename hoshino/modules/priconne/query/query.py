@@ -55,10 +55,10 @@ PCR_SITES = f'''
 【日文wiki/AppMedia】appmedia.jp/priconne-redive
 【竞技场作业库(中文)】pcrdfans.com/battle
 【竞技场作业库(日文)】nomae.net/arenadb
-【论坛/NGA社区】bbs.nga.cn/thread.php?fid=-10308342
-【iOS实用工具/初音笔记】bbs.nga.cn/read.php?tid=14878762
-【安卓实用工具/静流笔记】bbs.nga.cn/read.php?tid=20499613
-【台服卡池千里眼】bbs.nga.cn/read.php?tid=28236922
+【论坛/NGA社区】nga.178.com/thread.php?fid=-10308342
+【iOS实用工具/初音笔记】nga.178.com/read.php?tid=14878762
+【安卓实用工具/静流笔记】nga.178.com/read.php?tid=20499613
+【台服卡池千里眼】nga.178.com/read.php?tid=28236922
 【日官网】priconne-redive.jp
 【台官网】www.princessconnect.so-net.tw
 
@@ -67,15 +67,15 @@ PCR_SITES = f'''
 ※B服速查请输入【bcr速查】'''
 
 BCR_SITES = f'''
-【妈宝骑士攻略(懒人攻略合集)】bbs.nga.cn/read.php?tid=20980776
-【机制详解】bbs.nga.cn/read.php?tid=19104807
-【初始推荐】bbs.nga.cn/read.php?tid=20789582
-【术语黑话】bbs.nga.cn/read.php?tid=18422680
-【角色点评】bbs.nga.cn/read.php?tid=20804052
-【秘石规划】bbs.nga.cn/read.php?tid=20101864
-【卡池亿里眼】bbs.nga.cn/read.php?tid=20816796
-【为何卡R卡星】bbs.nga.cn/read.php?tid=20732035
-【推图阵容推荐】bbs.nga.cn/read.php?tid=21010038
+【妈宝骑士攻略(懒人攻略合集)】nga.178.com/read.php?tid=20980776
+【机制详解】nga.178.com/read.php?tid=19104807
+【初始推荐】nga.178.com/read.php?tid=20789582
+【术语黑话】nga.178.com/read.php?tid=18422680
+【角色点评】nga.178.com/read.php?tid=20804052
+【秘石规划】nga.178.com/read.php?tid=20101864
+【卡池亿里眼】nga.178.com/read.php?tid=20816796
+【为何卡R卡星】nga.178.com/read.php?tid=20732035
+【推图阵容推荐】nga.178.com/read.php?tid=21010038
 
 ===其他查询关键词===
 {OTHER_KEYWORDS}
@@ -118,5 +118,5 @@ async def dragon(bot, ev):
 
 @sv.on_fullmatch('千里眼')
 async def future_gacha(bot, ev):
-    await bot.send(ev, "亿里眼·一之章 bbs.nga.cn/read.php?tid=21317816\n亿里眼·二之章 bbs.nga.cn/read.php?tid=25358671")
+    await bot.send(ev, "亿里眼·一之章 nga.178.com/read.php?tid=21317816\n亿里眼·二之章 nga.178.com/read.php?tid=25358671")
     await util.silence(ev, 60)

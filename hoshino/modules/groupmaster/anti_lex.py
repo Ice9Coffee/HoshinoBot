@@ -9,7 +9,7 @@ lmt = FreqLimiter(3600)
 @sv.scheduled_job('cron', hour='*/8')
 async def hour_call():
     pic = R.img("lexbiss.jpg").cqcode
-    msg = f'{pic}\n共创和谐环境人人有责 拿出行动天天打卡🍒Σ打卡帖bbs.nga.cn/read.php?tid=29780767'
+    msg = f'{pic}\n共创和谐环境人人有责 拿出行动天天打卡🍒Σ打卡帖nga.178.com/read.php?tid=29780767'
     await sv.broadcast(msg, 'anti-lex')
 
 
