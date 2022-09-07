@@ -1,3 +1,4 @@
+MarkupSafe~=1.0
 Jinja2~=2.11.2
 werkzeug~=1.0.1
 wsproto~=0.15.0
