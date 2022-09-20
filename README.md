@@ -3,7 +3,7 @@
 ![Python Version](https://img.shields.io/badge/python-3.8+-blue)
 ![Nonebot Version](https://img.shields.io/badge/nonebot-1.6.0%2B%2C%202.0.0---blue)
 [![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoのお茶会-brightgreen)](https://jq.qq.com/?_wv=1027&k=eYGgrL4A)
-[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://jq.qq.com/?_wv=1027&k=wgirhYYQ)
+[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://qm.qq.com/cgi-bin/qm/qr?k=uenYsmKuPcI_xIXnz4yDjkT_thRv8h2m)
 
 A QQ-bot for Princess Connect Re:Dive based on [Nonebot](https://github.com/nonebot/nonebot)
 
@@ -100,7 +100,7 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 ## 开源协议及免责声明
 
 本项目遵守GPL-3.0协议开源，请在协议允许的条件及范围内使用本项目。本项目的开发者不会强制向您索要任何费用，同时也不会提供任何质保，一切因本项目引起的法律、利益纠纷由与本项目的开发者无关。
-- 对于自行搭建、小范围私用的非营利性bot，若遇到任何部署、开发上的疑问，欢迎提交issue或加入[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://jq.qq.com/?_wv=1027&k=wgirhYYQ)讨论，我们欢迎有礼貌、描述详尽的提问！
+- 对于自行搭建、小范围私用的非营利性bot，若遇到任何部署、开发上的疑问，欢迎提交issue或加入[![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://qm.qq.com/cgi-bin/qm/qr?k=uenYsmKuPcI_xIXnz4yDjkT_thRv8h2m)讨论，我们欢迎有礼貌、描述详尽的提问！
 - 对于以营利为目的部署的bot，由部署者负责，与本项目的开发者无关，本项目的开发者及社区没有义务回答您部署时的任何疑问。
 - 对于HoshinoBot插件的开发者，在您发布插件或利用插件营利时，请遵守GPL-3.0协议将插件代码开源。
 
@@ -293,7 +293,7 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 - setu库
 - [是谁呼叫舰队](http://fleet.diablohu.com/)舰娘&装备页面截图
 
-等资源。自行收集可能较为困难，所以我们准备了一个较为精简的资源包以及下载脚本，可以满足公主连接相关功能的日常使用。如果需要，请加入QQ群 **Hoshino的后花园** 367501912，下载群文件中的`res.zip`。
+等资源。自行收集可能较为困难，所以我们准备了一个较为精简的资源包以及下载脚本，可以满足公主连接相关功能的日常使用。如果需要，请加入QQ群 **Hoshino的后花园** 761100284，下载群文件中的`res.zip`。
 
 
 
