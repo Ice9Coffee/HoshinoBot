@@ -2,9 +2,11 @@
 [![License](https://img.shields.io/github/license/Ice-Cirno/HoshinoBot)](LICENSE)
 ![Python Version](https://img.shields.io/badge/python-3.8+-blue)
 ![Nonebot Version](https://img.shields.io/badge/nonebot-1.6.0%2B%2C%202.0.0---blue)
+
 [![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoのお茶会-brightgreen)](https://jq.qq.com/?_wv=1027&k=eYGgrL4A)
 [![开发交流群](https://img.shields.io/badge/开发交流-Hoshinoの后花园-brightgreen)](https://jq.qq.com/?_wv=1027&k=iXHA2UT7)
 [![防炸群备胎](https://img.shields.io/badge/开发交流-Hoshinoの4番灵装-brightgreen)](https://jq.qq.com/?_wv=1027&k=6zyqKSqT)
+[![Telegram](https://img.shields.io/badge/Telegram-后花园国际部-blue)](https://t.me/+u2Sv4sS-8CEwZjc1)
 
 A QQ-bot for Princess Connect Re:Dive based on [Nonebot](https://github.com/nonebot/nonebot)
 
@@ -111,7 +113,7 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 
 ## 部署指南
 
-**由于酷Q已停止运营，您可以使用[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)或[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)作为无头QQ客户端。**
+**HoshinoBot基于OneBot协议通信，使用[go-cqhttp](https://github.com/Mrs4s/go-cqhttp)或[CQHTTP Mirai](https://github.com/yyuueexxiinngg/cqhttp-mirai)作为无头QQ客户端。**
 
 <details>
   <summary>（点击查看社区提供的部署指南）</summary>

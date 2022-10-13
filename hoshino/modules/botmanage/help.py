@@ -77,6 +77,7 @@ def gen_bundle_manual(bundle_name, service_list, gid):
 
 
 @sv.on_prefix('help', '帮助')
+@sv.on_suffix('help', '帮助')
 async def send_help(bot, ev: CQEvent):
     gid = ev.group_id
     arg = ev.message.extract_plain_text().strip()
