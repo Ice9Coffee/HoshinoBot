@@ -24,5 +24,5 @@ async def handle_message(bot, event: CQEvent, _):
             except Exception as e:
                 service_func.sv.logger.error(f'{type(e)} occured when {service_func.__name__} handling message {event.message_id}.')
                 service_func.sv.logger.exception(e)
-            raise CanceledException('Handled by Hoshino')
+        raise CanceledException('Handled by Hoshino')
             # exception raised, no need for break

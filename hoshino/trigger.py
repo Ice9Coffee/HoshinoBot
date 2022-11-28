@@ -141,7 +141,8 @@ class RexTrigger(BaseTrigger):
     def find_handler(self, event: CQEvent) -> "ServiceFunc":
         for rex, sfs in self.allrex.items():
             for sf in sfs:
-                text = event.norm_text if sf.normalize_text else event.plain_text
+                # text = event.norm_text if sf.normalize_text else event.plain_text
+                text = event.raw_message
                 match = rex.search(text)
                 if match:
                     event["match"] = match
