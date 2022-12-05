@@ -8,7 +8,7 @@ from functools import wraps
 import nonebot
 import pytz
 from nonebot.command import SwitchException, _FinishException, _PauseException
-from nonebot.message import CanceledException
+from nonebot.message import CanceledException, Message
 
 import hoshino
 from hoshino import log, priv, trigger
@@ -220,7 +220,7 @@ class Service:
             async def wrapper(bot, event: CQEvent):
                 if len(event.message) != 1 or event.message[0].data.get('text'):
                     self.logger.info(f'Message {event.message_id} is ignored by fullmatch condition.')
-                    raise SwitchException
+                    raise SwitchException(Message(event.raw_message))
                 return await func(bot, event)
             sf = ServiceFunc(self, wrapper, only_to_me)
             for w in word:
