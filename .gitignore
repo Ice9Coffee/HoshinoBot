@@ -2,49 +2,10 @@
 config.py
 config.json
 hoshino/config/
-local_coolq_config/
-
-# Database
-db.json
-database.json
-*.db
-*.sqlite
-res/
-img/
-imgs/
-image/
-images/
-
-# 非公开的组件
-hoshino/modules/pcrclanbattle/clanbattlev3
+lo
 hoshino/modules/pcrclanbattle/clanbattlev4
 hoshino/modules/umamusume
-hoshino/modules/pcrjjc3-tw
-_git/
-
-# log
-log/
-
-# 暂时删除的代码
-TRASH/
-kokkoro-OLD/
-
-# VSCode Folder
-.vscode/
-
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-*$py.class
-
-# C extensions
-*.so
-
-# Distribution / packaging
-.Python
-build/
-develop-eggs/
-dist/
+hoshino
 downloads/
 eggs/
 .eggs/
@@ -65,30 +26,11 @@ MANIFEST
 *.manifest
 *.spec
 
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
+# Installer log
 .tox/
 .coverage
 .coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
+.cach
 
 # Flask stuff:
 instance/
