@@ -20,7 +20,7 @@ async def start_daemon():
 
     loop = asyncio.get_event_loop()
     daemon1 = loop.create_task(stream_daemon(follow_stream))
-    daemon2 = loop.create_task(stream_daemon(track_stream))
+    #daemon2 = loop.create_task(stream_daemon(track_stream))
 
 
 async def stream_daemon(stream_func):

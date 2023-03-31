@@ -56,10 +56,21 @@ class UserIdCache:
         ids = []
         for x in screen_names:
             if x not in self.cache:
-                try:
-                    user = await client.api.users.show.get(screen_name=x)
-                    self.cache[x] = user.id
-                except PeonyException as e:
+                client = peony.BasePeonyClient(
+                                   consumer_key=cfg.consumer_key,
+                                   consumer_secret=cfg.consumer_secret,
+                                   access_token=cfg.access_token_key,
+                                   access_token_secret=cfg.access_token_secret,
+                                   auth=peony.oauth.OAuth2Headers,
+                                   api_version="2",
+                                   proxy=cfg.proxy,
+                                   suffix="")
+                async with client:
+                 try:
+                     user = await client.api.users.by.username[x].get()
+                     print(user)
+                     self.cache[x] = user.get('data').id
+                 except PeonyException as e:
                     sv.logger.error(f"{e} occurred when getting id of `{x}`")
 
             id_ = self.cache.get(x)
@@ -118,50 +129,63 @@ class TweetRouter:
 
 
 async def follow_stream():
-    client = PeonyClient(
+    client = peony.BasePeonyClient(
         consumer_key=cfg.consumer_key,
         consumer_secret=cfg.consumer_secret,
         access_token=cfg.access_token_key,
         access_token_secret=cfg.access_token_secret,
+        auth=peony.oauth.OAuth2Headers,
+        api_version="2",
         proxy=cfg.proxy,
+        suffix="",
     )
     async with client:
+        print("dddd")
         follow_screen_names = set(itertools.chain(*cfg.follows.values()))
         follow_ids = await _id_cache.convert(client, follow_screen_names)
-
         router = TweetRouter()
         router.load(cfg.follows, cfg.media_only_users, cfg.forward_retweet_users)
-        
         sv.logger.info(f"订阅推主={follow_screen_names}, {follow_ids=}")
-        stream = client.stream.statuses.filter.post(follow=follow_ids)
-
+        resp = await client.api.tweets.search.stream.rules.get()            #先获取上一次的规则
+        data =resp.get('data')
+        if  resp.get('data'):                                               #然后删除上一次的规则
+            ids = list(map(lambda rule: data[0]["id"], data))
+            payload = {"delete": {"ids": ids}}
+            resp = await client.api.tweets.search.stream.rules.post(_json=payload)
+        data = {'add': [{'value': "from:PSO2NGS_JP OR from:Pso2ngsB OR from:pso2_emg_hour"}]}#按我的逻辑填，将会跟踪这些人的数据流
+        resp = await client.api.tweets.search.stream.rules.post(_json=data)  #写入新规则                         ，收到了才会判断是否开启了服务再广播，本来想写完先判断再跟踪的，现在不想写了
+        fields = {
+            "tweet.fields": ["created_at", "entities", "referenced_tweets","text","author_id"],
+            "expansions":["author_id","attachments.media_keys"],
+            "media.fields":["url","preview_image_url"],#md搞半天得要有上面的media_keys这个才生效
+        }
+        stream = client.api.tweets.search.stream.get.stream(**fields)        #启动stream流
         async for tweet in stream:
             sv.logger.info("Got twitter event.")
-            if peony.events.tweet(tweet):
-                uid = tweet.user.id
-                screen_name = tweet.user.screen_name
+            if tweet.get('data'):
+                uid =  tweet.get('data').author_id
+                screen_name = tweet.get('includes')['users'][0]['name']
                 if uid not in router.follows:
                     continue    # 推主不在订阅列表
-
-                entry = router.follows[uid]
+                try:  
+                   entry = router.follows[uid]
+                except Exception as e:
+                    print(e)
                 if peony.events.retweet(tweet) and not entry.forward_retweet:
                     continue    # 除非配置制定，忽略纯转推
+                if 'in_reply_to_user_id'in tweet.get('data'):######################################################我没测试这种情况，自行测试
+                   if  tweet.get('data').in_reply_to_user_id != uid:
+                       continue    # 忽略对他人的评论，保留自评论
 
-                reply_to = tweet.get("in_reply_to_user_id")
-                if reply_to and reply_to != uid:
-                    continue    # 忽略对他人的评论，保留自评论
-
-                media = tweet.get("extended_entities", {}).get("media", [])
+                media= tweet.get('includes')['media']#############3333333333333333333333333333333333333333333333我没测试这种情况，自行测试
                 if entry.media_only and not media:
-                    continue    # 无附带媒体，订阅选项media_only=True时忽略
-
+                    continue    # 无附带媒体，订阅选项media_only=True时忽略'''
                 msg = format_tweet(tweet)
-
-                old_profile_img = entry.profile_image
+                '''old_profile_img = entry.profile_image
                 entry.profile_image = tweet.user.get("profile_image_url_https") or entry.profile_image
                 if old_profile_img and entry.profile_image != old_profile_img:
                     big_img = re.sub(r'_normal(\.(jpg|jpeg|png|gif|jfif|webp))$', r'\1', entry.profile_image, re.I)
-                    msg = [msg, f"@{screen_name} 更换了头像\n{ms.image(big_img)}"]
+                    msg = [msg, f"@{screen_name} 更换了头像\n{ms.image(big_img)}"]'''
 
                 sv.logger.info(f"推送推文：\n{msg}")
                 for s in entry.services:
@@ -169,3 +193,4 @@ async def follow_stream():
 
             else:
                 sv.logger.debug("Ignore non-tweet event.")
+
