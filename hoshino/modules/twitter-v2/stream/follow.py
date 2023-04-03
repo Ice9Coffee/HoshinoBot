@@ -147,7 +147,7 @@ async def follow_stream():
         resp = await client.api.tweets.search.stream.rules.get()                                    #先获取上一次的规则
         data =resp.get('data')
         if  resp.get('data'):                                                                       #然后删除上一次的规则
-            ids = list(map(lambda rule: data[0]["id"], data))
+            ids = list(map(lambda rule: rule["id"], data))
             payload = {"delete": {"ids": ids}}
             resp = await client.api.tweets.search.stream.rules.post(_json=payload)
         follow_screen_names=list(follow_screen_names)
@@ -173,9 +173,10 @@ async def follow_stream():
                 uid =  tweet.get('data').author_id
                 entry = router.follows[uid]
                 screen_name = tweet.get('includes')['users'][0]['name']
-                if uid not in router.follows:
-                    continue                                                                        # 推主不在订阅列表
-                if peony.events.retweet(tweet) and not entry.forward_retweet:
+                if uid not in router.follows:                                                       # 推主不在订阅列表
+                    continue   
+                if  "referenced_tweets" in tweet.get('data'):                                                             
+                  if 'retweeted'  in tweet.get('data').referenced_tweets[0].type and not entry.forward_retweet:
                     continue                                                                        # 除非配置制定，忽略纯转推
                 if 'in_reply_to_user_id'in tweet.get('data'):                          
                    if  tweet.get('data').in_reply_to_user_id != uid:
