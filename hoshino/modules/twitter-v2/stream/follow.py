@@ -156,8 +156,8 @@ async def follow_stream():
         userqueue=""
         for user in users:
             user = " OR from:".join(user)
-            user="\"from:"+user+"\""
-            userqueue+="{{'value': {},}},".format(user)
+            user = f'"from:{user}"'
+            userqueue += "{{'value': {},}},".format(user)
         data = eval("{{'add': [{}]}}".format(userqueue))                                            
         resp = await client.api.tweets.search.stream.rules.post(_json=data)                         #写入新规则
         #sv.logger.info(resp)                                                                       #如果stream流启动失败请查看规则是否已经写入  

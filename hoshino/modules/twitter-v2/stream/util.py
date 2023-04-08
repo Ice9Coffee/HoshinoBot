@@ -90,7 +90,7 @@ async def format_tweet(tweet, client):
 
     if is_quote(tweet) or is_reply(tweet):
         quoted_tweet = await get_tweet(data["referenced_tweets"][0]["id"], client)
-        quoted_msg = format_tweet(quoted_tweet, client)
+        quoted_msg = await format_tweet(quoted_tweet, client)
         msg = f"{quoted_msg}\n\n<<<<<\n{msg}"
 
     return msg
