@@ -106,7 +106,7 @@ QUICK_START = f'''
 @on_command('!帮助', aliases=('！帮助', '!幫助', '！幫助', '!help', '！help'), only_to_me=False)
 async def cb_help(session:CommandSession):
     await session.send(QUICK_START, at_sender=True)
-    msg = MessageSegment.share(url='https://github.com/Ice-Cirno/HoshinoBot/wiki/%E4%BC%9A%E6%88%98%E7%AE%A1%E7%90%86v2',
+    msg = MessageSegment.share(url='https://github.com/Ice9Coffee/HoshinoBot/wiki/%E4%BC%9A%E6%88%98%E7%AE%A1%E7%90%86v2',
                                title='Hoshino会战管理v2',
                                content='完整命令一览表')
     await session.send(msg)

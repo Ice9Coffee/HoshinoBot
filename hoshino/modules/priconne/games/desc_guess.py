@@ -1,6 +1,6 @@
 # ref: https://github.com/GWYOG/GWYOG-Hoshino-plugins/blob/master/pcrdescguess
 # Originally written by @GWYOG
-# Reflacted by @Ice-Cirno
+# Reflacted by @Ice9Coffee
 # GPL-3.0 Licensed
 # Thanks to @GWYOG for his great contribution!
 

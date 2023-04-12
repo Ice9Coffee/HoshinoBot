@@ -30,7 +30,7 @@ async def whois(bot, ev: CQEvent):
     lmt.start_cd(uid, 120 if guess else 0)
     if guess:
         name = filt_message(name)
-        msg = f'兰德索尔似乎没有叫"{name}"的人...\n角色别称补全计划: github.com/Ice-Cirno/LandosolRoster'
+        msg = f'兰德索尔似乎没有叫"{name}"的人...\n角色别称补全计划: github.com/Ice9Coffee/LandosolRoster'
         await bot.send(ev, msg)
         msg = f'您有{confi}%的可能在找{guess_name} {await c.get_icon_cqcode()} {c.name}'
         await bot.send(ev, msg)
