@@ -1,5 +1,5 @@
 # HoshinoBot
-[![License](https://img.shields.io/github/license/Ice-Cirno/HoshinoBot)](LICENSE)
+[![License](https://img.shields.io/github/license/Ice9Coffee/HoshinoBot)](LICENSE)
 ![Python Version](https://img.shields.io/badge/python-3.8+-blue)
 ![Nonebot Version](https://img.shields.io/badge/nonebot-1.6.0%2B%2C%202.0.0---blue)
 
@@ -142,7 +142,7 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 3. 输入以下命令克隆本仓库并安装依赖
 
     ```powershell
-    git clone https://github.com/Ice-Cirno/HoshinoBot.git
+    git clone https://github.com/Ice9Coffee/HoshinoBot.git
     cd HoshinoBot
     py -3.8 -m pip install -r requirements.txt
     ```
@@ -221,7 +221,7 @@ QQ群[![试用/赞助群](https://img.shields.io/badge/试用/赞助-Hoshinoの�
 
 2. 克隆本仓库并安装依赖包
     ```bash
-    git clone https://github.com/Ice-Cirno/HoshinoBot.git
+    git clone https://github.com/Ice9Coffee/HoshinoBot.git
     cd HoshinoBot
     python3.8 -m pip install -r requirements.txt
     ```

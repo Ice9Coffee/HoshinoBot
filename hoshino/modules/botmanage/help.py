@@ -52,11 +52,11 @@ URA9因子嗅探者*
  
 =====================
 ※Hoshino开源Project：
-github.com/Ice-Cirno/HoshinoBot
+github.com/Ice9Coffee/HoshinoBot
 您对项目作者的支持与Star是本bot更新维护的动力
 💰+⭐=❤
 '''.strip()
-# 魔改请保留 github.com/Ice-Cirno/HoshinoBot 项目地址
+# 魔改请保留 github.com/Ice9Coffee/HoshinoBot 项目地址
 
 
 def gen_service_manual(service: Service, gid: int):

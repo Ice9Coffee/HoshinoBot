@@ -24,7 +24,7 @@ async def report_to_su(sess, msg_with_sess, msg_wo_sess):
 
 async def pull_chara(sess: CommandSession = None):
     try:
-        rsp = await aiorequests.get('https://raw.githubusercontent.com/Ice-Cirno/LandosolRoster/master/_pcr_data.py')
+        rsp = await aiorequests.get('https://raw.githubusercontent.com/Ice9Coffee/LandosolRoster/master/_pcr_data.py', timeout=300)
         rsp.raise_for_status()
         rsp = await rsp.text
 
