@@ -103,12 +103,12 @@ def cut_list(lists):
     :return: 一个二维数组 [[x,x],[x,x]]
     """
     res_data = [[]]
-    length = -2  # 7 - 9 = -2
+    length = -4                     # 5 - 9 = -4
 
     for x in lists:
-        length += len(x) + 9  # len(' OR from:') = 9
+        length += len(x) + 9        # len(' OR from:') = 9
         if length > 512:
-            length = len(x) + 7  # len('"from:' + '"') = 7
+            length = len(x) + 5     # len('from:') = 5
             res_data.append([])
         res_data[-1].append(x)
 

@@ -101,11 +101,11 @@ async def follow_stream():
         follow_name_chunks = cut_list(follow_names)     # 处理数据，准备将config里follow所有人写入规则
         rules = []                                      # 规则最多10个，所以要分批写入
         for chunk in follow_name_chunks:
-            rule = {"value": f'"from:{" OR from:".join(chunk)}"'}
+            rule = {"value": f'from:{" OR from:".join(chunk)}'}
             rules.append(rule)
         data = {"add": rules}
         resp = await client.api.tweets.search.stream.rules.post(_json=data)
-        # sv.logger.info(resp)                          # 如果stream流启动失败请查看规则是否已经写入
+        sv.logger.debug(resp)                          # 如果stream流启动失败请查看规则是否已经写入
         fields = {
             "tweet.fields": [
                 "created_at",
