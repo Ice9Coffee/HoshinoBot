@@ -66,17 +66,17 @@ async def get_tweet(tweet_id, client):
     sv.logger.debug(resp)
     return resp
 
-
-async def format_tweet(tweet, client):
+MAX_DEPTH = 1
+async def format_tweet(tweet, client, quote_depth=0):
     name = tweet.get("includes")["users"][0]["name"]
     try:
         data = tweet.get("data")[0]
     except KeyError:
         data = tweet.get("data")
 
-    if is_retweet(tweet):
+    if quote_depth < MAX_DEPTH and is_retweet(tweet):
         retweeted_tweet = await get_tweet(data["referenced_tweets"][0]["id"], client)
-        retweeted_msg = await format_tweet(retweeted_tweet, client)
+        retweeted_msg = await format_tweet(retweeted_tweet, client, quote_depth + 1)
         return f"@{name} 转推了\n>>>>>\n{retweeted_msg}"
 
     time = format_time(data["created_at"])
@@ -88,9 +88,9 @@ async def format_tweet(tweet, client):
         imgs = "".join([str(ms.image(m.url)) for m in media])
         msg = f"{msg}\n{imgs}"
 
-    if is_quote(tweet) or is_reply(tweet):
+    if quote_depth < MAX_DEPTH and (is_quote(tweet) or is_reply(tweet)):
         quoted_tweet = await get_tweet(data["referenced_tweets"][0]["id"], client)
-        quoted_msg = await format_tweet(quoted_tweet, client)
+        quoted_msg = await format_tweet(quoted_tweet, client, quote_depth + 1)
         msg = f"{quoted_msg}\n\n<<<<<\n{msg}"
 
     return msg
