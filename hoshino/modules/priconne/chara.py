@@ -114,17 +114,18 @@ async def download_chara_icon(id_, star):
     logger.info(f'Downloading chara icon from {url}')
     try:
         rsp = await aiorequests.get(url, stream=True, timeout=5)
+        if 200 == rsp.status_code:
+            img = Image.open(BytesIO(await rsp.content))
+            img.save(save_path)
+            logger.info(f'Saved to {save_path}')
+            return 0    # ok
+        else:
+            logger.error(f'Failed to download {url}. HTTP {rsp.status_code}')
+            return 1        # error
     except Exception as e:
         logger.error(f'Failed to download {url}. {type(e)}')
         logger.exception(e)
-    if 200 == rsp.status_code:
-        img = Image.open(BytesIO(await rsp.content))
-        img.save(save_path)
-        logger.info(f'Saved to {save_path}')
-        return 0    # ok
-    else:
-        logger.error(f'Failed to download {url}. HTTP {rsp.status_code}')
-    return 1        # error
+        return 1        # error
 
 
 class Chara:
