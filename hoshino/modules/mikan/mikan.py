@@ -18,10 +18,15 @@ class Mikan:
 
 
     @staticmethod
+    def get_proxies():
+        return hoshino.config.mikan.PROXIES
+
+
+    @staticmethod
     async def get_rss():
         res = []
         try:
-            resp = await aiorequests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, timeout=10)
+            resp = await aiorequests.get('https://mikanani.me/RSS/MyBangumi', params={'token': Mikan.get_token()}, proxies=Mikan.get_proxies(), timeout=10)
             rss = etree.XML(await resp.content)
         except Exception as e:
             sv.logger.error(f'[get_rss] Error: {e}')
