@@ -1,4 +1,4 @@
-Quart==0.14.1
+Quart==0.19.7
 MarkupSafe~=1.0
 Jinja2~=2.11.2
 werkzeug~=1.0.1
