@@ -26,6 +26,7 @@ A QQ-bot for Princess Connect Re:Dive based on [Nonebot](https://github.com/none
 
 
 ## 更新公告
+- 2025.05.08: **【喜报】** HoshinoBot现已更新[**超详细技术文档**](https://deepwiki.com/Ice9Coffee/HoshinoBot)！配有7*24h客服在线解决您的任何疑问！直达链接：https://deepwiki.com/Ice9Coffee/HoshinoBot 
 - 2023.04: 支持Twitter API v2。使用前请按照[指引](https://github.com/Ice9Coffee/HoshinoBot/pull/271#issuecomment-1505584958)升级框架。由于Twitter API政策仍在频繁调整，不保证未来的可用性。感谢贡献者[@othinus001](https://github.com/othinus001)！
 
 ## 功能介绍
