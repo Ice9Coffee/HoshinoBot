@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  ubuntu:
+    image: hoshino_local_image:latest
+    container_name: hoshinobot
+    volumes:
+      - ${PWD}/:/HoshinoBot
+    network_mode: host
