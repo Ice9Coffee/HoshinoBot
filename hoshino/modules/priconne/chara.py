@@ -1,5 +1,6 @@
 import asyncio
 import importlib
+import os
 from io import BytesIO
 
 import pygtrie
@@ -111,6 +112,12 @@ async def gen_team_pic(team, size=64, star_slot_verbose=True):
 async def download_chara_icon(id_, star):
     url = f'https://redive.estertion.win/icon/unit/{id_}{star}1.webp'
     save_path = R.img(f'priconne/unit/icon_unit_{id_}{star}1.png').path
+    save_dir = os.path.dirname(save_path)
+
+    if not os.path.exists(save_dir):
+        logger.info(f'Creating directory {save_dir}')
+        os.makedirs(save_dir)
+
     logger.info(f'Downloading chara icon from {url}')
     try:
         rsp = await aiorequests.get(url, stream=True, timeout=5)
