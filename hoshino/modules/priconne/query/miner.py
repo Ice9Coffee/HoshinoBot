@@ -15,15 +15,18 @@ this_season[2001:4000] = 1
 this_season[4000:8100:100] = 50
 this_season[8100:15001:100] = 15
 
-all_season[1:11] = 500
-all_season[11:101] = 50
-all_season[101:201] = 30
-all_season[201:501] = 10
-all_season[501:1001] = 5
-all_season[1001:2001] = 3
-all_season[2001:4001] = 2
+# 历届最高排名奖励（数据来自 redive db 的 arena_max_rank_reward，2023-06 调整后现行值）
+all_season[1:11] = 550
+all_season[11:101] = 60
+all_season[101:201] = 35
+all_season[201:501] = 13
+all_season[501:1001] = 7
+all_season[1001:2001] = 5
+all_season[2001:4001] = 3
 all_season[4001:8000] = 1
-all_season[8000:15001:100] = 30
+all_season[8000:12000:100] = 95
+all_season[12000] = 80
+all_season[12100:15001:100] = 45
 
 
 @sv.on_prefix('挖矿', 'jjc钻石', '竞技场钻石', 'jjc钻石查询', '竞技场钻石查询')
